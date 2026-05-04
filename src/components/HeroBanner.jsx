@@ -36,7 +36,7 @@ function HeroBanner({ seriesList }) {
           key={series.id}
           src={series.thumbnail_url}
           alt={series.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
