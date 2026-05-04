@@ -26,7 +26,7 @@ function HeroBanner({ seriesList }) {
   }
 
   return (
-    <div className="px-6 pt-16 pb-3">
+   <div className="px-6 pt-16 pb-3 md:px-64">
       <div
         className="relative rounded-2xl overflow-hidden aspect-[2/3] md:aspect-[16/9] shadow-2xl"
         onTouchStart={handleTouchStart}
