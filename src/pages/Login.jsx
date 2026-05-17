@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 
-const YOUTUBE_CHANNEL_ID = 'UCxxxxxxxxxxxxxxxxxxxxxx' // replace with your channel ID
+const YOUTUBE_CHANNEL_ID = 'UCNIsckaXm3JOTRrmhQVGD2g' // replace with your channel ID
 
 function Login() {
   const navigate = useNavigate()
