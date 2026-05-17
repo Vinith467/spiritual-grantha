@@ -1,25 +1,25 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 
-const YOUTUBE_CHANNEL_ID = 'UCNIsckaXm3JOTRrmhQVGD2g' // replace with your channel ID
-
 function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // If already subscribed, skip login
     if (localStorage.getItem('subscribed') === 'true') {
       navigate('/', { replace: true })
     }
-  }, [navigate])
 
-  function handleSubscribe() {
-    // Open YouTube subscribe page
-    window.open(
-      `https://www.youtube.com/@Vinu_s_shetty467?sub_confirmation=1`,
-      '_blank'
-    )
-  }
+    // Load YouTube iframe API script
+    const script = document.createElement('script')
+    script.src = 'https://apis.google.com/js/platform.js'
+    script.async = true
+    script.defer = true
+    document.body.appendChild(script)
+
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [navigate])
 
   function handleContinue() {
     localStorage.setItem('subscribed', 'true')
@@ -30,45 +30,62 @@ function Login() {
     <div className="bg-[#141414] min-h-screen flex flex-col items-center justify-center px-6">
 
       {/* Logo */}
-      <h1 className="text-yellow-500 text-4xl font-extrabold tracking-wider mb-2">
+      <h1 className="text-yellow-500 text-4xl font-extrabold tracking-wider mb-1">
         GRANTHA
       </h1>
       <p className="text-gray-400 text-sm mb-10">Stream the Eternal</p>
 
       {/* Card */}
-      <div className="bg-[#1f1f1f] rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+      <div className="bg-[#1f1f1f] rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-white/5">
 
-        {/* Channel avatar placeholder */}
+        {/* Icon */}
         <div className="flex flex-col items-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-yellow-500/20 border-2 border-yellow-500 flex items-center justify-center mb-3">
-            <span className="text-3xl">🕉️</span>
+          <div className="w-20 h-20 rounded-full bg-yellow-500/10 border-2 border-yellow-500/50 flex items-center justify-center mb-3">
+            <span className="text-4xl">🕉️</span>
           </div>
           <h2 className="text-white font-bold text-lg text-center">
-            Sanatan Dharma
+            Welcome to Grantha
           </h2>
-          <p className="text-gray-400 text-xs text-center mt-1">
-            Subscribe to get free access to all spiritual content
+          <p className="text-gray-400 text-xs text-center mt-1 leading-relaxed">
+            Subscribe to our YouTube channel to get free access to all spiritual content
           </p>
         </div>
 
-        {/* Subscribe button */}
-        <button
-          onClick={handleSubscribe}
-          className="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all mb-3"
-        >
-          Subscribe on YouTube
-        </button>
+        {/* Step 1 - YouTube Subscribe Button */}
+        <div className="mb-4">
+          <p className="text-gray-400 text-xs mb-3 text-center">
+            Step 1 — Subscribe to our channel
+          </p>
+          <div className="flex justify-center bg-white/5 rounded-xl py-4">
+            <div
+              className="g-ytsubscribe"
+              data-channelid="UCNIsckaXm3JOTRrmhQVGD2g"
+              data-layout="full"
+              data-count="default"
+            />
+          </div>
+        </div>
 
-        {/* Continue button */}
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-gray-500 text-xs">then</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+
+        {/* Step 2 - Continue button */}
+        <p className="text-gray-400 text-xs mb-3 text-center">
+          Step 2 — Enter the app
+        </p>
         <button
           onClick={handleContinue}
-          className="w-full bg-white/10 hover:bg-white/20 active:scale-95 text-white py-3 rounded-xl font-bold text-sm transition-all"
+          className="w-full bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black py-3 rounded-xl font-bold text-sm transition-all"
         >
-          I've Subscribed — Continue
+          I've Subscribed — Watch Now
         </button>
 
-        <p className="text-gray-500 text-xs text-center mt-4">
-          Free forever for subscribers
+        <p className="text-gray-500 text-[10px] text-center mt-4">
+          Free forever for subscribers. One time only.
         </p>
       </div>
     </div>
