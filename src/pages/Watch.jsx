@@ -6,6 +6,8 @@ function Watch() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [episode, setEpisode] = useState(null)
+  const [seriesEpisodes, setSeriesEpisodes] = useState([])
+  const [series, setSeries] = useState(null)
 
   const fetchEpisode = useCallback(async () => {
     const { data } = await supabase
@@ -14,8 +16,27 @@ function Watch() {
       .eq('id', id)
       .single()
     setEpisode(data)
-    if (data) localStorage.setItem('lastWatched', JSON.stringify(data))
+    if (data) {
+      localStorage.setItem('lastWatched', JSON.stringify(data))
+      fetchSeriesEpisodes(data.series_id)
+    }
   }, [id])
+
+  async function fetchSeriesEpisodes(seriesId) {
+    const { data: seriesData } = await supabase
+      .from('series')
+      .select('*')
+      .eq('id', seriesId)
+      .single()
+    setSeries(seriesData)
+
+    const { data: episodes } = await supabase
+      .from('episodes')
+      .select('*')
+      .eq('series_id', seriesId)
+      .order('episode_number')
+    setSeriesEpisodes(episodes || [])
+  }
 
   useEffect(() => {
     fetchEpisode()
@@ -23,32 +44,103 @@ function Watch() {
 
   if (!episode) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
-      Loading...
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-400 text-sm">Loading...</p>
+      </div>
     </div>
   )
 
   return (
     <div className="bg-[#141414] min-h-screen text-white">
-      <div className="p-3 md:p-6">
+
+      {/* Top bar */}
+      <div className="flex items-center gap-3 px-4 py-3 bg-black/80 sticky top-0 z-50">
         <button
           onClick={() => navigate(-1)}
-          className="mb-3 text-gray-400 hover:text-white text-sm"
+          className="text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center transition"
         >
-          Back
+          ←
         </button>
-        <div className="aspect-video w-full max-w-5xl mx-auto">
-          <iframe
-            src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1`}
-            className="w-full h-full rounded-lg"
-            allowFullScreen
-            allow="autoplay"
-          />
-        </div>
-        <div className="max-w-5xl mx-auto mt-3 md:mt-4">
-          <h1 className="text-lg md:text-2xl font-bold">{episode.title}</h1>
-          <p className="text-gray-400 text-sm mt-2">{episode.description}</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-yellow-500 text-xs font-bold truncate">{series?.title}</p>
+          <p className="text-white text-sm font-semibold truncate">{episode.title}</p>
         </div>
       </div>
+
+      {/* Video Player */}
+      <div className="w-full bg-black aspect-video">
+        <iframe
+          src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0`}
+          className="w-full h-full"
+          allowFullScreen
+          allow="autoplay; encrypted-media"
+        />
+      </div>
+
+      {/* Episode info */}
+      <div className="px-4 py-4 border-b border-white/10">
+        <h1 className="text-lg md:text-2xl font-bold mb-1">{episode.title}</h1>
+        {episode.description && (
+          <p className="text-gray-400 text-sm leading-relaxed">{episode.description}</p>
+        )}
+      </div>
+
+      {/* More episodes */}
+      {seriesEpisodes.length > 1 && (
+        <div className="px-4 py-4">
+          <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wider">
+            More Episodes — {series?.title}
+          </h3>
+          <div className="flex flex-col gap-3">
+            {seriesEpisodes.map(ep => (
+              <div
+                key={ep.id}
+                onClick={() => ep.id !== episode.id && navigate(`/watch/${ep.id}`)}
+                className={`flex gap-3 rounded-xl overflow-hidden cursor-pointer transition
+                  ${ep.id === episode.id
+                    ? 'bg-white/10 border border-yellow-500/50'
+                    : 'bg-white/5 hover:bg-white/10'
+                  }`}
+              >
+                {/* Thumbnail */}
+                <div className="relative flex-shrink-0 w-36 md:w-48 aspect-video">
+                  <img
+                    src={ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/hqdefault.jpg`}
+                    alt={ep.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {ep.id === episode.id && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="w-7 h-7 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  {ep.id !== episode.id && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition">
+                      <div className="bg-white/80 rounded-full w-8 h-8 flex items-center justify-center">
+                        <span className="text-black text-sm ml-0.5">&#9654;</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex flex-col justify-center py-2 pr-3 flex-1 min-w-0">
+                  <p className="text-xs text-yellow-500 font-bold mb-0.5">
+                    EP {ep.episode_number}
+                  </p>
+                  <p className={`text-sm font-semibold truncate ${ep.id === episode.id ? 'text-yellow-400' : 'text-white'}`}>
+                    {ep.title}
+                  </p>
+                  {ep.description && (
+                    <p className="text-gray-400 text-xs line-clamp-2 mt-1">{ep.description}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
