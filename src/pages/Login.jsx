@@ -8,11 +8,27 @@ function Login() {
   const navigate = useNavigate()
   const [status, setStatus] = useState('idle') // idle | signing | subscribing | done | error
   const [userName, setUserName] = useState('')
+  const [cameBack, setCameBack] = useState(false)
 
   useEffect(() => {
     if (localStorage.getItem('subscribed') === 'true') {
       navigate('/', { replace: true })
     }
+
+    // Check if user came back after clicking YouTube button
+    if (localStorage.getItem('clickedYouTube') === 'true') {
+      setCameBack(true)
+    }
+
+    // Detect when user comes back to tab
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        if (localStorage.getItem('clickedYouTube') === 'true') {
+          setCameBack(true)
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     // Load Google Identity Services
     const script = document.createElement('script')
@@ -22,13 +38,22 @@ function Login() {
     document.body.appendChild(script)
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
       if (document.body.contains(script)) document.body.removeChild(script)
     }
   }, [navigate])
 
+  function handleYouTubeSubscribe() {
+    // Mark that they clicked YouTube button
+    localStorage.setItem('clickedYouTube', 'true')
+    window.open(
+      'https://www.youtube.com/@Vinu_s_shetty467?sub_confirmation=1',
+      '_blank'
+    )
+  }
+
   async function handleGoogleLogin() {
     setStatus('signing')
-
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/youtube',
@@ -40,7 +65,6 @@ function Login() {
         await subscribeToChannel(tokenResponse.access_token)
       },
     })
-
     client.requestAccessToken()
   }
 
@@ -65,17 +89,13 @@ function Login() {
           }),
         }
       )
-
-      // 200 = subscribed, 409 = already subscribed — both are fine!
       if (res.status === 200 || res.status === 409) {
-        setStatus('done')
-        // Get user name from token info
-        const info = await fetch(
-          `https://www.googleapis.com/oauth2/v3/userinfo`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        )
+        const info = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        })
         const userData = await info.json()
         setUserName(userData.given_name || 'Devotee')
+        setStatus('done')
       } else {
         setStatus('error')
       }
@@ -86,6 +106,7 @@ function Login() {
 
   function handleContinue() {
     localStorage.setItem('subscribed', 'true')
+    localStorage.removeItem('clickedYouTube')
     navigate('/', { replace: true })
   }
 
@@ -99,7 +120,7 @@ function Login() {
 
       <div className="bg-[#1f1f1f] rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-white/5">
 
-        {/* Icon */}
+        {/* Icon + title */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-20 h-20 rounded-full bg-yellow-500/10 border-2 border-yellow-500/50 flex items-center justify-center mb-3">
             <span className="text-4xl">🕉️</span>
@@ -110,11 +131,11 @@ function Login() {
           <p className="text-gray-400 text-xs text-center mt-1 leading-relaxed">
             {status === 'done'
               ? 'You have successfully subscribed!'
-              : 'Subscribe to our YouTube channel to unlock free access to all spiritual content'}
+              : 'Subscribe to our YouTube channel to unlock free access'}
           </p>
         </div>
 
-        {/* Status messages */}
+        {/* Subscribing spinner */}
         {status === 'subscribing' && (
           <div className="flex items-center justify-center gap-2 mb-4 text-yellow-500 text-sm">
             <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
@@ -122,15 +143,16 @@ function Login() {
           </div>
         )}
 
+        {/* Error */}
         {status === 'error' && (
           <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4 text-center">
-            <p className="text-red-400 text-xs">Something went wrong. Try again or use the link below.</p>
+            <p className="text-red-400 text-xs">Something went wrong. Try again.</p>
           </div>
         )}
 
-        {/* Subscribe button — hidden when done */}
         {status !== 'done' && (
           <>
+            {/* Google OAuth button */}
             <button
               onClick={handleGoogleLogin}
               disabled={status === 'subscribing'}
@@ -152,22 +174,37 @@ function Login() {
               <div className="flex-1 h-px bg-white/10" />
             </div>
 
-            {/* Fallback */}
-            <a
-              href="https://www.youtube.com/@Vinu_s_shetty467?sub_confirmation=1"
-              target="_blank"
-              rel="noreferrer"
+            {/* YouTube button */}
+            <button
+              onClick={handleYouTubeSubscribe}
               className="w-full bg-red-600 hover:bg-red-700 active:scale-95 text-white py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
-              Subscribe on YouTube directly
-            </a>
+              Subscribe on YouTube
+            </button>
+
+            {/* came back — show Watch Now */}
+            {cameBack && (
+              <div className="mt-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-gray-500 text-xs">Welcome back!</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+                <button
+                  onClick={handleContinue}
+                  className="w-full bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-black py-3 rounded-xl font-bold text-sm transition-all"
+                >
+                  I've Subscribed — Watch Now
+                </button>
+              </div>
+            )}
           </>
         )}
 
-        {/* Watch Now — only shown after subscribed */}
+        {/* OAuth subscribed — show Watch Now */}
         {status === 'done' && (
           <button
             onClick={handleContinue}
