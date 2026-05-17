@@ -94,8 +94,10 @@ function Login() {
           headers: { Authorization: `Bearer ${accessToken}` }
         })
         const userData = await info.json()
-        setUserName(userData.given_name || 'Devotee')
-        setStatus('done')
+        localStorage.setItem('subscribed', 'true')
+        localStorage.removeItem('clickedYouTube')
+        navigate('/', { replace: true })
+
       } else {
         setStatus('error')
       }
