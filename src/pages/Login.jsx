@@ -101,9 +101,7 @@ function Login() {
 
         // Security check: Verify if they match the admin google accounts list
         const ADMIN_EMAILS = [
-          "vinu.s.shetty467@gmail.com",
-          "vinithshetty467@gmail.com",
-          "vinithshetty@gmail.com"
+          "vinuvinith0007@gmail.com"
         ];
         if (email && ADMIN_EMAILS.includes(email)) {
           localStorage.setItem("isAdmin", "true");
