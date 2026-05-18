@@ -135,28 +135,28 @@ function Login() {
         <img 
           src="/assets/vishnu_lakshmi.png" 
           alt="Vishnu Lakshmi" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-[center_15%] transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Ram Sita */}
         <img 
           src="/assets/ram_sita.png" 
           alt="Ram Sita" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-[center_15%] transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Krishna Arjuna */}
         <img 
           src="/assets/krishna_arjuna.png" 
           alt="Krishna Arjuna" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-[center_15%] transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
         {/* Krishna Radha */}
         <img 
           src="/assets/krishna_radha.png" 
           alt="Krishna Radha" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-[center_15%] transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
       </div>
@@ -172,7 +172,7 @@ function Login() {
       <div className="fixed bottom-0 left-0 w-full h-[70vh] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent z-0 pointer-events-none"></div>
 
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 pt-40 pb-8 sm:pb-12 flex flex-col items-center justify-end min-h-screen">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 pt-[45vh] pb-8 sm:pb-12 flex flex-col items-center justify-end min-h-screen">
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
