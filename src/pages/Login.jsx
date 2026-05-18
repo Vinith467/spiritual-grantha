@@ -85,6 +85,7 @@ function Login() {
 
   async function fetchUserInfoAndVerify(accessToken) {
     setStatus("subscribing");
+    let isUserAdmin = false;
     try {
       // 1. Fetch user info from Google OAuth2 API
       const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
@@ -105,6 +106,7 @@ function Login() {
         ];
         if (email && ADMIN_EMAILS.includes(email)) {
           localStorage.setItem("isAdmin", "true");
+          isUserAdmin = true;
         } else {
           localStorage.setItem("isAdmin", "false");
         }
@@ -113,8 +115,15 @@ function Login() {
       console.error("Error retrieving Google user details:", err);
     }
 
-    // 2. Perform regular YouTube subscription check
-    await subscribeToChannel(accessToken);
+    // 2. Perform YouTube check or Admin bypass
+    if (isUserAdmin) {
+      // Admin bypasses subscription check entirely! Log in instantly.
+      localStorage.setItem("subscribed", "true");
+      localStorage.removeItem("clickedYouTube");
+      navigate("/", { replace: true });
+    } else {
+      await subscribeToChannel(accessToken);
+    }
   }
 
   async function subscribeToChannel(accessToken) {
@@ -137,15 +146,24 @@ function Login() {
           }),
         },
       );
+      
+      // Successfully subscribed OR already subscribed (409 Conflict)
       if (res.status === 200 || res.status === 409) {
         localStorage.setItem("subscribed", "true");
         localStorage.removeItem("clickedYouTube");
         navigate("/", { replace: true });
       } else {
-        setStatus("error");
+        // Fallback: If YouTube API returns an error (e.g. no channel exists on their Google account)
+        // we still log them in to prevent frustration
+        localStorage.setItem("subscribed", "true");
+        localStorage.removeItem("clickedYouTube");
+        navigate("/", { replace: true });
       }
     } catch {
-      setStatus("error");
+      // Fallback on network/fetch errors
+      localStorage.setItem("subscribed", "true");
+      localStorage.removeItem("clickedYouTube");
+      navigate("/", { replace: true });
     }
   }
 
