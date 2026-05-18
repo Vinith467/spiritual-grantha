@@ -93,14 +93,6 @@ function Home() {
       <Navbar />
       <HeroBanner seriesList={seriesList} />
       <div className="pb-10 -mt-4 relative z-10">
-        {lastWatched && (
-          <div className="mb-6 px-4 md:px-8">
-            <h3 className="text-sm md:text-lg font-bold mb-2">Continue Watching</h3>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <ContinueCard episode={lastWatched} />
-            </div>
-          </div>
-        )}
         {seriesList.map(series => (
           <VideoRow key={series.id} series={series} />
         ))}

@@ -62,7 +62,13 @@ function HeroBanner({ seriesList }) {
             <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
             {firstEpisode && (
               <button
-                onClick={() => navigate(`/watch/${firstEpisode.id}`)}
+                onClick={() => {
+                  if (isWatched) {
+                    navigate(`/watch/${lastWatched.id}`)
+                  } else {
+                    navigate(`/watch/${firstEpisode.id}`)
+                  }
+                }}
                 className="w-full sm:w-auto bg-white text-black px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
               >
                 {isWatched ? 'Continue Watching' : 'Watch Now'}

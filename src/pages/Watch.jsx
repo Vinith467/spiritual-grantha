@@ -11,33 +11,61 @@ function Watch() {
   const [series, setSeries] = useState(null)
 
   const fetchEpisode = useCallback(async () => {
+    // 1. Check local admin videos first
+    const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
+    const adminVid = adminVideos.find(v => v.id === id)
+    
+    if (adminVid) {
+      const epData = {
+        id: adminVid.id,
+        title: adminVid.episodeTitle,
+        youtube_id: adminVid.youtubeId,
+        series_id: `admin_${adminVid.seriesTitle}`,
+        description: ''
+      }
+      setEpisode(epData)
+      localStorage.setItem('lastWatched', JSON.stringify(epData))
+      
+      const seriesEps = adminVideos
+        .filter(v => v.seriesTitle === adminVid.seriesTitle)
+        .map((v, i) => ({
+          id: v.id,
+          title: v.episodeTitle,
+          youtube_id: v.youtubeId,
+          episode_number: i + 1,
+          thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
+        }))
+      setSeries({ title: adminVid.seriesTitle })
+      setSeriesEpisodes(seriesEps)
+      return
+    }
+
+    // 2. Fallback to Supabase
     const { data } = await supabase
       .from('episodes')
       .select('*')
       .eq('id', id)
       .single()
+      
     setEpisode(data)
     if (data) {
       localStorage.setItem('lastWatched', JSON.stringify(data))
-      fetchSeriesEpisodes(data.series_id)
+      
+      const { data: seriesData } = await supabase
+        .from('series')
+        .select('*')
+        .eq('id', data.series_id)
+        .single()
+      setSeries(seriesData)
+
+      const { data: episodes } = await supabase
+        .from('episodes')
+        .select('*')
+        .eq('series_id', data.series_id)
+        .order('episode_number')
+      setSeriesEpisodes(episodes || [])
     }
   }, [id])
-
-  async function fetchSeriesEpisodes(seriesId) {
-    const { data: seriesData } = await supabase
-      .from('series')
-      .select('*')
-      .eq('id', seriesId)
-      .single()
-    setSeries(seriesData)
-
-    const { data: episodes } = await supabase
-      .from('episodes')
-      .select('*')
-      .eq('series_id', seriesId)
-      .order('episode_number')
-    setSeriesEpisodes(episodes || [])
-  }
 
   useEffect(() => {
     fetchEpisode()
