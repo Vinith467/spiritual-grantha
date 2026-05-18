@@ -126,7 +126,7 @@ function Login() {
             />
           </div>
           
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-center mb-1 drop-shadow-lg shrink-0">
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-center mb-1 drop-shadow-lg shrink-0">
             Sanatan Dharma
           </h1>
           <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
@@ -134,11 +134,11 @@ function Login() {
           </h2>
           
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-yellow-500/60"></div>
-            <p className="text-yellow-400 text-sm sm:text-base font-medium tracking-wide text-center drop-shadow-md">
+            <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#FF9933]/60"></div>
+            <p className="text-[#FF9933] text-sm sm:text-base font-medium tracking-wide text-center drop-shadow-md">
               धर्मो रक्षति रक्षितः
             </p>
-            <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-l from-transparent to-yellow-500/60"></div>
+            <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-l from-transparent to-[#FF9933]/60"></div>
           </div>
         </div>
 
