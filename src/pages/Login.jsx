@@ -104,7 +104,7 @@ function Login() {
   }
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-hidden selection:bg-yellow-500/30">
+    <div className="relative h-[100dvh] w-full flex flex-col bg-[#0a0a0a] overflow-hidden selection:bg-yellow-500/30">
       
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -114,11 +114,11 @@ function Login() {
       </div>
 
       {/* Main Content Area - Taking Full Screen */}
-      <div className="relative z-10 flex-1 flex flex-col justify-between px-6 py-12 md:py-20 w-full max-w-7xl mx-auto min-h-screen">
+      <div className="relative z-10 flex-1 flex flex-col justify-between px-6 py-6 sm:py-12 md:py-20 w-full max-w-7xl mx-auto h-full overflow-y-auto sm:overflow-hidden">
         
         {/* Top Header & Center Content */}
-        <div className="flex flex-col items-center flex-1 justify-center">
-          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.15)] mb-8 ring-8 ring-black/50">
+        <div className="flex flex-col items-center flex-1 justify-center min-h-min">
+          <div className="w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.15)] mb-4 sm:mb-8 ring-4 sm:ring-8 ring-black/50 shrink-0">
             <img
               src="/icon-192.png"
               alt="Grantha"
@@ -126,94 +126,94 @@ function Login() {
             />
           </div>
           
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 text-5xl md:text-7xl font-black tracking-tighter text-center mb-2 drop-shadow-lg">
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-center mb-1 md:mb-2 drop-shadow-lg shrink-0">
             Sanatan Dharma
           </h1>
-          <h2 className="text-white text-3xl md:text-5xl font-extrabold tracking-tight text-center mb-6">
+          <h2 className="text-white text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-center mb-3 sm:mb-6 shrink-0">
             Television
           </h2>
           
-          <div className="flex items-center gap-4 mb-10 md:mb-14">
-            <div className="h-[1px] w-8 md:w-16 bg-gradient-to-r from-transparent to-yellow-500/50"></div>
-            <p className="text-yellow-500 text-xs md:text-sm tracking-[0.4em] uppercase font-bold text-center">
+          <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-10 md:mb-14 shrink-0">
+            <div className="h-[1px] w-6 sm:w-8 md:w-16 bg-gradient-to-r from-transparent to-yellow-500/50"></div>
+            <p className="text-yellow-500 text-[10px] sm:text-xs md:text-sm tracking-[0.3em] sm:tracking-[0.4em] uppercase font-bold text-center">
               Stream the Eternal
             </p>
-            <div className="h-[1px] w-8 md:w-16 bg-gradient-to-l from-transparent to-yellow-500/50"></div>
+            <div className="h-[1px] w-6 sm:w-8 md:w-16 bg-gradient-to-l from-transparent to-yellow-500/50"></div>
           </div>
 
-          <div className="w-full max-w-md mx-auto">
-            <p className="text-gray-300 text-base md:text-lg text-center mb-10 leading-relaxed font-medium px-4">
+          <div className="w-full max-w-md mx-auto flex-1 flex flex-col justify-center">
+            <p className="text-gray-300 text-sm sm:text-base md:text-lg text-center mb-5 sm:mb-10 leading-relaxed font-medium px-2 sm:px-4 shrink-0">
               Subscribe to our YouTube channel to unlock free access to all spiritual content and sacred texts.
             </p>
 
             {/* Status Messages */}
             {status === "subscribing" && (
-              <div className="w-full bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-4 mb-6 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(234,179,8,0.1)]">
-                <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
-                <span className="text-yellow-500 text-sm font-semibold">Verifying Subscription...</span>
+              <div className="w-full bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(234,179,8,0.1)] shrink-0">
+                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                <span className="text-yellow-500 text-xs sm:text-sm font-semibold">Verifying Subscription...</span>
               </div>
             )}
 
             {status === "error" && (
-              <div className="w-full bg-red-500/10 border border-red-500/20 rounded-2xl p-4 mb-6 text-center shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                <p className="text-red-400 text-sm font-semibold">
+              <div className="w-full bg-red-500/10 border border-red-500/20 rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 text-center shadow-[0_0_20px_rgba(239,68,68,0.1)] shrink-0">
+                <p className="text-red-400 text-xs sm:text-sm font-semibold">
                   Something went wrong. Please try again.
                 </p>
               </div>
             )}
 
             {/* Buttons */}
-            <div className="w-full space-y-4">
+            <div className="w-full space-y-3 sm:space-y-4 shrink-0">
               <button
                 onClick={handleGoogleLogin}
                 disabled={status === "subscribing"}
-                className="group relative w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 active:scale-[0.98] transition-all duration-300 px-6 py-4 md:py-5 rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] disabled:opacity-70 disabled:active:scale-100"
+                className="group relative w-full flex items-center justify-center gap-2 sm:gap-3 bg-white hover:bg-gray-100 active:scale-[0.98] transition-all duration-300 px-4 sm:px-6 py-3.5 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] disabled:opacity-70 disabled:active:scale-100"
               >
-                <svg className="w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                <span className="text-gray-800 font-bold text-base md:text-lg">
+                <span className="text-gray-800 font-bold text-sm sm:text-base md:text-lg">
                   {status === "signing" ? "Opening Google..." : "Subscribe with Google"}
                 </span>
               </button>
 
-              <div className="flex items-center gap-4 py-3">
+              <div className="flex items-center gap-3 sm:gap-4 py-1 sm:py-3">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-                <span className="text-gray-500 text-xs font-bold uppercase tracking-widest">or</span>
+                <span className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest">or</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
               </div>
 
               <button
                 onClick={handleYouTubeSubscribe}
-                className="w-full flex items-center justify-center gap-3 bg-[#FF0000] hover:bg-[#E60000] active:scale-[0.98] transition-all duration-300 text-white px-6 py-4 md:py-5 rounded-2xl shadow-[0_0_30px_rgba(255,0,0,0.15)] hover:shadow-[0_0_40px_rgba(255,0,0,0.25)] border border-red-500/20"
+                className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-[#FF0000] hover:bg-[#E60000] active:scale-[0.98] transition-all duration-300 text-white px-4 sm:px-6 py-3.5 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,0,0,0.15)] hover:shadow-[0_0_40px_rgba(255,0,0,0.25)] border border-red-500/20"
               >
-                <svg className="w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                 </svg>
-                <span className="font-bold text-base md:text-lg tracking-wide">
+                <span className="font-bold text-sm sm:text-base md:text-lg tracking-wide">
                   Subscribe on YouTube
                 </span>
               </button>
             </div>
 
             {cameBack && (
-              <div className="w-full mt-10">
-                <div className="flex items-center gap-4 mb-6">
+              <div className="w-full mt-4 sm:mt-8 shrink-0">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
-                  <span className="text-yellow-500 text-sm font-bold uppercase tracking-widest drop-shadow-md">Welcome Back</span>
+                  <span className="text-yellow-500 text-[10px] sm:text-sm font-bold uppercase tracking-widest drop-shadow-md">Welcome Back</span>
                   <div className="flex-1 h-px bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
                 </div>
                 <button
                   onClick={handleContinue}
-                  className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 active:scale-[0.98] transition-all duration-300 text-black px-6 py-4 md:py-5 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] hover:shadow-[0_0_40px_rgba(234,179,8,0.3)] border border-yellow-400/50"
+                  className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 active:scale-[0.98] transition-all duration-300 text-black px-4 sm:px-6 py-3.5 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] hover:shadow-[0_0_40px_rgba(234,179,8,0.3)] border border-yellow-400/50"
                 >
-                  <span className="font-extrabold text-base md:text-lg tracking-wide">
+                  <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-wide">
                     I've Subscribed — Watch Now
                   </span>
-                  <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -223,8 +223,8 @@ function Login() {
         </div>
 
         {/* Footer */}
-        <div className="w-full text-center mt-6">
-          <p className="text-gray-500 text-xs md:text-sm font-medium tracking-wide">
+        <div className="w-full text-center mt-auto pb-2 sm:pb-0 pt-3 sm:pt-6 shrink-0">
+          <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium tracking-wide">
             Free forever for subscribers. One time only.
           </p>
         </div>
