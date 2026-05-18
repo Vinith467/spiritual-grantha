@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { HomeOutlined, VideoCameraOutlined, CustomerServiceOutlined, MobileOutlined, UserOutlined } from '@ant-design/icons'
+import { HomeOutlined, VideoCameraOutlined, CustomerServiceOutlined, MobileOutlined, UserOutlined, PictureOutlined } from '@ant-design/icons'
 
 function Admin() {
   const navigate = useNavigate()
   const [authed, setAuthed] = useState(false)
-  const [activeTab, setActiveTab] = useState('videos') // 'videos', 'music', 'shorts', 'users'
+  const [activeTab, setActiveTab] = useState('banners') // default to banners so they see it
 
   // Data States
+  const [banners, setBanners] = useState([])
   const [videos, setVideos] = useState([])
   const [supabaseVideos, setSupabaseVideos] = useState([])
   const [music, setMusic] = useState([])
@@ -16,7 +17,8 @@ function Admin() {
   const [editingId, setEditingId] = useState(null)
 
   // Form States
-  const [videoForm, setVideoForm] = useState({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '', desktopThumbnailUrl: '' })
+  const [bannerForm, setBannerForm] = useState({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
+  const [videoForm, setVideoForm] = useState({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
   const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
   const [shortForm, setShortForm] = useState({ description: '', youtubeId: '' })
 
@@ -48,6 +50,7 @@ function Admin() {
     if (localStorage.getItem('isAdmin') === 'true') {
       setAuthed(true)
       // Load data
+      setBanners(JSON.parse(localStorage.getItem('admin_banners') || '[]'))
       setVideos(JSON.parse(localStorage.getItem('admin_videos') || '[]'))
       setMusic(JSON.parse(localStorage.getItem('admin_music') || '[]'))
       setShorts(JSON.parse(localStorage.getItem('admin_shorts') || '[]'))
@@ -60,6 +63,20 @@ function Admin() {
 
   const saveToLocal = (key, data) => {
     localStorage.setItem(key, JSON.stringify(data))
+  }
+
+  const handleBannerSubmit = (e) => {
+    e.preventDefault()
+    let newData
+    if (editingId) {
+      newData = banners.map(b => b.id === editingId ? { ...bannerForm, id: editingId } : b)
+    } else {
+      newData = [{ ...bannerForm, id: Date.now().toString() }, ...banners]
+    }
+    setBanners(newData)
+    saveToLocal('admin_banners', newData)
+    setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
+    setEditingId(null)
   }
 
   // Generic Submit Handler
@@ -78,7 +95,7 @@ function Admin() {
     }
     setVideos(newData)
     saveToLocal('admin_videos', newData)
-    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '', desktopThumbnailUrl: '' })
+    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
     setEditingId(null)
   }
 
@@ -111,6 +128,11 @@ function Admin() {
   }
 
   // Delete Handlers
+  const deleteBanner = (id) => {
+    const newData = banners.filter(b => b.id !== id)
+    setBanners(newData)
+    saveToLocal('admin_banners', newData)
+  }
   const deleteVideo = (v) => {
     if (v.isSupabase) {
       alert("Live database Delete feature is currently read-only. You can only delete locally uploaded items.")
@@ -132,6 +154,7 @@ function Admin() {
   }
 
   // Edit Handlers
+  const editBanner = (item) => { setBannerForm(item); setEditingId(item.id); window.scrollTo(0,0) }
   const editVideo = (item) => { 
     if (item.isSupabase) {
       alert("You can view this item in the form, but live database saving is read-only for now.")
@@ -140,8 +163,7 @@ function Admin() {
       seriesTitle: item.seriesTitle || '',
       episodeTitle: item.episodeTitle || '',
       youtubeId: item.youtubeId || '',
-      thumbnailUrl: item.thumbnailUrl || '',
-      desktopThumbnailUrl: item.desktopThumbnailUrl || ''
+      thumbnailUrl: item.thumbnailUrl || ''
     })
     setEditingId(item.id)
     window.scrollTo(0,0) 
@@ -152,7 +174,8 @@ function Admin() {
   // Cancel Edit
   const cancelEdit = () => {
     setEditingId(null)
-    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '', desktopThumbnailUrl: '' })
+    setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
+    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
     setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
     setShortForm({ description: '', youtubeId: '' })
   }
@@ -165,6 +188,7 @@ function Admin() {
 
   const TABS = [
     { id: 'home_link', label: 'Home', icon: <HomeOutlined /> },
+    { id: 'banners', label: 'Banners', icon: <PictureOutlined /> },
     { id: 'videos', label: 'Videos', icon: <VideoCameraOutlined /> },
     { id: 'music', label: 'Music', icon: <CustomerServiceOutlined /> },
     { id: 'shorts', label: 'Shorts', icon: <MobileOutlined /> },
@@ -188,6 +212,46 @@ function Admin() {
       {/* Main Content Area */}
       <div className="p-5 max-w-4xl mx-auto space-y-8">
         
+        {/* BANNERS TAB */}
+        {activeTab === 'banners' && (
+          <div className="animate-fade-in space-y-8">
+            <form onSubmit={handleBannerSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
+              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Hero Banner' : 'Add New Hero Banner'}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input required type="text" placeholder="Banner Title" value={bannerForm.title} onChange={e=>setBannerForm({...bannerForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="Target Video ID (to play when clicked)" value={bannerForm.targetId} onChange={e=>setBannerForm({...bannerForm, targetId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <textarea required rows="2" placeholder="Description" value={bannerForm.description} onChange={e=>setBannerForm({...bannerForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+                <input required type="url" placeholder="Mobile Banner Image URL (Vertical)" value={bannerForm.mobileUrl} onChange={e=>setBannerForm({...bannerForm, mobileUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="url" placeholder="Desktop Banner Image URL (Horizontal)" value={bannerForm.desktopUrl} onChange={e=>setBannerForm({...bannerForm, desktopUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+              </div>
+              <div className="flex gap-3">
+                <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Banner' : 'Publish Banner'}</button>
+                {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
+              </div>
+            </form>
+
+            <div className="space-y-4">
+              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Active Hero Banners ({banners.length})</h3>
+              {banners.length === 0 && <p className="text-sm text-gray-500">No custom banners uploaded. App will use video series by default.</p>}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {banners.map(b => (
+                  <div key={b.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden">
+                    <img src={b.desktopUrl || b.mobileUrl} alt="thumb" className="w-24 h-14 object-cover rounded-md bg-black shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{b.title}</p>
+                      <p className="text-xs text-gray-400 truncate">Video ID: {b.targetId}</p>
+                    </div>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <button onClick={()=>editBanner(b)} className="text-xs text-[#FF9933] font-bold">Edit</button>
+                      <button onClick={()=>deleteBanner(b.id)} className="text-xs text-red-500 font-bold">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* VIDEOS TAB */}
         {activeTab === 'videos' && (
           <div className="animate-fade-in space-y-8">
@@ -197,8 +261,7 @@ function Admin() {
                 <input required type="text" placeholder="Series Title" value={videoForm.seriesTitle} onChange={e=>setVideoForm({...videoForm, seriesTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="Episode Title" value={videoForm.episodeTitle} onChange={e=>setVideoForm({...videoForm, episodeTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube ID" value={videoForm.youtubeId} onChange={e=>setVideoForm({...videoForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="url" placeholder="Mobile Thumbnail URL" value={videoForm.thumbnailUrl} onChange={e=>setVideoForm({...videoForm, thumbnailUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input type="url" placeholder="Desktop Thumbnail URL (Optional)" value={videoForm.desktopThumbnailUrl} onChange={e=>setVideoForm({...videoForm, desktopThumbnailUrl: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="url" placeholder="Video Thumbnail URL" value={videoForm.thumbnailUrl} onChange={e=>setVideoForm({...videoForm, thumbnailUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
               </div>
               <div className="flex gap-3">
                 <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Changes' : 'Upload Video'}</button>

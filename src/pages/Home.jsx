@@ -33,7 +33,7 @@ function ContinueCard({ episode }) {
 
 function Home() {
   const [seriesList, setSeriesList] = useState([])
-  const [lastWatched, setLastWatched] = useState(null)
+  const [bannerList, setBannerList] = useState([])
 
   const fetchSeries = useCallback(async () => {
     let supabaseSeries = []
@@ -64,7 +64,7 @@ function Home() {
         title: v.episodeTitle,
         youtube_id: v.youtubeId,
         thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`,
-        desktop_thumbnail_url: v.desktopThumbnailUrl || v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
+        desktop_thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
       })
     })
 
@@ -80,18 +80,33 @@ function Home() {
     // Merge Supabase and LocalStorage series
     const combinedData = [...supabaseSeries, ...Object.values(adminSeriesMap)]
     setSeriesList(combinedData)
+
+    // Load custom banners
+    const banners = JSON.parse(localStorage.getItem('admin_banners') || '[]')
+    if (banners.length > 0) {
+      const customBanners = banners.map(b => ({
+        id: b.id,
+        title: b.title,
+        description: b.description,
+        category: 'Featured',
+        thumbnail_url: b.mobileUrl,
+        desktop_thumbnail_url: b.desktopUrl,
+        episodes: [{ id: b.targetId }]
+      }))
+      setBannerList(customBanners)
+    } else {
+      setBannerList(combinedData)
+    }
   }, [])
 
   useEffect(() => {
     fetchSeries()
-    const lw = localStorage.getItem('lastWatched')
-    if (lw) setLastWatched(JSON.parse(lw))
   }, [fetchSeries])
 
   return (
     <div className="bg-[#141414] min-h-screen text-white pb-24">
       <Navbar />
-      <HeroBanner seriesList={seriesList} />
+      <HeroBanner seriesList={bannerList} />
       <div className="pb-10 -mt-4 relative z-10">
         {seriesList.map(series => (
           <VideoRow key={series.id} series={series} />
