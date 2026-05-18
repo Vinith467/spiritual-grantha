@@ -172,7 +172,7 @@ function Login() {
       <div className="fixed bottom-0 left-0 w-full h-[70vh] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent z-0 pointer-events-none"></div>
 
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-8 sm:pb-12 flex flex-col items-center justify-end h-[100dvh] overflow-hidden">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-8 sm:pb-12 flex flex-col items-center justify-end h-[100dvh] overflow-hidden md:h-auto md:min-h-screen md:overflow-visible md:pt-[50vh]">
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
