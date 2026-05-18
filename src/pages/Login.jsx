@@ -9,6 +9,23 @@ function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("idle");
   const [cameBack, setCameBack] = useState(false);
+  const [hoverZone, setHoverZone] = useState("none");
+
+  const handleMouseMove = (e) => {
+    const { clientX } = e;
+    const width = window.innerWidth;
+    if (clientX < width / 3) {
+      setHoverZone("left");
+    } else if (clientX < (width * 2) / 3) {
+      setHoverZone("center");
+    } else {
+      setHoverZone("right");
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setHoverZone("none");
+  };
 
   useEffect(() => {
     if (localStorage.getItem("subscribed") === "true") {
@@ -104,23 +121,39 @@ function Login() {
   }
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-yellow-500/30 group">
+    <div 
+      className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-yellow-500/30"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
       
-      {/* Background Gods Images (Fades in on hover) */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-0 group-hover:opacity-50 transition-opacity duration-1000 ease-in-out">
-        <div className="absolute top-[5%] -left-[10%] w-[50vw] max-w-[500px] aspect-square mix-blend-screen animate-pulse" style={{ animationDuration: '6s' }}>
-          <img src="/assets/vishnu_lakshmi.png" alt="Vishnu Lakshmi" className="w-full h-full object-cover opacity-80 [mask-image:radial-gradient(circle,black_30%,transparent_70%)] [-webkit-mask-image:radial-gradient(circle,black_30%,transparent_70%)]" />
-        </div>
-        <div className="absolute top-[35%] -right-[15%] w-[60vw] max-w-[600px] aspect-square mix-blend-screen animate-pulse" style={{ animationDuration: '8s' }}>
-          <img src="/assets/ram_sita.png" alt="Ram Sita" className="w-full h-full object-cover opacity-80 [mask-image:radial-gradient(circle,black_30%,transparent_70%)] [-webkit-mask-image:radial-gradient(circle,black_30%,transparent_70%)]" />
-        </div>
-        <div className="absolute bottom-[5%] -left-[5%] w-[45vw] max-w-[450px] aspect-square mix-blend-screen animate-pulse" style={{ animationDuration: '7s' }}>
-          <img src="/assets/krishna_radha.png" alt="Krishna Radha" className="w-full h-full object-cover opacity-80 [mask-image:radial-gradient(circle,black_30%,transparent_70%)] [-webkit-mask-image:radial-gradient(circle,black_30%,transparent_70%)]" />
-        </div>
+      {/* Background Gods Images (Fades in based on mouse position) */}
+      <div className="absolute inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
+        {/* Vishnu Lakshmi */}
+        <img 
+          src="/assets/vishnu_lakshmi.png" 
+          alt="Vishnu Lakshmi" 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'left' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center left' }}
+        />
+        {/* Ram Sita */}
+        <img 
+          src="/assets/ram_sita.png" 
+          alt="Ram Sita" 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'center' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center center' }}
+        />
+        {/* Krishna Radha */}
+        <img 
+          src="/assets/krishna_radha.png" 
+          alt="Krishna Radha" 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'right' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center right' }}
+        />
       </div>
 
       {/* Dynamic Background Glow */}
-      <div className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 group-hover:opacity-40">
+      <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${hoverZone !== 'none' ? 'opacity-30' : 'opacity-100'}`}>
         <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-yellow-900/10 to-transparent"></div>
         <div className="absolute bottom-0 right-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-900/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3"></div>
         <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-yellow-900/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
