@@ -32,12 +32,15 @@ function HeroBanner({ seriesList }) {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <img
-          key={series.id}
-          src={series.thumbnail_url}
-          alt={series.title}
-          className="w-full h-full object-cover object-top sm:object-center"
-        />
+        <picture>
+          <source media="(min-width: 768px)" srcSet={series.desktop_thumbnail_url || series.thumbnail_url} />
+          <img
+            key={series.id}
+            src={series.thumbnail_url}
+            alt={series.title}
+            className="w-full h-full object-cover object-top sm:object-center"
+          />
+        </picture>
 
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 

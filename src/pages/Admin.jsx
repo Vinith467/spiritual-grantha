@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { HomeOutlined, VideoCameraOutlined, CustomerServiceOutlined, MobileOutlined, UserOutlined } from '@ant-design/icons'
 
 function Admin() {
   const navigate = useNavigate()
@@ -15,7 +16,7 @@ function Admin() {
   const [editingId, setEditingId] = useState(null)
 
   // Form States
-  const [videoForm, setVideoForm] = useState({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
+  const [videoForm, setVideoForm] = useState({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '', desktopThumbnailUrl: '' })
   const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
   const [shortForm, setShortForm] = useState({ description: '', youtubeId: '' })
 
@@ -77,7 +78,7 @@ function Admin() {
     }
     setVideos(newData)
     saveToLocal('admin_videos', newData)
-    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
+    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '', desktopThumbnailUrl: '' })
     setEditingId(null)
   }
 
@@ -139,7 +140,8 @@ function Admin() {
       seriesTitle: item.seriesTitle || '',
       episodeTitle: item.episodeTitle || '',
       youtubeId: item.youtubeId || '',
-      thumbnailUrl: item.thumbnailUrl || ''
+      thumbnailUrl: item.thumbnailUrl || '',
+      desktopThumbnailUrl: item.desktopThumbnailUrl || ''
     })
     setEditingId(item.id)
     window.scrollTo(0,0) 
@@ -150,7 +152,7 @@ function Admin() {
   // Cancel Edit
   const cancelEdit = () => {
     setEditingId(null)
-    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
+    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '', desktopThumbnailUrl: '' })
     setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
     setShortForm({ description: '', youtubeId: '' })
   }
@@ -162,11 +164,11 @@ function Admin() {
   )
 
   const TABS = [
-    { id: 'home_link', label: 'Home', icon: '🏠' },
-    { id: 'videos', label: 'Videos', icon: '📺' },
-    { id: 'music', label: 'Music', icon: '🎵' },
-    { id: 'shorts', label: 'Shorts', icon: '📱' },
-    { id: 'users', label: 'Users', icon: '👥' },
+    { id: 'home_link', label: 'Home', icon: <HomeOutlined /> },
+    { id: 'videos', label: 'Videos', icon: <VideoCameraOutlined /> },
+    { id: 'music', label: 'Music', icon: <CustomerServiceOutlined /> },
+    { id: 'shorts', label: 'Shorts', icon: <MobileOutlined /> },
+    { id: 'users', label: 'Users', icon: <UserOutlined /> },
   ]
 
   const allDisplayVideos = [...videos, ...supabaseVideos]
@@ -195,7 +197,8 @@ function Admin() {
                 <input required type="text" placeholder="Series Title" value={videoForm.seriesTitle} onChange={e=>setVideoForm({...videoForm, seriesTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="Episode Title" value={videoForm.episodeTitle} onChange={e=>setVideoForm({...videoForm, episodeTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube ID" value={videoForm.youtubeId} onChange={e=>setVideoForm({...videoForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="url" placeholder="Thumbnail URL" value={videoForm.thumbnailUrl} onChange={e=>setVideoForm({...videoForm, thumbnailUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="url" placeholder="Mobile Thumbnail URL" value={videoForm.thumbnailUrl} onChange={e=>setVideoForm({...videoForm, thumbnailUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input type="url" placeholder="Desktop Thumbnail URL (Optional)" value={videoForm.desktopThumbnailUrl} onChange={e=>setVideoForm({...videoForm, desktopThumbnailUrl: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
               </div>
               <div className="flex gap-3">
                 <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Changes' : 'Upload Video'}</button>

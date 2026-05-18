@@ -63,8 +63,18 @@ function Home() {
         id: v.id,
         title: v.episodeTitle,
         youtube_id: v.youtubeId,
-        thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
+        thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`,
+        desktop_thumbnail_url: v.desktopThumbnailUrl || v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
       })
+    })
+
+    // Add thumbnail_url to the adminSeriesMap root so HeroBanner can display it
+    Object.keys(adminSeriesMap).forEach(key => {
+      const firstEp = adminSeriesMap[key].episodes[0]
+      if (firstEp) {
+        adminSeriesMap[key].thumbnail_url = firstEp.thumbnail_url
+        adminSeriesMap[key].desktop_thumbnail_url = firstEp.desktop_thumbnail_url
+      }
     })
 
     // Merge Supabase and LocalStorage series
