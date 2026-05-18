@@ -135,28 +135,28 @@ function Login() {
         <img 
           src="/assets/vishnu_lakshmi.png" 
           alt="Vishnu Lakshmi" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Ram Sita */}
         <img 
           src="/assets/ram_sita.png" 
           alt="Ram Sita" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Krishna Arjuna */}
         <img 
           src="/assets/krishna_arjuna.png" 
           alt="Krishna Arjuna" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
         {/* Krishna Radha */}
         <img 
           src="/assets/krishna_radha.png" 
           alt="Krishna Radha" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
       </div>
