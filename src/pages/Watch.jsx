@@ -56,17 +56,23 @@ function Watch() {
 
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-3 bg-black/80 sticky top-0 z-50">
-        <button
-          onClick={() => navigate(-1)}
-          className="text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center transition"
-        >
-          ←
-        </button>
-        <div className="flex-1 min-w-0">
-          <p className="text-yellow-500 text-xs font-bold truncate">{series?.title}</p>
-          <p className="text-white text-sm font-semibold truncate">{episode.title}</p>
-        </div>
-      </div>
+  <button
+    onClick={() => navigate(-1)}
+    className="text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center transition"
+  >
+    ←
+  </button>
+  <img
+    src="/icon-192.png"
+    alt="Grantha"
+    className="w-7 h-7 rounded-full object-cover border border-yellow-500/50"
+  />
+  <div className="flex-1 min-w-0">
+    <p className="text-yellow-500 text-xs font-bold truncate">{series?.title}</p>
+    <p className="text-white text-sm font-semibold truncate">{episode.title}</p>
+  </div>
+</div>
+      
 
       {/* Video Player */}
       <div className="w-full bg-black aspect-video">

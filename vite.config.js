@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Sanatan dharm TV',
+        name: 'Sanatan Dharma Television',
         short_name: 'SDTV',
         description: 'Watch Ramayan, Mahabharat, Bhagwat Geeta & more',
         theme_color: '#ffffff',
