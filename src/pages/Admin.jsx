@@ -187,7 +187,6 @@ function Admin() {
   )
 
   const TABS = [
-    { id: 'home_link', label: 'Home', icon: <HomeOutlined /> },
     { id: 'banners', label: 'Banners', icon: <PictureOutlined /> },
     { id: 'videos', label: 'Videos', icon: <VideoCameraOutlined /> },
     { id: 'music', label: 'Music', icon: <CustomerServiceOutlined /> },
