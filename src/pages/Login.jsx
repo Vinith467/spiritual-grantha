@@ -168,8 +168,11 @@ function Login() {
         <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-yellow-900/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
       </div>
 
+      {/* Bottom Dark Gradient for UI Readability */}
+      <div className="fixed bottom-0 left-0 w-full h-[70vh] bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent z-0 pointer-events-none"></div>
+
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 py-8 flex flex-col items-center justify-center min-h-screen">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 pt-40 pb-8 sm:pb-12 flex flex-col items-center justify-end min-h-screen">
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
