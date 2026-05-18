@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import BottomNavbar from '../components/BottomNavbar'
 
 function Watch() {
   const { id } = useParams()
@@ -52,7 +53,7 @@ function Watch() {
   )
 
   return (
-    <div className="bg-[#141414] min-h-screen text-white">
+    <div className="bg-[#141414] min-h-screen text-white pb-24">
 
       {/* Top bar */}
       <nav className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 sticky top-0 z-50 transition-all duration-300">
@@ -147,6 +148,7 @@ function Watch() {
           </div>
         </div>
       )}
+      <BottomNavbar />
     </div>
   )
 }

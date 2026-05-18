@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import HeroBanner from '../components/HeroBanner'
 import VideoRow from '../components/VideoRow'
+import BottomNavbar from '../components/BottomNavbar'
 
 function ContinueCard({ episode }) {
   const navigate = useNavigate()
@@ -49,7 +50,7 @@ function Home() {
   }, [fetchSeries])
 
   return (
-    <div className="bg-[#141414] min-h-screen text-white">
+    <div className="bg-[#141414] min-h-screen text-white pb-24">
       <Navbar />
       <HeroBanner seriesList={seriesList} />
       <div className="pb-10 -mt-4 relative z-10">
@@ -65,6 +66,7 @@ function Home() {
           <VideoRow key={series.id} series={series} />
         ))}
       </div>
+      <BottomNavbar />
     </div>
   )
 }
