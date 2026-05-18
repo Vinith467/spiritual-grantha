@@ -10,11 +10,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Spiritual Grantha',
-        short_name: 'Grantha',
+        name: 'Sanatan dharm TV',
+        short_name: 'SDTV',
         description: 'Watch Ramayan, Mahabharat, Bhagwat Geeta & more',
-        theme_color: '#141414',
-        background_color: '#141414',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
         icons: [
           { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
