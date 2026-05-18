@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 function Admin() {
   const navigate = useNavigate()
@@ -8,6 +9,7 @@ function Admin() {
 
   // Data States
   const [videos, setVideos] = useState([])
+  const [supabaseVideos, setSupabaseVideos] = useState([])
   const [music, setMusic] = useState([])
   const [shorts, setShorts] = useState([])
   const [editingId, setEditingId] = useState(null)
@@ -17,6 +19,30 @@ function Admin() {
   const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
   const [shortForm, setShortForm] = useState({ description: '', youtubeId: '' })
 
+  const loadSupabaseVideos = useCallback(async () => {
+    try {
+      const { data } = await supabase.from('series').select('*, episodes(*)').order('created_at', { ascending: false })
+      let spVideos = []
+      if (data) {
+        data.forEach(s => {
+          s.episodes?.forEach(ep => {
+            spVideos.push({
+              id: ep.id,
+              seriesTitle: s.title,
+              episodeTitle: ep.title,
+              youtubeId: ep.youtube_id,
+              thumbnailUrl: ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/hqdefault.jpg`,
+              isSupabase: true
+            })
+          })
+        })
+      }
+      setSupabaseVideos(spVideos)
+    } catch (e) {
+      console.error(e)
+    }
+  }, [])
+
   useEffect(() => {
     if (localStorage.getItem('isAdmin') === 'true') {
       setAuthed(true)
@@ -24,19 +50,25 @@ function Admin() {
       setVideos(JSON.parse(localStorage.getItem('admin_videos') || '[]'))
       setMusic(JSON.parse(localStorage.getItem('admin_music') || '[]'))
       setShorts(JSON.parse(localStorage.getItem('admin_shorts') || '[]'))
+      loadSupabaseVideos()
     } else {
       alert('Access Denied: You are not authorized to view the Admin Dashboard.')
       navigate('/home')
     }
-  }, [navigate])
+  }, [navigate, loadSupabaseVideos])
 
   const saveToLocal = (key, data) => {
     localStorage.setItem(key, JSON.stringify(data))
   }
 
   // Generic Submit Handler
-  const handleVideoSubmit = (e) => {
+  const handleVideoSubmit = async (e) => {
     e.preventDefault()
+    if (editingId && editingId.toString().length < 10) { 
+       alert("Live database Edit feature is currently read-only. Please edit local uploads only.")
+       cancelEdit()
+       return
+    }
     let newData
     if (editingId) {
       newData = videos.map(v => v.id === editingId ? { ...videoForm, id: editingId } : v)
@@ -78,8 +110,12 @@ function Admin() {
   }
 
   // Delete Handlers
-  const deleteVideo = (id) => {
-    const newData = videos.filter(v => v.id !== id)
+  const deleteVideo = (v) => {
+    if (v.isSupabase) {
+      alert("Live database Delete feature is currently read-only. You can only delete locally uploaded items.")
+      return
+    }
+    const newData = videos.filter(vid => vid.id !== v.id)
     setVideos(newData)
     saveToLocal('admin_videos', newData)
   }
@@ -95,7 +131,19 @@ function Admin() {
   }
 
   // Edit Handlers
-  const editVideo = (item) => { setVideoForm(item); setEditingId(item.id); window.scrollTo(0,0) }
+  const editVideo = (item) => { 
+    if (item.isSupabase) {
+      alert("You can view this item in the form, but live database saving is read-only for now.")
+    }
+    setVideoForm({
+      seriesTitle: item.seriesTitle || '',
+      episodeTitle: item.episodeTitle || '',
+      youtubeId: item.youtubeId || '',
+      thumbnailUrl: item.thumbnailUrl || ''
+    })
+    setEditingId(item.id)
+    window.scrollTo(0,0) 
+  }
   const editMusic = (item) => { setMusicForm(item); setEditingId(item.id); window.scrollTo(0,0) }
   const editShort = (item) => { setShortForm(item); setEditingId(item.id); window.scrollTo(0,0) }
 
@@ -114,11 +162,14 @@ function Admin() {
   )
 
   const TABS = [
+    { id: 'home_link', label: 'Home', icon: '🏠' },
     { id: 'videos', label: 'Videos', icon: '📺' },
     { id: 'music', label: 'Music', icon: '🎵' },
     { id: 'shorts', label: 'Shorts', icon: '📱' },
     { id: 'users', label: 'Users', icon: '👥' },
   ]
+
+  const allDisplayVideos = [...videos, ...supabaseVideos]
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white pb-24 selection:bg-[#FF9933]/30">
@@ -153,19 +204,20 @@ function Admin() {
             </form>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Uploaded Videos</h3>
-              {videos.length === 0 && <p className="text-sm text-gray-500">No videos uploaded yet.</p>}
+              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Uploaded Videos ({allDisplayVideos.length})</h3>
+              {allDisplayVideos.length === 0 && <p className="text-sm text-gray-500">No videos uploaded yet.</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {videos.map(v => (
-                  <div key={v.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center">
-                    <img src={v.thumbnailUrl} alt="thumb" className="w-20 h-14 object-cover rounded-md bg-black" />
+                {allDisplayVideos.map(v => (
+                  <div key={v.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden">
+                    {v.isSupabase && <div className="absolute top-0 right-0 bg-[#FF9933]/20 text-[#FF9933] text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">LIVE</div>}
+                    <img src={v.thumbnailUrl} alt="thumb" className="w-20 h-14 object-cover rounded-md bg-black shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{v.episodeTitle}</p>
                       <p className="text-xs text-gray-400 truncate">{v.seriesTitle}</p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
                       <button onClick={()=>editVideo(v)} className="text-xs text-[#FF9933] font-bold">Edit</button>
-                      <button onClick={()=>deleteVideo(v.id)} className="text-xs text-red-500 font-bold">Delete</button>
+                      <button onClick={()=>deleteVideo(v)} className="text-xs text-red-500 font-bold">Delete</button>
                     </div>
                   </div>
                 ))}
@@ -297,19 +349,25 @@ function Admin() {
 
       {/* ADMIN BOTTOM NAVBAR */}
       <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2">
-        <div className="max-w-md mx-auto bg-black/80 backdrop-blur-xl border border-white/10 rounded-3xl p-2 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div className="max-w-md mx-auto bg-black/80 backdrop-blur-xl border border-white/10 rounded-3xl p-2 flex justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.5)] overflow-x-auto hide-scrollbar">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id
             return (
               <button
                 key={tab.id}
-                onClick={() => { setActiveTab(tab.id); cancelEdit(); }}
-                className={`flex flex-col items-center justify-center w-16 h-14 rounded-2xl transition-all duration-300 ${
-                  isActive ? 'bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_15px_rgba(255,153,51,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                onClick={() => {
+                  if (tab.id === 'home_link') {
+                    navigate('/home')
+                  } else {
+                    setActiveTab(tab.id); cancelEdit();
+                  }
+                }}
+                className={`flex flex-col items-center justify-center min-w-[3.5rem] sm:min-w-[4rem] h-14 rounded-2xl transition-all duration-300 flex-shrink-0 px-1 ${
+                  isActive && tab.id !== 'home_link' ? 'bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_15px_rgba(255,153,51,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <span className="text-xl mb-0.5">{tab.icon}</span>
-                <span className={`text-[9px] font-extrabold ${isActive ? 'text-black' : 'text-gray-500'}`}>
+                <span className={`text-[9px] font-extrabold ${isActive && tab.id !== 'home_link' ? 'text-black' : 'text-gray-500'}`}>
                   {tab.label}
                 </span>
               </button>
