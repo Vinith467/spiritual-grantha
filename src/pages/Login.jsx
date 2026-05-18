@@ -172,10 +172,10 @@ function Login() {
             />
           </div>
           
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter text-center mb-1 drop-shadow-lg shrink-0">
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-5xl font-black tracking-tighter text-center whitespace-nowrap mb-1 drop-shadow-lg shrink-0">
             Sanatan Dharma
           </h1>
-          <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
+          <h2 className="text-white text-2xl sm:text-3xl md:text-3xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
             Television
           </h2>
           
