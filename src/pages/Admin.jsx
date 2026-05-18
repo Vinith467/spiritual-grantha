@@ -11,7 +11,7 @@ function Admin() {
       setAuthed(true)
     } else {
       alert('Access Denied: You are not authorized to view the Admin Dashboard.')
-      navigate('/')
+      navigate('/home')
     }
   }, [navigate])
 

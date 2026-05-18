@@ -31,7 +31,7 @@ function Login() {
 
   useEffect(() => {
     if (localStorage.getItem("subscribed") === "true") {
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     }
 
     if (localStorage.getItem("clickedYouTube") === "true") {
@@ -120,7 +120,7 @@ function Login() {
       // Admin bypasses subscription check entirely! Log in instantly.
       localStorage.setItem("subscribed", "true");
       localStorage.removeItem("clickedYouTube");
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     } else {
       await subscribeToChannel(accessToken);
     }
@@ -151,19 +151,19 @@ function Login() {
       if (res.status === 200 || res.status === 409) {
         localStorage.setItem("subscribed", "true");
         localStorage.removeItem("clickedYouTube");
-        navigate("/", { replace: true });
+        navigate("/home", { replace: true });
       } else {
         // Fallback: If YouTube API returns an error (e.g. no channel exists on their Google account)
         // we still log them in to prevent frustration
         localStorage.setItem("subscribed", "true");
         localStorage.removeItem("clickedYouTube");
-        navigate("/", { replace: true });
+        navigate("/home", { replace: true });
       }
     } catch {
       // Fallback on network/fetch errors
       localStorage.setItem("subscribed", "true");
       localStorage.removeItem("clickedYouTube");
-      navigate("/", { replace: true });
+      navigate("/home", { replace: true });
     }
   }
 

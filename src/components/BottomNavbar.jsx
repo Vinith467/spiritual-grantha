@@ -53,7 +53,7 @@ function BottomNavbar() {
 
       {/* Home (Accented Center Button) */}
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/home')}
         className={`flex flex-col items-center justify-center -translate-y-4 w-14 h-14 rounded-full bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_25px_rgba(255,153,51,0.45)] hover:shadow-[0_0_35px_rgba(255,153,51,0.65)] hover:scale-110 active:scale-95 transition-all duration-300 border-4 border-[#0a0a0a]`}
       >
         <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">

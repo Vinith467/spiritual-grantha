@@ -54,6 +54,7 @@ function Account() {
   const handleSignOut = () => {
     if (window.confirm('Are you sure you want to sign out?')) {
       localStorage.removeItem('subscribed')
+      localStorage.removeItem('isAdmin')
       window.location.href = '/login'
     }
   }

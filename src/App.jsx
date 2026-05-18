@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import Landing from './pages/Landing'
 import Home from './pages/Home'
 import Watch from './pages/Watch'
 import Admin from './pages/Admin'
@@ -18,8 +19,14 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <Routes>
+      {/* Public routes — visible to everyone including Google bots */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+
+      {/* Protected routes — require Google subscription */}
+      <Route path="/home" element={
         <ProtectedRoute>
           <Home />
         </ProtectedRoute>
@@ -49,8 +56,6 @@ function App() {
           <About />
         </ProtectedRoute>
       } />
-      <Route path="/privacy" element={<Privacy />} />
-      <Route path="/terms" element={<Terms />} />
       <Route path="/admin" element={<Admin />} />
     </Routes>
   )
