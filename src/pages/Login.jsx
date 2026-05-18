@@ -71,20 +71,55 @@ function Login() {
     setStatus("signing");
     const client = window.google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/youtube",
+      scope: "https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
       callback: async (tokenResponse) => {
         if (tokenResponse.error) {
           setStatus("error");
           return;
         }
-        await subscribeToChannel(tokenResponse.access_token);
+        await fetchUserInfoAndVerify(tokenResponse.access_token);
       },
     });
     client.requestAccessToken();
   }
 
-  async function subscribeToChannel(accessToken) {
+  async function fetchUserInfoAndVerify(accessToken) {
     setStatus("subscribing");
+    try {
+      // 1. Fetch user info from Google OAuth2 API
+      const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      if (userRes.ok) {
+        const userInfo = await userRes.json();
+        const email = userInfo.email?.toLowerCase();
+        
+        // Auto-populate local profile with their real Google Account info!
+        if (userInfo.name) localStorage.setItem("profileName", userInfo.name);
+        if (userInfo.picture) localStorage.setItem("profileAvatar", userInfo.picture);
+        if (email) localStorage.setItem("profileEmail", email);
+
+        // Security check: Verify if they match the admin google accounts list
+        const ADMIN_EMAILS = [
+          "vinu.s.shetty467@gmail.com",
+          "vinithshetty467@gmail.com",
+          "vinithshetty@gmail.com"
+        ];
+        if (email && ADMIN_EMAILS.includes(email)) {
+          localStorage.setItem("isAdmin", "true");
+        } else {
+          localStorage.setItem("isAdmin", "false");
+        }
+      }
+    } catch (err) {
+      console.error("Error retrieving Google user details:", err);
+    }
+
+    // 2. Perform regular YouTube subscription check
+    await subscribeToChannel(accessToken);
+  }
+
+  async function subscribeToChannel(accessToken) {
     try {
       const res = await fetch(
         "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet",

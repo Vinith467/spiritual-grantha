@@ -1,28 +1,25 @@
-import { useState } from 'react'
-
-const PASSWORD = 'grantha123'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function Admin() {
+  const navigate = useNavigate()
   const [authed, setAuthed] = useState(false)
-  const [pass, setPass] = useState('')
+
+  useEffect(() => {
+    // Google SSO Admin Auto-Authorization
+    if (localStorage.getItem('isAdmin') === 'true') {
+      setAuthed(true)
+    } else {
+      alert('Access Denied: You are not authorized to view the Admin Dashboard.')
+      navigate('/')
+    }
+  }, [navigate])
 
   if (!authed) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
-      <div className="bg-[#1f1f1f] p-8 rounded-lg w-80">
-        <h2 className="text-xl font-bold mb-4">Admin Login</h2>
-        <input
-          type="password"
-          placeholder="Enter password"
-          value={pass}
-          onChange={e => setPass(e.target.value)}
-          className="w-full p-2 rounded bg-[#333] text-white mb-4"
-        />
-        <button
-          onClick={() => pass === PASSWORD ? setAuthed(true) : alert('Wrong password')}
-          className="w-full bg-[#FF9933] hover:bg-[#FF6600] text-black py-2 rounded font-bold"
-        >
-          Login
-        </button>
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-400 text-sm font-semibold">Authorizing Session...</p>
       </div>
     </div>
   )

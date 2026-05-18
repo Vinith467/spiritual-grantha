@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
 function Account() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
   const [avatar, setAvatar] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved'
 
   // Load profile data from localStorage
@@ -13,6 +16,7 @@ function Account() {
     setName(localStorage.getItem('profileName') || 'Devotee')
     setContact(localStorage.getItem('profileContact') || '')
     setAvatar(localStorage.getItem('profileAvatar') || null)
+    setIsAdmin(localStorage.getItem('isAdmin') === 'true')
   }, [])
 
   // Handle avatar upload and convert to base64
@@ -152,6 +156,24 @@ function Account() {
               Sign Out
             </button>
           </div>
+
+          {/* Admin Dashboard Entry (Visible only to authenticated Admin Google Accounts) */}
+          {isAdmin && (
+            <div className="mt-6 pt-5 border-t border-white/10">
+              <div className="flex justify-between items-center bg-[#FF9933]/10 border border-[#FF9933]/20 rounded-2xl p-4">
+                <div>
+                  <p className="text-xs text-[#FF9933] font-black uppercase tracking-wider">Privilege Level</p>
+                  <p className="text-sm font-bold text-white">System Admin</p>
+                </div>
+                <button
+                  onClick={() => navigate('/admin')}
+                  className="bg-[#FF9933] hover:bg-[#FF6600] text-black font-extrabold text-xs px-4 py-2.5 rounded-xl transition duration-300 active:scale-95 shadow-[0_0_15px_rgba(255,153,51,0.25)] border border-[#FF9933]/50"
+                >
+                  Admin Panel
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
