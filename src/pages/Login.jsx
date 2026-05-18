@@ -204,7 +204,7 @@ function Login() {
             <div className="w-full mt-6 shrink-0">
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
-                <span className="text-yellow-500 text-[10px] sm:text-sm font-bold uppercase tracking-widest drop-shadow-md">Welcome Back</span>
+                <span className="text-yellow-500 text-[10px] sm:text-sm font-bold uppercase tracking-widest drop-shadow-md">Almost Done!</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
               </div>
               <button
