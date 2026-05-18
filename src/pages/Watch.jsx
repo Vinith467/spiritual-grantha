@@ -55,23 +55,23 @@ function Watch() {
     <div className="bg-[#141414] min-h-screen text-white">
 
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-black/80 sticky top-0 z-50">
-  <button
-    onClick={() => navigate(-1)}
-    className="text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center transition"
-  >
-    ←
-  </button>
-  <img
-    src="/icon-192.png"
-    alt="Grantha"
-    className="w-7 h-7 rounded-full object-cover border border-[#FF9933]/50"
-  />
-  <div className="flex-1 min-w-0">
-    <p className="text-[#FF9933] text-xs font-bold truncate">{series?.title}</p>
-    <p className="text-white text-sm font-semibold truncate">{episode.title}</p>
-  </div>
-</div>
+      <nav className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 sticky top-0 z-50 transition-all duration-300">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center transition active:scale-95 shrink-0 font-bold"
+        >
+          ←
+        </button>
+        <img
+          src="/icon-192.png"
+          alt="Grantha"
+          className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-[#FF9933]/50 shrink-0 shadow-[0_0_15px_rgba(255,153,51,0.2)]"
+        />
+        <div className="flex-1 min-w-0">
+          <p className="text-[#FF9933] text-[10px] sm:text-xs font-black uppercase tracking-wider truncate">{series?.title}</p>
+          <p className="text-white text-xs sm:text-sm font-bold truncate">{episode.title}</p>
+        </div>
+      </nav>
       
 
       {/* Video Player */}
