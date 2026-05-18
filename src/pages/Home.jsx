@@ -36,11 +36,40 @@ function Home() {
   const [lastWatched, setLastWatched] = useState(null)
 
   const fetchSeries = useCallback(async () => {
-    const { data } = await supabase
-      .from('series')
-      .select('*, episodes(*)')
-      .order('created_at', { ascending: false })
-    setSeriesList(data || [])
+    let supabaseSeries = []
+    try {
+      const { data } = await supabase
+        .from('series')
+        .select('*, episodes(*)')
+        .order('created_at', { ascending: false })
+      supabaseSeries = data || []
+    } catch (e) {
+      console.error('Error fetching from supabase:', e)
+    }
+
+    // Load admin uploaded videos from localStorage
+    const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
+    const adminSeriesMap = {}
+
+    adminVideos.forEach(v => {
+      if (!adminSeriesMap[v.seriesTitle]) {
+        adminSeriesMap[v.seriesTitle] = {
+          id: `admin_${v.seriesTitle}`,
+          title: v.seriesTitle,
+          episodes: []
+        }
+      }
+      adminSeriesMap[v.seriesTitle].episodes.push({
+        id: v.id,
+        title: v.episodeTitle,
+        youtube_id: v.youtubeId,
+        thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
+      })
+    })
+
+    // Merge Supabase and LocalStorage series
+    const combinedData = [...supabaseSeries, ...Object.values(adminSeriesMap)]
+    setSeriesList(combinedData)
   }, [])
 
   useEffect(() => {

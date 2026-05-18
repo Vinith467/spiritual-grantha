@@ -34,8 +34,21 @@ const SPIRITUAL_SHORTS = [
 ]
 
 function Shorts() {
-  const [activeShort, setActiveShort] = useState(0)
+  const [shortsData, setShortsData] = useState([])
   const [liked, setLiked] = useState({})
+
+  useEffect(() => {
+    const adminShortsRaw = JSON.parse(localStorage.getItem('admin_shorts') || '[]')
+    const adminShorts = adminShortsRaw.map(s => ({
+      id: `admin_${s.id}`,
+      youtubeId: s.youtubeId,
+      title: 'Admin Upload',
+      description: s.description,
+      likes: '0',
+    }))
+
+    setShortsData([...adminShorts, ...SPIRITUAL_SHORTS])
+  }, [])
 
   const toggleLike = (id) => {
     setLiked(prev => ({ ...prev, [id]: !prev[id] }))
@@ -46,7 +59,7 @@ function Shorts() {
       
       {/* Scrollable Container */}
       <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-16">
-        {SPIRITUAL_SHORTS.map((short, index) => (
+        {shortsData.map((short, index) => (
           <div
             key={short.id}
             className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black"

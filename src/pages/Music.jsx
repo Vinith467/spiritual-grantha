@@ -51,7 +51,30 @@ const DEVOTIONAL_TRACKS = [
 ]
 
 function Music() {
-  const [activeTrack, setActiveTrack] = useState(DEVOTIONAL_TRACKS[0])
+  const [tracks, setTracks] = useState([])
+  const [activeTrack, setActiveTrack] = useState(null)
+
+  useEffect(() => {
+    // Load admin music and merge with hardcoded tracks
+    const adminMusicRaw = JSON.parse(localStorage.getItem('admin_music') || '[]')
+    const adminTracks = adminMusicRaw.map(m => ({
+      id: `admin_${m.id}`,
+      youtubeId: m.youtubeId,
+      title: m.trackTitle,
+      singer: m.artist,
+      duration: 'Live', // Or some default
+      thumbnail: m.coverUrl || `https://img.youtube.com/vi/${m.youtubeId}/hqdefault.jpg`,
+      category: 'New Upload'
+    }))
+
+    const combinedTracks = [...adminTracks, ...DEVOTIONAL_TRACKS]
+    setTracks(combinedTracks)
+    if (combinedTracks.length > 0) {
+      setActiveTrack(combinedTracks[0])
+    }
+  }, [])
+
+  if (!activeTrack) return null
 
   return (
     <div className="bg-[#141414] min-h-screen text-white pb-24">
@@ -102,7 +125,7 @@ function Music() {
           </h3>
 
           <div className="flex flex-col gap-3 max-h-[480px] overflow-y-auto pr-1">
-            {DEVOTIONAL_TRACKS.map(track => {
+            {tracks.map(track => {
               const isSelected = track.id === activeTrack.id
               return (
                 <div
