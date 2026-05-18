@@ -7,6 +7,8 @@ import Shorts from './pages/Shorts'
 import Music from './pages/Music'
 import Account from './pages/Account'
 import About from './pages/About'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 
 function ProtectedRoute({ children }) {
   const subscribed = localStorage.getItem('subscribed') === 'true'
@@ -47,6 +49,8 @@ function App() {
           <About />
         </ProtectedRoute>
       } />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="/admin" element={<Admin />} />
     </Routes>
   )

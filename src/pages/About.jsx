@@ -69,6 +69,13 @@ function About() {
             <p className="text-[10px] text-gray-400 mt-1">Truth alone triumphs, not untruth</p>
           </div>
 
+          {/* Legal Compliance Links */}
+          <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-center gap-4 text-[11px] text-gray-500 font-semibold tracking-wider uppercase">
+            <a href="/privacy" className="hover:text-[#FF9933] hover:underline transition">Privacy Policy</a>
+            <span className="text-gray-700">•</span>
+            <a href="/terms" className="hover:text-[#FF9933] hover:underline transition">Terms of Service</a>
+          </div>
+
         </div>
       </div>
 

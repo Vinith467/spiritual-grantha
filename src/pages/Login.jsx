@@ -328,10 +328,15 @@ function Login() {
           )}
 
           {/* Footer */}
-          <div className="w-full text-center mt-8 shrink-0">
+          <div className="w-full text-center mt-8 shrink-0 space-y-3">
             <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium tracking-wide">
               Free forever for subscribers. One time only.
             </p>
+            <div className="flex items-center justify-center gap-3 text-[10px] text-gray-600 font-semibold tracking-wider uppercase">
+              <a href="/privacy" className="hover:text-[#FF9933] hover:underline transition">Privacy Policy</a>
+              <span className="text-gray-800">•</span>
+              <a href="/terms" className="hover:text-[#FF9933] hover:underline transition">Terms of Service</a>
+            </div>
           </div>
         </div>
       </div>
