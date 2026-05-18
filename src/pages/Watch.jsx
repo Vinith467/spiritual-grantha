@@ -102,7 +102,7 @@ function Watch() {
             {seriesEpisodes.map(ep => (
               <div
                 key={ep.id}
-                onClick={() => ep.id !== episode.id && navigate(`/watch/${ep.id}`)}
+                onClick={() => ep.id !== episode.id && navigate(`/watch/${ep.id}`, { replace: true })}
                 className={`flex gap-3 rounded-xl overflow-hidden cursor-pointer transition
                   ${ep.id === episode.id
                     ? 'bg-white/10 border border-yellow-500/50'
