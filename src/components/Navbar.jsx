@@ -7,9 +7,9 @@ function Navbar() {
         <img
           src="/icon-192.png"
           alt="Sanatan Dharma Television"
-          className="w-8 h-8 rounded-full object-cover border border-yellow-500/50 flex-shrink-0"
+          className="w-8 h-8 rounded-full object-cover border border-[#FF9933]/50 flex-shrink-0"
         />
-        <h1 className="text-yellow-500 text-base md:text-2xl font-extrabold tracking-wide leading-tight">
+        <h1 className="text-[#FF9933] text-base md:text-2xl font-extrabold tracking-wide leading-tight">
           Sanatan Dharma Television
         </h1>
       </div>

@@ -124,7 +124,7 @@ function Login() {
 
   return (
     <div 
-      className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-yellow-500/30"
+      className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-[#FF9933]/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -163,9 +163,9 @@ function Login() {
 
       {/* Dynamic Background Glow */}
       <div className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${hoverZone !== 'none' ? 'opacity-30' : 'opacity-100'}`}>
-        <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-yellow-900/10 to-transparent"></div>
+        <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-orange-950/10 to-transparent"></div>
         <div className="absolute bottom-0 right-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-900/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3"></div>
-        <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-yellow-900/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
+        <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-950/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
       </div>
 
       {/* Main Content Area */}
@@ -173,7 +173,7 @@ function Login() {
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.15)] mb-4 sm:mb-6 ring-4 ring-black/50 shrink-0">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_50px_rgba(255,153,51,0.15)] mb-4 sm:mb-6 ring-4 ring-black/50 shrink-0">
             <img
               src="/icon-192.png"
               alt="Grantha"
@@ -204,9 +204,9 @@ function Login() {
 
           {/* Status Messages */}
           {status === "subscribing" && (
-            <div className="w-full bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-4 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(234,179,8,0.1)] shrink-0">
-              <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-yellow-500 text-sm font-semibold">Verifying Subscription...</span>
+            <div className="w-full bg-[#FF9933]/10 border border-[#FF9933]/20 rounded-xl p-3 mb-4 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(255,153,51,0.1)] shrink-0">
+              <div className="w-4 h-4 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+              <span className="text-[#FF9933] text-sm font-semibold">Verifying Subscription...</span>
             </div>
           )}
 
@@ -258,13 +258,13 @@ function Login() {
           {cameBack && (
             <div className="w-full mt-6 shrink-0">
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
-                <span className="text-yellow-500 text-[10px] sm:text-sm font-bold uppercase tracking-widest drop-shadow-md">Almost Done!</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-yellow-500/30 to-transparent"></div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF9933]/30 to-transparent"></div>
+                <span className="text-[#FF9933] text-[10px] sm:text-sm font-bold uppercase tracking-widest drop-shadow-md">Almost Done!</span>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF9933]/30 to-transparent"></div>
               </div>
               <button
                 onClick={handleContinue}
-                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 active:scale-[0.98] transition-all duration-300 text-black px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.2)] hover:shadow-[0_0_40px_rgba(234,179,8,0.3)] border border-yellow-400/50"
+                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF9933] to-[#FF6600] hover:from-[#FFAA55] hover:to-[#FF8822] active:scale-[0.98] transition-all duration-300 text-black px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,153,51,0.2)] hover:shadow-[0_0_40px_rgba(255,153,51,0.3)] border border-[#FF9933]/50"
               >
                 <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-wide">
                   I've Subscribed — Watch Now

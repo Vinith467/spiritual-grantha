@@ -45,7 +45,7 @@ function HeroBanner({ seriesList }) {
           {seriesList.map((_, i) => (
             <div
               key={i}
-              className={`h-1 rounded-full transition-all duration-300 ${i === current ? 'bg-yellow-500 w-6' : 'bg-white/40 w-1.5'}`}
+              className={`h-1 rounded-full transition-all duration-300 ${i === current ? 'bg-[#FF9933] w-6' : 'bg-white/40 w-1.5'}`}
             />
           ))}
         </div>

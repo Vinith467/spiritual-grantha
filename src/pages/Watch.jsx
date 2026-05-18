@@ -45,7 +45,7 @@ function Watch() {
   if (!episode) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
       <div className="text-center">
-        <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <div className="w-12 h-12 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
         <p className="text-gray-400 text-sm">Loading...</p>
       </div>
     </div>
@@ -65,10 +65,10 @@ function Watch() {
   <img
     src="/icon-192.png"
     alt="Grantha"
-    className="w-7 h-7 rounded-full object-cover border border-yellow-500/50"
+    className="w-7 h-7 rounded-full object-cover border border-[#FF9933]/50"
   />
   <div className="flex-1 min-w-0">
-    <p className="text-yellow-500 text-xs font-bold truncate">{series?.title}</p>
+    <p className="text-[#FF9933] text-xs font-bold truncate">{series?.title}</p>
     <p className="text-white text-sm font-semibold truncate">{episode.title}</p>
   </div>
 </div>
@@ -105,7 +105,7 @@ function Watch() {
                 onClick={() => ep.id !== episode.id && navigate(`/watch/${ep.id}`, { replace: true })}
                 className={`flex gap-3 rounded-xl overflow-hidden cursor-pointer transition
                   ${ep.id === episode.id
-                    ? 'bg-white/10 border border-yellow-500/50'
+                    ? 'bg-white/10 border border-[#FF9933]/50'
                     : 'bg-white/5 hover:bg-white/10'
                   }`}
               >
@@ -118,7 +118,7 @@ function Watch() {
                   />
                   {ep.id === episode.id && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-7 h-7 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                      <div className="w-7 h-7 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
                   {ep.id !== episode.id && (
@@ -132,10 +132,10 @@ function Watch() {
 
                 {/* Info */}
                 <div className="flex flex-col justify-center py-2 pr-3 flex-1 min-w-0">
-                  <p className="text-xs text-yellow-500 font-bold mb-0.5">
+                  <p className="text-xs text-[#FF9933] font-bold mb-0.5">
                     EP {ep.episode_number}
                   </p>
-                  <p className={`text-sm font-semibold truncate ${ep.id === episode.id ? 'text-yellow-400' : 'text-white'}`}>
+                  <p className={`text-sm font-semibold truncate ${ep.id === episode.id ? 'text-[#FF9933]' : 'text-white'}`}>
                     {ep.title}
                   </p>
                   {ep.description && (

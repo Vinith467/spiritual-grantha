@@ -19,7 +19,7 @@ function Admin() {
         />
         <button
           onClick={() => pass === PASSWORD ? setAuthed(true) : alert('Wrong password')}
-          className="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-2 rounded font-bold"
+          className="w-full bg-[#FF9933] hover:bg-[#FF6600] text-black py-2 rounded font-bold"
         >
           Login
         </button>
