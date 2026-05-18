@@ -6,6 +6,7 @@ import Login from './pages/Login'
 import Shorts from './pages/Shorts'
 import Music from './pages/Music'
 import Account from './pages/Account'
+import About from './pages/About'
 
 function ProtectedRoute({ children }) {
   const subscribed = localStorage.getItem('subscribed') === 'true'
@@ -39,6 +40,11 @@ function App() {
       <Route path="/account" element={
         <ProtectedRoute>
           <Account />
+        </ProtectedRoute>
+      } />
+      <Route path="/about" element={
+        <ProtectedRoute>
+          <About />
         </ProtectedRoute>
       } />
       <Route path="/admin" element={<Admin />} />
