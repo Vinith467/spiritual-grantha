@@ -14,12 +14,14 @@ function Login() {
   const handleMouseMove = (e) => {
     const { clientX } = e;
     const width = window.innerWidth;
-    if (clientX < width / 3) {
-      setHoverZone("left");
-    } else if (clientX < (width * 2) / 3) {
-      setHoverZone("center");
+    if (clientX < width / 4) {
+      setHoverZone("zone1");
+    } else if (clientX < (width * 2) / 4) {
+      setHoverZone("zone2");
+    } else if (clientX < (width * 3) / 4) {
+      setHoverZone("zone3");
     } else {
-      setHoverZone("right");
+      setHoverZone("zone4");
     }
   };
 
@@ -128,32 +130,39 @@ function Login() {
     >
       
       {/* Background Gods Images (Fades in based on mouse position) */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
         {/* Vishnu Lakshmi */}
         <img 
           src="/assets/vishnu_lakshmi.png" 
           alt="Vishnu Lakshmi" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'left' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Ram Sita */}
         <img 
           src="/assets/ram_sita.png" 
           alt="Ram Sita" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'center' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
-          style={{ transformOrigin: 'center center' }}
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center left' }}
+        />
+        {/* Krishna Arjuna */}
+        <img 
+          src="/assets/krishna_arjuna.png" 
+          alt="Krishna Arjuna" 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center right' }}
         />
         {/* Krishna Radha */}
         <img 
           src="/assets/krishna_radha.png" 
           alt="Krishna Radha" 
-          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'right' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
       </div>
 
       {/* Dynamic Background Glow */}
-      <div className={`absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${hoverZone !== 'none' ? 'opacity-30' : 'opacity-100'}`}>
+      <div className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${hoverZone !== 'none' ? 'opacity-30' : 'opacity-100'}`}>
         <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-yellow-900/10 to-transparent"></div>
         <div className="absolute bottom-0 right-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-900/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3"></div>
         <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-yellow-900/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
