@@ -114,11 +114,11 @@ function Login() {
       </div>
 
       {/* Main Content Area - Taking Full Screen */}
-      <div className="relative z-10 flex-1 flex flex-col justify-between px-6 py-6 sm:py-12 md:py-20 w-full max-w-7xl mx-auto h-full overflow-y-auto sm:overflow-hidden">
+      <div className="relative z-10 flex-1 flex flex-col justify-between px-6 py-4 sm:py-8 md:py-12 w-full max-w-7xl mx-auto h-full overflow-y-auto sm:overflow-hidden">
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center flex-1 justify-center min-h-min">
-          <div className="w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.15)] mb-4 sm:mb-8 ring-4 sm:ring-8 ring-black/50 shrink-0">
+          <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full overflow-hidden border-2 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.15)] mb-3 sm:mb-6 ring-4 sm:ring-8 ring-black/50 shrink-0">
             <img
               src="/icon-192.png"
               alt="Grantha"
@@ -126,36 +126,36 @@ function Login() {
             />
           </div>
           
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-center mb-1 md:mb-2 drop-shadow-lg shrink-0">
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 via-yellow-500 to-yellow-700 text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-center mb-0 sm:mb-1 drop-shadow-lg shrink-0">
             Sanatan Dharma
           </h1>
-          <h2 className="text-white text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-center mb-3 sm:mb-6 shrink-0">
+          <h2 className="text-white text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-center mb-2 sm:mb-4 shrink-0">
             Television
           </h2>
           
-          <div className="flex items-center gap-3 sm:gap-4 mb-5 sm:mb-10 md:mb-14 shrink-0">
-            <div className="h-[1px] w-6 sm:w-8 md:w-16 bg-gradient-to-r from-transparent to-yellow-500/50"></div>
-            <p className="text-yellow-500 text-[10px] sm:text-xs md:text-sm tracking-[0.3em] sm:tracking-[0.4em] uppercase font-bold text-center">
-              Stream the Eternal
+          <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-8 shrink-0">
+            <div className="h-[1px] w-8 sm:w-12 md:w-20 bg-gradient-to-r from-transparent to-yellow-500/60"></div>
+            <p className="text-yellow-400 text-sm sm:text-base md:text-xl font-medium tracking-wide text-center drop-shadow-md">
+              धर्मो रक्षति रक्षितः
             </p>
-            <div className="h-[1px] w-6 sm:w-8 md:w-16 bg-gradient-to-l from-transparent to-yellow-500/50"></div>
+            <div className="h-[1px] w-8 sm:w-12 md:w-20 bg-gradient-to-l from-transparent to-yellow-500/60"></div>
           </div>
 
           <div className="w-full max-w-md mx-auto flex-1 flex flex-col justify-center">
-            <p className="text-gray-300 text-sm sm:text-base md:text-lg text-center mb-5 sm:mb-10 leading-relaxed font-medium px-2 sm:px-4 shrink-0">
-              Subscribe to our YouTube channel to unlock free access to all spiritual content and sacred texts.
+            <p className="text-gray-300 text-sm sm:text-base text-center mb-4 sm:mb-6 leading-relaxed font-medium px-2 sm:px-4 shrink-0">
+              Subscribe to our YouTube channel to unlock free access to all spiritual content.
             </p>
 
             {/* Status Messages */}
             {status === "subscribing" && (
-              <div className="w-full bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(234,179,8,0.1)] shrink-0">
-                <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-full bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-3 sm:mb-4 flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(234,179,8,0.1)] shrink-0">
+                <div className="w-4 h-4 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
                 <span className="text-yellow-500 text-xs sm:text-sm font-semibold">Verifying Subscription...</span>
               </div>
             )}
 
             {status === "error" && (
-              <div className="w-full bg-red-500/10 border border-red-500/20 rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 text-center shadow-[0_0_20px_rgba(239,68,68,0.1)] shrink-0">
+              <div className="w-full bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-3 sm:mb-4 text-center shadow-[0_0_20px_rgba(239,68,68,0.1)] shrink-0">
                 <p className="text-red-400 text-xs sm:text-sm font-semibold">
                   Something went wrong. Please try again.
                 </p>
@@ -163,11 +163,11 @@ function Login() {
             )}
 
             {/* Buttons */}
-            <div className="w-full space-y-3 sm:space-y-4 shrink-0">
+            <div className="w-full space-y-3 shrink-0">
               <button
                 onClick={handleGoogleLogin}
                 disabled={status === "subscribing"}
-                className="group relative w-full flex items-center justify-center gap-2 sm:gap-3 bg-white hover:bg-gray-100 active:scale-[0.98] transition-all duration-300 px-4 sm:px-6 py-3.5 sm:py-4 md:py-5 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] disabled:opacity-70 disabled:active:scale-100"
+                className="group relative w-full flex items-center justify-center gap-2 sm:gap-3 bg-white hover:bg-gray-100 active:scale-[0.98] transition-all duration-300 px-4 sm:px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.05)] hover:shadow-[0_0_40px_rgba(255,255,255,0.15)] disabled:opacity-70 disabled:active:scale-100"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
