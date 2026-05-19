@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 
@@ -6,8 +6,11 @@ function Shorts() {
   const [shortsData, setShortsData] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Muted and liked local states
+  // Muted and active index states
   const [muted, setMuted] = useState(true)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  // Likes state stored in localStorage
   const [liked, setLiked] = useState(() => {
     return JSON.parse(localStorage.getItem('likedShorts') || '{}')
   })
@@ -47,6 +50,137 @@ function Shorts() {
     }
     fetchShorts()
   }, [])
+
+  // Intersection Observer to track active scrolling short
+  useEffect(() => {
+    if (shortsData.length === 0) return
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.6 // Trigger when 60% of the short card is in viewport
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const shortId = entry.target.getAttribute('data-short-id')
+          const idx = shortsData.findIndex(s => s.id === shortId)
+          if (idx !== -1) {
+            setActiveIndex(idx)
+          }
+        }
+      })
+    }, observerOptions)
+
+    // Start observing container elements
+    shortsData.forEach((short) => {
+      const el = document.getElementById(`short-container-${short.id}`)
+      if (el) observer.observe(el)
+    })
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [shortsData])
+
+  // Synchronize playing and muting state across scrolled iframes
+  useEffect(() => {
+    if (shortsData.length === 0) return
+
+    shortsData.forEach((short, idx) => {
+      const iframe = document.getElementById(`iframe-${short.id}`)
+      if (iframe && iframe.contentWindow) {
+        if (idx === activeIndex) {
+          // Play current video
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'playVideo' }),
+            '*'
+          )
+          // Set volume status programmatically without reloading iframe
+          iframe.contentWindow.postMessage(
+            JSON.stringify({
+              event: 'command',
+              func: muted ? 'mute' : 'unMute'
+            }),
+            '*'
+          )
+          if (!muted) {
+            iframe.contentWindow.postMessage(
+              JSON.stringify({
+                event: 'command',
+                func: 'setVolume',
+                args: [100]
+              }),
+              '*'
+            )
+          }
+        } else {
+          // Pause all off-screen videos
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ event: 'command', func: 'pauseVideo' }),
+            '*'
+          )
+        }
+      }
+    })
+  }, [activeIndex, muted, shortsData])
+
+  // Handle programmatic volume and mute toggle
+  const toggleMute = () => {
+    const nextMuted = !muted
+    setMuted(nextMuted)
+
+    // Trigger instant API postMessage update to current active playing iframe
+    const activeShort = shortsData[activeIndex]
+    if (activeShort) {
+      const iframe = document.getElementById(`iframe-${activeShort.id}`)
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            event: 'command',
+            func: nextMuted ? 'mute' : 'unMute'
+          }),
+          '*'
+        )
+        if (!nextMuted) {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({
+              event: 'command',
+              func: 'setVolume',
+              args: [100]
+            }),
+            '*'
+          )
+        }
+      }
+    }
+  }
+
+  // Handle postMessage commands when iframe is fully loaded
+  const handleIframeLoad = (shortId, idx) => {
+    const iframe = document.getElementById(`iframe-${shortId}`)
+    if (iframe && iframe.contentWindow) {
+      if (idx === activeIndex) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo' }),
+          '*'
+        )
+        iframe.contentWindow.postMessage(
+          JSON.stringify({
+            event: 'command',
+            func: muted ? 'mute' : 'unMute'
+          }),
+          '*'
+        )
+      } else {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'pauseVideo' }),
+          '*'
+        )
+      }
+    }
+  }
 
   // Sync likes with Supabase database
   const toggleLike = async (short) => {
@@ -223,19 +357,23 @@ function Shorts() {
             <p className="text-xs text-gray-600 max-w-xs">Upload shorts using the Admin panel to populate this screen with beautiful divine highlights!</p>
           </div>
         ) : (
-          shortsData.map((short) => (
+          shortsData.map((short, idx) => (
             <div
               key={short.id}
+              id={`short-container-${short.id}`}
+              data-short-id={short.id}
               className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black"
             >
               {/* YouTube Shorts Embed */}
               <div className="absolute inset-0 w-full h-[calc(100%-64px)] pb-16">
                 <iframe
-                  src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${short.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0`}
+                  id={`iframe-${short.id}`}
+                  src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${short.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0&enablejsapi=1`}
                   title={short.title}
                   className="w-full h-full object-cover pointer-events-auto"
                   allow="autoplay; encrypted-media"
                   allowFullScreen
+                  onLoad={() => handleIframeLoad(short.id, idx)}
                 />
               </div>
 
@@ -243,11 +381,11 @@ function Shorts() {
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
 
               {/* Sidebar Interactions (Right Side) */}
-              <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-30">
+              <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-30 font-semibold">
                 
                 {/* Mute/Volume Toggle */}
                 <button 
-                  onClick={() => setMuted(!muted)} 
+                  onClick={toggleMute} 
                   className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
                 >
                   <div className={`p-3 rounded-full backdrop-blur-md transition-all ${
@@ -277,50 +415,50 @@ function Shorts() {
                   }`}>
                     <svg className="w-6 h-6" fill={liked[short.id] ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <span className="text-xs font-bold">{getLikesDisplay(short)}</span>
-              </button>
+                    </svg>
+                  </div>
+                  <span className="text-xs font-bold">{getLikesDisplay(short)}</span>
+                </button>
 
-              {/* Comment Button */}
-              <button 
-                onClick={() => openComments(short.id)} 
-                className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
-              >
-                <div className="p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:text-[#FF9933] transition-colors">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <span className="text-xs font-bold">Comments</span>
-              </button>
+                {/* Comment Button */}
+                <button 
+                  onClick={() => openComments(short.id)} 
+                  className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
+                >
+                  <div className="p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:text-[#FF9933] transition-colors">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-bold">Comments</span>
+                </button>
 
-              {/* Share Button */}
-              <button 
-                onClick={() => handleShare(short.youtubeId)} 
-                className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
-              >
-                <div className="p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:text-[#FF9933] transition-colors">
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l4.636-2.318m0 7.152l-4.636-2.318M21 12a3 3 0 11-6 0 3 3 0 016 0zm-6-6a3 3 0 11-6 0 3 3 0 016 0zm-6 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <span className="text-xs font-bold">Share</span>
-              </button>
+                {/* Share Button */}
+                <button 
+                  onClick={() => handleShare(short.youtubeId)} 
+                  className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
+                >
+                  <div className="p-3 rounded-full bg-black/40 backdrop-blur-md text-white hover:text-[#FF9933] transition-colors">
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 10.742l4.636-2.318m0 7.152l-4.636-2.318M21 12a3 3 0 11-6 0 3 3 0 016 0zm-6-6a3 3 0 11-6 0 3 3 0 016 0zm-6 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-bold">Share</span>
+                </button>
+              </div>
+
+              {/* Bottom Content Overlay (Left Side) */}
+              <div className="absolute left-4 bottom-24 right-16 z-20 pointer-events-none">
+                <span className="bg-[#FF9933]/20 border border-[#FF9933]/30 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] inline-block mb-3 backdrop-blur-md">
+                  Divine Short
+                </span>
+                <h2 className="text-lg sm:text-xl font-black text-white mb-1 drop-shadow-md truncate">{short.title}</h2>
+                <p className="text-gray-300 text-xs sm:text-sm line-clamp-2 drop-shadow-md leading-relaxed">{short.description}</p>
+              </div>
+
             </div>
-
-            {/* Bottom Content Overlay (Left Side) */}
-            <div className="absolute left-4 bottom-24 right-16 z-20 pointer-events-none">
-              <span className="bg-[#FF9933]/20 border border-[#FF9933]/30 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] inline-block mb-3 backdrop-blur-md">
-                Divine Short
-              </span>
-              <h2 className="text-lg sm:text-xl font-black text-white mb-1 drop-shadow-md truncate">{short.title}</h2>
-              <p className="text-gray-300 text-xs sm:text-sm line-clamp-2 drop-shadow-md leading-relaxed">{short.description}</p>
-            </div>
-
-          </div>
-        ))
-      )}
+          ))
+        )}
       </div>
 
       {/* Comments Drawer Sheet */}
