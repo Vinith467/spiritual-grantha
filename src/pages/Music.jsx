@@ -75,7 +75,7 @@ function Music() {
             thumbnail: m.cover_url || `https://img.youtube.com/vi/${m.youtube_id}/hqdefault.jpg`,
             category: m.category || 'Devotional'
           }))
-          const combined = [...dbTracks, ...DEVOTIONAL_TRACKS]
+          const combined = dbTracks.length > 0 ? dbTracks : DEVOTIONAL_TRACKS
           setTracks(combined)
           if (combined.length > 0) {
             setActiveTrack(combined[0])
