@@ -1,10 +1,22 @@
 import { useNavigate } from 'react-router-dom'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
 function HeroBanner({ seriesList }) {
   const navigate = useNavigate()
   const [current, setCurrent] = useState(0)
   const touchStartX = useRef(null)
+
+  // Auto-play timer (changes slide every 6 seconds)
+  useEffect(() => {
+    if (!seriesList || seriesList.length <= 1) return
+
+    const timer = setInterval(() => {
+      setCurrent(prev => (prev + 1) % seriesList.length)
+    }, 6000)
+
+    return () => clearInterval(timer)
+  }, [current, seriesList?.length])
 
   if (!seriesList || seriesList.length === 0) return <div className="h-64 bg-[#141414]" />
 
@@ -20,40 +32,77 @@ function HeroBanner({ seriesList }) {
   function handleTouchEnd(e) {
     if (touchStartX.current === null) return
     const diff = touchStartX.current - e.changedTouches[0].clientX
-    if (diff > 50 && current < seriesList.length - 1) setCurrent(c => c + 1)
-    if (diff < -50 && current > 0) setCurrent(c => c - 1)
+    if (diff > 50) {
+      setCurrent(c => (c === seriesList.length - 1 ? 0 : c + 1))
+    }
+    if (diff < -50) {
+      setCurrent(c => (c === 0 ? seriesList.length - 1 : c - 1))
+    }
     touchStartX.current = null
   }
 
   return (
     <div className="w-full px-6 md:px-0 pt-[60px] sm:pt-[72px] pb-3">
       <div
-        className="relative w-full overflow-hidden rounded-2xl md:rounded-none aspect-[2/3] md:aspect-[21/9] lg:aspect-[3/1] shadow-2xl"
+        className="relative group w-full overflow-hidden rounded-2xl md:rounded-none aspect-[2/3] md:aspect-[21/9] lg:aspect-[3/1] shadow-2xl select-none"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <picture>
+        {/* Banner Images */}
+        <picture key={`pic-${series.id}`} className="animate-fade-in">
           <source media="(min-width: 768px)" srcSet={series.desktop_thumbnail_url || series.thumbnail_url} />
           <img
-            key={series.id}
             src={series.thumbnail_url}
             alt={series.title}
             className="w-full h-full object-cover object-top sm:object-center"
           />
         </picture>
 
+        {/* Shadow overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
+        {/* Clickable Navigation Indicators */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
           {seriesList.map((_, i) => (
-            <div
+            <button
               key={i}
-              className={`h-1 rounded-full transition-all duration-300 ${i === current ? 'bg-[#FF9933] w-6 shadow-[0_0_8px_#FF9933]' : 'bg-white/40 w-1.5'}`}
+              onClick={() => setCurrent(i)}
+              className={`h-1.5 rounded-full transition-all duration-300 outline-none cursor-pointer ${i === current ? 'bg-[#FF9933] w-6 shadow-[0_0_8px_#FF9933]' : 'bg-white/40 w-1.5 hover:bg-white/80'}`}
+              aria-label={`Go to slide ${i + 1}`}
             />
           ))}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 lg:px-20 pb-5 md:pb-12 z-10">
+        {/* Left Navigation Arrow Overlay (Laptop & Desktop) */}
+        {seriesList.length > 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setCurrent(prev => (prev === 0 ? seriesList.length - 1 : prev - 1))
+            }}
+            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-[#FF9933] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 hidden md:flex border border-white/10 hover:border-transparent hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
+            aria-label="Previous slide"
+          >
+            <LeftOutlined style={{ fontSize: '18px', fontWeight: 'bold' }} />
+          </button>
+        )}
+
+        {/* Right Navigation Arrow Overlay (Laptop & Desktop) */}
+        {seriesList.length > 1 && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setCurrent(prev => (prev === seriesList.length - 1 ? 0 : prev + 1))
+            }}
+            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-[#FF9933] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 hidden md:flex border border-white/10 hover:border-transparent hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
+            aria-label="Next slide"
+          >
+            <RightOutlined style={{ fontSize: '18px', fontWeight: 'bold' }} />
+          </button>
+        )}
+
+        {/* Content Info Area */}
+        <div key={`info-${series.id}`} className="absolute bottom-0 left-0 right-0 px-4 md:px-12 lg:px-20 pb-5 md:pb-12 z-10 animate-fade-in">
           <div className="max-w-2xl">
             {series.category && (
               <span className="text-[#FF9933] text-[10px] md:text-xs font-bold uppercase tracking-widest block mb-2">{series.category}</span>
@@ -69,7 +118,7 @@ function HeroBanner({ seriesList }) {
                     navigate(`/watch/${firstEpisode.id}`)
                   }
                 }}
-                className="w-full sm:w-auto bg-white text-black px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                className="w-full sm:w-auto bg-white text-black px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
               >
                 {isWatched ? 'Continue Watching' : 'Watch Now'}
               </button>
