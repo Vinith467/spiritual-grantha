@@ -6,97 +6,61 @@ import HeroBanner from '../components/HeroBanner'
 import VideoRow from '../components/VideoRow'
 import BottomNavbar from '../components/BottomNavbar'
 
-function ContinueCard({ episode }) {
-  const navigate = useNavigate()
-
-  return (
-    <div
-      onClick={() => navigate(`/watch/${episode.id}`)}
-      className="min-w-[120px] max-w-[120px] md:min-w-[160px] cursor-pointer group flex-shrink-0"
-    >
-      <div className="relative overflow-hidden rounded-md aspect-[2/3]">
-        <img
-          src={`https://img.youtube.com/vi/${episode.youtube_id}/hqdefault.jpg`}
-          alt={episode.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center">
-            <span className="text-black text-sm ml-0.5">&#9654;</span>
-          </div>
-        </div>
-      </div>
-      <p className="text-xs mt-1 text-gray-300 truncate">{episode.title}</p>
-    </div>
-  )
-}
-
 function Home() {
   const [seriesList, setSeriesList] = useState([])
   const [bannerList, setBannerList] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const fetchSeries = useCallback(async () => {
+    setLoading(true)
     let supabaseSeries = []
     try {
       const { data } = await supabase
         .from('series')
         .select('*, episodes(*)')
         .order('created_at', { ascending: false })
+      
+      // Sort episodes inside each series by episode_number ascending
+      if (data) {
+        data.forEach(s => {
+          if (s.episodes) {
+            s.episodes.sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0))
+          }
+        })
+      }
       supabaseSeries = data || []
     } catch (e) {
       console.error('Error fetching from supabase:', e)
     }
 
-    // Load admin uploaded videos from localStorage
-    const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
-    const adminSeriesMap = {}
+    let supabaseBanners = []
+    try {
+      const { data } = await supabase
+        .from('banners')
+        .select('*')
+        .order('created_at', { ascending: false })
+      supabaseBanners = data || []
+    } catch (e) {
+      console.error('Error fetching banners:', e)
+    }
 
-    adminVideos.forEach(v => {
-      if (!adminSeriesMap[v.seriesTitle]) {
-        adminSeriesMap[v.seriesTitle] = {
-          id: `admin_${v.seriesTitle}`,
-          title: v.seriesTitle,
-          episodes: []
-        }
-      }
-      adminSeriesMap[v.seriesTitle].episodes.push({
-        id: v.id,
-        title: v.episodeTitle,
-        youtube_id: v.youtubeId,
-        thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`,
-        desktop_thumbnail_url: v.thumbnailUrl || `https://img.youtube.com/vi/${v.youtubeId}/hqdefault.jpg`
-      })
-    })
+    setSeriesList(supabaseSeries)
 
-    // Add thumbnail_url to the adminSeriesMap root so HeroBanner can display it
-    Object.keys(adminSeriesMap).forEach(key => {
-      const firstEp = adminSeriesMap[key].episodes[0]
-      if (firstEp) {
-        adminSeriesMap[key].thumbnail_url = firstEp.thumbnail_url
-        adminSeriesMap[key].desktop_thumbnail_url = firstEp.desktop_thumbnail_url
-      }
-    })
-
-    // Merge Supabase and LocalStorage series
-    const combinedData = [...supabaseSeries, ...Object.values(adminSeriesMap)]
-    setSeriesList(combinedData)
-
-    // Load custom banners
-    const banners = JSON.parse(localStorage.getItem('admin_banners') || '[]')
-    if (banners.length > 0) {
-      const customBanners = banners.map(b => ({
+    if (supabaseBanners.length > 0) {
+      const customBanners = supabaseBanners.map(b => ({
         id: b.id,
         title: b.title,
         description: b.description,
         category: 'Featured',
-        thumbnail_url: b.mobileUrl,
-        desktop_thumbnail_url: b.desktopUrl,
-        episodes: [{ id: b.targetId }]
+        thumbnail_url: b.mobile_url,
+        desktop_thumbnail_url: b.desktop_url,
+        episodes: [{ id: b.target_id }]
       }))
       setBannerList(customBanners)
     } else {
-      setBannerList(combinedData)
+      setBannerList(supabaseSeries)
     }
+    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -106,12 +70,22 @@ function Home() {
   return (
     <div className="bg-[#141414] min-h-screen text-white pb-24">
       <Navbar />
-      <HeroBanner seriesList={bannerList} />
-      <div className="pb-10 -mt-4 relative z-10">
-        {seriesList.map(series => (
-          <VideoRow key={series.id} series={series} />
-        ))}
-      </div>
+      
+      {loading ? (
+        <div className="h-64 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <>
+          <HeroBanner seriesList={bannerList} />
+          <div className="pb-10 -mt-4 relative z-10">
+            {seriesList.map(series => (
+              <VideoRow key={series.id} series={series} />
+            ))}
+          </div>
+        </>
+      )}
+      
       <BottomNavbar />
     </div>
   )

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 
 // Curated high-quality spiritual YouTube Shorts
@@ -36,30 +37,56 @@ const SPIRITUAL_SHORTS = [
 function Shorts() {
   const [shortsData, setShortsData] = useState([])
   const [liked, setLiked] = useState({})
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const adminShortsRaw = JSON.parse(localStorage.getItem('admin_shorts') || '[]')
-    const adminShorts = adminShortsRaw.map(s => ({
-      id: `admin_${s.id}`,
-      youtubeId: s.youtubeId,
-      title: 'Admin Upload',
-      description: s.description,
-      likes: '0',
-    }))
-
-    setShortsData([...adminShorts, ...SPIRITUAL_SHORTS])
+    const fetchShorts = async () => {
+      setLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('shorts')
+          .select('*')
+          .order('created_at', { ascending: false })
+        
+        if (!error && data) {
+          const dbShorts = data.map(s => ({
+            id: s.id,
+            youtubeId: s.youtube_id,
+            title: s.title || 'Divine Short',
+            description: s.description,
+            likes: '0',
+          }))
+          setShortsData([...dbShorts, ...SPIRITUAL_SHORTS])
+        } else {
+          setShortsData(SPIRITUAL_SHORTS)
+        }
+      } catch (err) {
+        console.error(err)
+        setShortsData(SPIRITUAL_SHORTS)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchShorts()
   }, [])
 
   const toggleLike = (id) => {
     setLiked(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
+  if (loading) return (
+    <div className="h-[100dvh] w-full bg-black text-white flex flex-col items-center justify-center">
+      <div className="w-10 h-10 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin mb-4" />
+      <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Loading Divine Shorts...</p>
+    </div>
+  )
+
   return (
     <div className="h-[100dvh] w-full bg-black text-white relative overflow-hidden">
       
       {/* Scrollable Container */}
       <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-16">
-        {shortsData.map((short, index) => (
+        {shortsData.map((short) => (
           <div
             key={short.id}
             className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black"

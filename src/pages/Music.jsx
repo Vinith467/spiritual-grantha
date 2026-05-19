@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
@@ -53,26 +54,52 @@ const DEVOTIONAL_TRACKS = [
 function Music() {
   const [tracks, setTracks] = useState([])
   const [activeTrack, setActiveTrack] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load admin music and merge with hardcoded tracks
-    const adminMusicRaw = JSON.parse(localStorage.getItem('admin_music') || '[]')
-    const adminTracks = adminMusicRaw.map(m => ({
-      id: `admin_${m.id}`,
-      youtubeId: m.youtubeId,
-      title: m.trackTitle,
-      singer: m.artist,
-      duration: 'Live', // Or some default
-      thumbnail: m.coverUrl || `https://img.youtube.com/vi/${m.youtubeId}/hqdefault.jpg`,
-      category: 'New Upload'
-    }))
-
-    const combinedTracks = [...adminTracks, ...DEVOTIONAL_TRACKS]
-    setTracks(combinedTracks)
-    if (combinedTracks.length > 0) {
-      setActiveTrack(combinedTracks[0])
+    const fetchMusic = async () => {
+      setLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('music_tracks')
+          .select('*')
+          .order('created_at', { ascending: false })
+        
+        if (!error && data) {
+          const dbTracks = data.map(m => ({
+            id: m.id,
+            youtubeId: m.youtube_id,
+            title: m.track_title,
+            singer: m.artist,
+            duration: 'Live',
+            thumbnail: m.cover_url || `https://img.youtube.com/vi/${m.youtube_id}/hqdefault.jpg`,
+            category: m.category || 'Devotional'
+          }))
+          const combined = [...dbTracks, ...DEVOTIONAL_TRACKS]
+          setTracks(combined)
+          if (combined.length > 0) {
+            setActiveTrack(combined[0])
+          }
+        } else {
+          setTracks(DEVOTIONAL_TRACKS)
+          setActiveTrack(DEVOTIONAL_TRACKS[0])
+        }
+      } catch (err) {
+        console.error(err)
+        setTracks(DEVOTIONAL_TRACKS)
+        setActiveTrack(DEVOTIONAL_TRACKS[0])
+      } finally {
+        setLoading(false)
+      }
     }
+    fetchMusic()
   }, [])
+
+  if (loading) return (
+    <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
+      <div className="w-10 h-10 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+    </div>
+  )
 
   if (!activeTrack) return null
 

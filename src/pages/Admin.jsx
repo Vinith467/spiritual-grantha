@@ -1,183 +1,385 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { HomeOutlined, VideoCameraOutlined, CustomerServiceOutlined, MobileOutlined, UserOutlined, PictureOutlined } from '@ant-design/icons'
+import {
+  HomeOutlined,
+  VideoCameraOutlined,
+  CustomerServiceOutlined,
+  MobileOutlined,
+  UserOutlined,
+  PictureOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  FolderOpenOutlined,
+  PlayCircleOutlined
+} from '@ant-design/icons'
 
 function Admin() {
   const navigate = useNavigate()
   const [authed, setAuthed] = useState(false)
-  const [activeTab, setActiveTab] = useState('banners') // default to banners so they see it
+  const [activeTab, setActiveTab] = useState('banners')
+
+  // Loading States
+  const [loading, setLoading] = useState(false)
 
   // Data States
   const [banners, setBanners] = useState([])
-  const [videos, setVideos] = useState([])
-  const [supabaseVideos, setSupabaseVideos] = useState([])
+  const [seriesList, setSeriesList] = useState([])
+  const [episodesList, setEpisodesList] = useState([])
   const [music, setMusic] = useState([])
   const [shorts, setShorts] = useState([])
+  
+  // Active editing item ID
   const [editingId, setEditingId] = useState(null)
+  const [editingSeriesId, setEditingSeriesId] = useState(null)
+  const [editingEpisodeId, setEditingEpisodeId] = useState(null)
+
+  // Video Sub-Tab state: 'episodes' or 'series'
+  const [videoSubTab, setVideoSubTab] = useState('episodes')
 
   // Form States
   const [bannerForm, setBannerForm] = useState({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
-  const [videoForm, setVideoForm] = useState({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
-  const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
-  const [shortForm, setShortForm] = useState({ description: '', youtubeId: '' })
+  const [seriesForm, setSeriesForm] = useState({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
+  const [episodeForm, setEpisodeForm] = useState({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })
+  const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
+  const [shortForm, setShortForm] = useState({ title: 'Divine Short', description: '', youtubeId: '' })
 
-  const loadSupabaseVideos = useCallback(async () => {
-    try {
-      const { data } = await supabase.from('series').select('*, episodes(*)').order('created_at', { ascending: false })
-      let spVideos = []
-      if (data) {
-        data.forEach(s => {
-          s.episodes?.forEach(ep => {
-            spVideos.push({
-              id: ep.id,
-              seriesTitle: s.title,
-              episodeTitle: ep.title,
-              youtubeId: ep.youtube_id,
-              thumbnailUrl: ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/hqdefault.jpg`,
-              isSupabase: true
-            })
-          })
-        })
-      }
-      setSupabaseVideos(spVideos)
-    } catch (e) {
-      console.error(e)
-    }
+  // Data Loaders
+  const loadBanners = useCallback(async () => {
+    const { data, error } = await supabase.from('banners').select('*').order('created_at', { ascending: false })
+    if (!error && data) setBanners(data)
+  }, [])
+
+  const loadSeriesAndEpisodes = useCallback(async () => {
+    const { data: sData, error: sErr } = await supabase.from('series').select('*').order('created_at', { ascending: false })
+    if (!sErr && sData) setSeriesList(sData)
+
+    const { data: epData, error: epErr } = await supabase.from('episodes').select('*').order('created_at', { ascending: false })
+    if (!epErr && epData) setEpisodesList(epData)
+  }, [])
+
+  const loadMusic = useCallback(async () => {
+    const { data, error } = await supabase.from('music_tracks').select('*').order('created_at', { ascending: false })
+    if (!error && data) setMusic(data)
+  }, [])
+
+  const loadShorts = useCallback(async () => {
+    const { data, error } = await supabase.from('shorts').select('*').order('created_at', { ascending: false })
+    if (!error && data) setShorts(data)
   }, [])
 
   useEffect(() => {
     if (localStorage.getItem('isAdmin') === 'true') {
       setAuthed(true)
-      // Load data
-      setBanners(JSON.parse(localStorage.getItem('admin_banners') || '[]'))
-      setVideos(JSON.parse(localStorage.getItem('admin_videos') || '[]'))
-      setMusic(JSON.parse(localStorage.getItem('admin_music') || '[]'))
-      setShorts(JSON.parse(localStorage.getItem('admin_shorts') || '[]'))
-      loadSupabaseVideos()
+      setLoading(true)
+      Promise.all([
+        loadBanners(),
+        loadSeriesAndEpisodes(),
+        loadMusic(),
+        loadShorts()
+      ]).finally(() => setLoading(false))
     } else {
       alert('Access Denied: You are not authorized to view the Admin Dashboard.')
       navigate('/home')
     }
-  }, [navigate, loadSupabaseVideos])
+  }, [navigate, loadBanners, loadSeriesAndEpisodes, loadMusic, loadShorts])
 
-  const saveToLocal = (key, data) => {
-    localStorage.setItem(key, JSON.stringify(data))
-  }
-
-  const handleBannerSubmit = (e) => {
+  // ============================================================
+  // BANNERS CRUD
+  // ============================================================
+  const handleBannerSubmit = async (e) => {
     e.preventDefault()
-    let newData
-    if (editingId) {
-      newData = banners.map(b => b.id === editingId ? { ...bannerForm, id: editingId } : b)
-    } else {
-      newData = [{ ...bannerForm, id: Date.now().toString() }, ...banners]
+    setLoading(true)
+    const payload = {
+      title: bannerForm.title,
+      description: bannerForm.description,
+      target_id: bannerForm.targetId,
+      mobile_url: bannerForm.mobileUrl,
+      desktop_url: bannerForm.desktopUrl
     }
-    setBanners(newData)
-    saveToLocal('admin_banners', newData)
-    setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
-    setEditingId(null)
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from('banners').update(payload).eq('id', editingId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('banners').insert([payload])
+        if (error) throw error
+      }
+      setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
+      setEditingId(null)
+      await loadBanners()
+    } catch (err) {
+      alert('Error saving banner: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Generic Submit Handler
-  const handleVideoSubmit = async (e) => {
-    e.preventDefault()
-    if (editingId && editingId.toString().length < 10) { 
-       alert("Live database Edit feature is currently read-only. Please edit local uploads only.")
-       cancelEdit()
-       return
-    }
-    let newData
-    if (editingId) {
-      newData = videos.map(v => v.id === editingId ? { ...videoForm, id: editingId } : v)
-    } else {
-      newData = [{ ...videoForm, id: Date.now().toString() }, ...videos]
-    }
-    setVideos(newData)
-    saveToLocal('admin_videos', newData)
-    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
-    setEditingId(null)
-  }
-
-  const handleMusicSubmit = (e) => {
-    e.preventDefault()
-    let newData
-    if (editingId) {
-      newData = music.map(m => m.id === editingId ? { ...musicForm, id: editingId } : m)
-    } else {
-      newData = [{ ...musicForm, id: Date.now().toString() }, ...music]
-    }
-    setMusic(newData)
-    saveToLocal('admin_music', newData)
-    setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
-    setEditingId(null)
-  }
-
-  const handleShortSubmit = (e) => {
-    e.preventDefault()
-    let newData
-    if (editingId) {
-      newData = shorts.map(s => s.id === editingId ? { ...shortForm, id: editingId } : s)
-    } else {
-      newData = [{ ...shortForm, id: Date.now().toString() }, ...shorts]
-    }
-    setShorts(newData)
-    saveToLocal('admin_shorts', newData)
-    setShortForm({ description: '', youtubeId: '' })
-    setEditingId(null)
-  }
-
-  // Delete Handlers
-  const deleteBanner = (id) => {
-    const newData = banners.filter(b => b.id !== id)
-    setBanners(newData)
-    saveToLocal('admin_banners', newData)
-  }
-  const deleteVideo = (v) => {
-    if (v.isSupabase) {
-      alert("Live database Delete feature is currently read-only. You can only delete locally uploaded items.")
-      return
-    }
-    const newData = videos.filter(vid => vid.id !== v.id)
-    setVideos(newData)
-    saveToLocal('admin_videos', newData)
-  }
-  const deleteMusic = (id) => {
-    const newData = music.filter(m => m.id !== id)
-    setMusic(newData)
-    saveToLocal('admin_music', newData)
-  }
-  const deleteShort = (id) => {
-    const newData = shorts.filter(s => s.id !== id)
-    setShorts(newData)
-    saveToLocal('admin_shorts', newData)
-  }
-
-  // Edit Handlers
-  const editBanner = (item) => { setBannerForm(item); setEditingId(item.id); window.scrollTo(0,0) }
-  const editVideo = (item) => { 
-    if (item.isSupabase) {
-      alert("You can view this item in the form, but live database saving is read-only for now.")
-    }
-    setVideoForm({
-      seriesTitle: item.seriesTitle || '',
-      episodeTitle: item.episodeTitle || '',
-      youtubeId: item.youtubeId || '',
-      thumbnailUrl: item.thumbnailUrl || ''
+  const editBanner = (item) => {
+    setBannerForm({
+      title: item.title || '',
+      description: item.description || '',
+      targetId: item.target_id || '',
+      mobileUrl: item.mobile_url || '',
+      desktopUrl: item.desktop_url || ''
     })
     setEditingId(item.id)
-    window.scrollTo(0,0) 
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
-  const editMusic = (item) => { setMusicForm(item); setEditingId(item.id); window.scrollTo(0,0) }
-  const editShort = (item) => { setShortForm(item); setEditingId(item.id); window.scrollTo(0,0) }
 
-  // Cancel Edit
+  const deleteBanner = async (id) => {
+    if (!confirm('Are you sure you want to delete this banner?')) return
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('banners').delete().eq('id', id)
+      if (error) throw error
+      await loadBanners()
+    } catch (err) {
+      alert('Error deleting banner: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ============================================================
+  // SERIES CRUD
+  // ============================================================
+  const handleSeriesSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    const payload = {
+      title: seriesForm.title,
+      description: seriesForm.description,
+      thumbnail_url: seriesForm.thumbnail_url,
+      desktop_thumbnail_url: seriesForm.desktop_thumbnail_url
+    }
+
+    try {
+      if (editingSeriesId) {
+        const { error } = await supabase.from('series').update(payload).eq('id', editingSeriesId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('series').insert([payload])
+        if (error) throw error
+      }
+      setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
+      setEditingSeriesId(null)
+      await loadSeriesAndEpisodes()
+    } catch (err) {
+      alert('Error saving series: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const editSeries = (item) => {
+    setSeriesForm({
+      title: item.title || '',
+      description: item.description || '',
+      thumbnail_url: item.thumbnail_url || '',
+      desktop_thumbnail_url: item.desktop_thumbnail_url || ''
+    })
+    setEditingSeriesId(item.id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const deleteSeries = async (id) => {
+    if (!confirm('Warning: Deleting a series will also orphan or break related episodes. Are you sure you want to delete this series?')) return
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('series').delete().eq('id', id)
+      if (error) throw error
+      await loadSeriesAndEpisodes()
+    } catch (err) {
+      alert('Error deleting series: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ============================================================
+  // EPISODES CRUD
+  // ============================================================
+  const handleEpisodeSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    const payload = {
+      series_id: episodeForm.series_id,
+      title: episodeForm.title,
+      youtube_id: episodeForm.youtube_id,
+      thumbnail_url: episodeForm.thumbnail_url || `https://img.youtube.com/vi/${episodeForm.youtube_id}/hqdefault.jpg`,
+      episode_number: parseInt(episodeForm.episode_number) || 1,
+      description: episodeForm.description
+    }
+
+    try {
+      if (editingEpisodeId) {
+        const { error } = await supabase.from('episodes').update(payload).eq('id', editingEpisodeId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('episodes').insert([payload])
+        if (error) throw error
+      }
+      setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })
+      setEditingEpisodeId(null)
+      await loadSeriesAndEpisodes()
+    } catch (err) {
+      alert('Error saving episode: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const editEpisode = (item) => {
+    setEpisodeForm({
+      series_id: item.series_id || '',
+      title: item.title || '',
+      youtube_id: item.youtube_id || '',
+      thumbnail_url: item.thumbnail_url || '',
+      episode_number: item.episode_number || '',
+      description: item.description || ''
+    })
+    setEditingEpisodeId(item.id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const deleteEpisode = async (id) => {
+    if (!confirm('Are you sure you want to delete this episode?')) return
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('episodes').delete().eq('id', id)
+      if (error) throw error
+      await loadSeriesAndEpisodes()
+    } catch (err) {
+      alert('Error deleting episode: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ============================================================
+  // MUSIC CRUD
+  // ============================================================
+  const handleMusicSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    const payload = {
+      track_title: musicForm.trackTitle,
+      artist: musicForm.artist,
+      youtube_id: musicForm.youtubeId,
+      cover_url: musicForm.coverUrl || `https://img.youtube.com/vi/${musicForm.youtubeId}/hqdefault.jpg`,
+      category: musicForm.category
+    }
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from('music_tracks').update(payload).eq('id', editingId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('music_tracks').insert([payload])
+        if (error) throw error
+      }
+      setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
+      setEditingId(null)
+      await loadMusic()
+    } catch (err) {
+      alert('Error saving music: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const editMusic = (item) => {
+    setMusicForm({
+      trackTitle: item.track_title || '',
+      artist: item.artist || '',
+      youtubeId: item.youtube_id || '',
+      coverUrl: item.cover_url || '',
+      category: item.category || 'Devotional'
+    })
+    setEditingId(item.id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const deleteMusic = async (id) => {
+    if (!confirm('Are you sure you want to delete this music track?')) return
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('music_tracks').delete().eq('id', id)
+      if (error) throw error
+      await loadMusic()
+    } catch (err) {
+      alert('Error deleting music track: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // ============================================================
+  // SHORTS CRUD
+  // ============================================================
+  const handleShortSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    const payload = {
+      title: shortForm.title,
+      description: shortForm.description,
+      youtube_id: shortForm.youtubeId
+    }
+
+    try {
+      if (editingId) {
+        const { error } = await supabase.from('shorts').update(payload).eq('id', editingId)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('shorts').insert([payload])
+        if (error) throw error
+      }
+      setShortForm({ title: 'Divine Short', description: '', youtubeId: '' })
+      setEditingId(null)
+      await loadShorts()
+    } catch (err) {
+      alert('Error saving short: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const editShort = (item) => {
+    setShortForm({
+      title: item.title || 'Divine Short',
+      description: item.description || '',
+      youtubeId: item.youtube_id || ''
+    })
+    setEditingId(item.id)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const deleteShort = async (id) => {
+    if (!confirm('Are you sure you want to delete this short?')) return
+    setLoading(true)
+    try {
+      const { error } = await supabase.from('shorts').delete().eq('id', id)
+      if (error) throw error
+      await loadShorts()
+    } catch (err) {
+      alert('Error deleting short: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const cancelEdit = () => {
     setEditingId(null)
+    setEditingSeriesId(null)
+    setEditingEpisodeId(null)
     setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
-    setVideoForm({ seriesTitle: '', episodeTitle: '', youtubeId: '', thumbnailUrl: '' })
-    setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '' })
-    setShortForm({ description: '', youtubeId: '' })
+    setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
+    setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })
+    setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
+    setShortForm({ title: 'Divine Short', description: '', youtubeId: '' })
   }
 
   if (!authed) return (
@@ -194,16 +396,17 @@ function Admin() {
     { id: 'users', label: 'Users', icon: <UserOutlined /> },
   ]
 
-  const allDisplayVideos = [...videos, ...supabaseVideos]
-
   return (
-    <div className="bg-[#0a0a0a] min-h-screen text-white pb-24 selection:bg-[#FF9933]/30">
+    <div className="bg-[#0a0a0a] min-h-screen text-white pb-28 selection:bg-[#FF9933]/30">
       
       {/* Top Header */}
       <div className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-white/10 px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <img src="/icon-192.png" alt="Logo" className="w-8 h-8 rounded-full border border-[#FF9933]/50" />
-          <h1 className="font-black text-sm tracking-tight">Admin <span className="text-[#FF9933]">Dashboard</span></h1>
+          <h1 className="font-black text-sm tracking-tight flex items-center gap-2">
+            Admin <span className="text-[#FF9933]">Dashboard</span>
+            {loading && <span className="w-2.5 h-2.5 rounded-full bg-[#FF9933] animate-ping" />}
+          </h1>
         </div>
         <button onClick={() => navigate('/home')} className="text-xs font-bold text-gray-400 hover:text-white transition">Exit Admin</button>
       </div>
@@ -215,34 +418,37 @@ function Admin() {
         {activeTab === 'banners' && (
           <div className="animate-fade-in space-y-8">
             <form onSubmit={handleBannerSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Hero Banner' : 'Add New Hero Banner'}</h2>
+              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Hero Banner (Supabase)' : 'Add New Hero Banner (Supabase)'}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input required type="text" placeholder="Banner Title" value={bannerForm.title} onChange={e=>setBannerForm({...bannerForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="Target Video ID (to play when clicked)" value={bannerForm.targetId} onChange={e=>setBannerForm({...bannerForm, targetId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="Target Video/Episode ID (to play when clicked)" value={bannerForm.targetId} onChange={e=>setBannerForm({...bannerForm, targetId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <textarea required rows="2" placeholder="Description" value={bannerForm.description} onChange={e=>setBannerForm({...bannerForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
                 <input required type="url" placeholder="Mobile Banner Image URL (Vertical)" value={bannerForm.mobileUrl} onChange={e=>setBannerForm({...bannerForm, mobileUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="url" placeholder="Desktop Banner Image URL (Horizontal)" value={bannerForm.desktopUrl} onChange={e=>setBannerForm({...bannerForm, desktopUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
               </div>
               <div className="flex gap-3">
-                <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Banner' : 'Publish Banner'}</button>
+                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Publish Banner'}</button>
                 {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
               </div>
             </form>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Active Hero Banners ({banners.length})</h3>
-              {banners.length === 0 && <p className="text-sm text-gray-500">No custom banners uploaded. App will use video series by default.</p>}
+              <h3 className="font-bold text-lg border-b border-white/10 pb-2 flex justify-between items-center">
+                <span>Active Hero Banners ({banners.length})</span>
+                <span className="text-xs text-gray-500 font-normal">Stored in Supabase Database</span>
+              </h3>
+              {banners.length === 0 && <p className="text-sm text-gray-500">No banners found in the database. Home page will fall back to active series.</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {banners.map(b => (
-                  <div key={b.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden">
-                    <img src={b.desktopUrl || b.mobileUrl} alt="thumb" className="w-24 h-14 object-cover rounded-md bg-black shrink-0" />
+                  <div key={b.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
+                    <img src={b.desktop_url || b.mobile_url} alt="thumb" className="w-24 h-14 object-cover rounded-md bg-black shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{b.title}</p>
-                      <p className="text-xs text-gray-400 truncate">Video ID: {b.targetId}</p>
+                      <p className="text-xs text-gray-400 truncate">Target: {b.target_id}</p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editBanner(b)} className="text-xs text-[#FF9933] font-bold">Edit</button>
-                      <button onClick={()=>deleteBanner(b.id)} className="text-xs text-red-500 font-bold">Delete</button>
+                      <button onClick={()=>editBanner(b)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                      <button onClick={()=>deleteBanner(b.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -254,40 +460,126 @@ function Admin() {
         {/* VIDEOS TAB */}
         {activeTab === 'videos' && (
           <div className="animate-fade-in space-y-8">
-            <form onSubmit={handleVideoSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Video' : 'Add New Video'}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input required type="text" placeholder="Series Title" value={videoForm.seriesTitle} onChange={e=>setVideoForm({...videoForm, seriesTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="Episode Title" value={videoForm.episodeTitle} onChange={e=>setVideoForm({...videoForm, episodeTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="YouTube ID" value={videoForm.youtubeId} onChange={e=>setVideoForm({...videoForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="url" placeholder="Video Thumbnail URL" value={videoForm.thumbnailUrl} onChange={e=>setVideoForm({...videoForm, thumbnailUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Changes' : 'Upload Video'}</button>
-                {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
-              </div>
-            </form>
-
-            <div className="space-y-4">
-              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Uploaded Videos ({allDisplayVideos.length})</h3>
-              {allDisplayVideos.length === 0 && <p className="text-sm text-gray-500">No videos uploaded yet.</p>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {allDisplayVideos.map(v => (
-                  <div key={v.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden">
-                    {v.isSupabase && <div className="absolute top-0 right-0 bg-[#FF9933]/20 text-[#FF9933] text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">LIVE</div>}
-                    <img src={v.thumbnailUrl} alt="thumb" className="w-20 h-14 object-cover rounded-md bg-black shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{v.episodeTitle}</p>
-                      <p className="text-xs text-gray-400 truncate">{v.seriesTitle}</p>
-                    </div>
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editVideo(v)} className="text-xs text-[#FF9933] font-bold">Edit</button>
-                      <button onClick={()=>deleteVideo(v)} className="text-xs text-red-500 font-bold">Delete</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* Sub-tab selection */}
+            <div className="flex bg-white/5 p-1.5 rounded-xl border border-white/10 max-w-sm">
+              <button
+                onClick={() => { setVideoSubTab('episodes'); cancelEdit(); }}
+                className={`flex-1 py-2 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-2 ${videoSubTab === 'episodes' ? 'bg-[#FF9933] text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+              >
+                <PlayCircleOutlined /> Manage Episodes ({episodesList.length})
+              </button>
+              <button
+                onClick={() => { setVideoSubTab('series'); cancelEdit(); }}
+                className={`flex-1 py-2 text-xs font-black rounded-lg transition-all flex items-center justify-center gap-2 ${videoSubTab === 'series' ? 'bg-[#FF9933] text-black shadow-md' : 'text-gray-400 hover:text-white'}`}
+              >
+                <FolderOpenOutlined /> Manage Series ({seriesList.length})
+              </button>
             </div>
+
+            {/* EPISODES MANAGEMENT */}
+            {videoSubTab === 'episodes' && (
+              <div className="space-y-8">
+                <form onSubmit={handleEpisodeSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
+                  <h2 className="text-xl font-black text-[#FF9933]">{editingEpisodeId ? 'Edit Episode (Supabase)' : 'Add New Episode (Supabase)'}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-400 mb-1.5">Select Series Category</label>
+                      <select
+                        required
+                        value={episodeForm.series_id}
+                        onChange={e => setEpisodeForm({ ...episodeForm, series_id: e.target.value })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white"
+                      >
+                        <option value="">-- Choose Series --</option>
+                        {seriesList.map(s => (
+                          <option key={s.id} value={s.id}>{s.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <input required type="text" placeholder="Episode Title" value={episodeForm.title} onChange={e=>setEpisodeForm({...episodeForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="number" placeholder="Episode Number" value={episodeForm.episode_number} onChange={e=>setEpisodeForm({...episodeForm, episode_number: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="text" placeholder="YouTube Video ID" value={episodeForm.youtube_id} onChange={e=>setEpisodeForm({...episodeForm, youtube_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input type="url" placeholder="Thumbnail URL (Optional: auto generated from Youtube ID if empty)" value={episodeForm.thumbnail_url} onChange={e=>setEpisodeForm({...episodeForm, thumbnail_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <textarea placeholder="Episode Description (Optional)" rows="2" value={episodeForm.description} onChange={e=>setEpisodeForm({...episodeForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+                  </div>
+                  <div className="flex gap-3">
+                    <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingEpisodeId ? 'Save Episode' : 'Upload Episode'}</button>
+                    {editingEpisodeId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
+                  </div>
+                </form>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold text-lg border-b border-white/10 pb-2 flex justify-between items-center">
+                    <span>Uploaded Episodes ({episodesList.length})</span>
+                    <span className="text-xs text-gray-500 font-normal">Supabase DB</span>
+                  </h3>
+                  {episodesList.length === 0 && <p className="text-sm text-gray-500">No episodes found. Select "Manage Series" to create a series first, then upload episodes here.</p>}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {episodesList.map(v => {
+                      const parentSeries = seriesList.find(s => s.id === v.series_id)
+                      return (
+                        <div key={v.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
+                          <img src={v.thumbnail_url} alt="thumb" className="w-20 h-14 object-cover rounded-md bg-black shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm truncate">{v.title}</p>
+                            <p className="text-xs text-gray-400 truncate">{parentSeries ? parentSeries.title : 'No Series'} • EP {v.episode_number}</p>
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0">
+                            <button onClick={()=>editEpisode(v)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                            <button onClick={()=>deleteEpisode(v.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SERIES MANAGEMENT */}
+            {videoSubTab === 'series' && (
+              <div className="space-y-8">
+                <form onSubmit={handleSeriesSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
+                  <h2 className="text-xl font-black text-[#FF9933]">{editingSeriesId ? 'Edit Series Category (Supabase)' : 'Create New Series Category (Supabase)'}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <input required type="text" placeholder="Series/Show Title" value={seriesForm.title} onChange={e=>setSeriesForm({...seriesForm, title: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="url" placeholder="Mobile Thumbnail Image URL (Vertical)" value={seriesForm.thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, thumbnail_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="url" placeholder="Desktop Banner Image URL (Horizontal)" value={seriesForm.desktop_thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, desktop_thumbnail_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <textarea placeholder="Description / Summary (Used in Hero Carousel banner if selected)" rows="2" value={seriesForm.description} onChange={e=>setSeriesForm({...seriesForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+                  </div>
+                  <div className="flex gap-3">
+                    <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingSeriesId ? 'Save Series' : 'Create Series'}</button>
+                    {editingSeriesId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
+                  </div>
+                </form>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold text-lg border-b border-white/10 pb-2 flex justify-between items-center">
+                    <span>Active Series Categories ({seriesList.length})</span>
+                    <span className="text-xs text-gray-500 font-normal">Supabase DB</span>
+                  </h3>
+                  {seriesList.length === 0 && <p className="text-sm text-gray-500">No series categories created yet.</p>}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {seriesList.map(s => {
+                      const count = episodesList.filter(ep => ep.series_id === s.id).length
+                      return (
+                        <div key={s.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
+                          <img src={s.thumbnail_url} alt="thumb" className="w-14 h-20 object-cover rounded-md bg-black shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm truncate">{s.title}</p>
+                            <p className="text-xs text-gray-400 truncate">{count} Episodes</p>
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0">
+                            <button onClick={()=>editSeries(s)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                            <button onClick={()=>deleteSeries(s.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -295,33 +587,37 @@ function Admin() {
         {activeTab === 'music' && (
           <div className="animate-fade-in space-y-8">
             <form onSubmit={handleMusicSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Music' : 'Add New Music'}</h2>
+              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Devotional Track (Supabase)' : 'Add New Devotional Track (Supabase)'}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input required type="text" placeholder="Track Title" value={musicForm.trackTitle} onChange={e=>setMusicForm({...musicForm, trackTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="Artist" value={musicForm.artist} onChange={e=>setMusicForm({...musicForm, artist: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="YouTube ID" value={musicForm.youtubeId} onChange={e=>setMusicForm({...musicForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="url" placeholder="Cover Art URL" value={musicForm.coverUrl} onChange={e=>setMusicForm({...musicForm, coverUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e=>setMusicForm({...musicForm, artist: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="YouTube Video ID (for audio stream)" value={musicForm.youtubeId} onChange={e=>setMusicForm({...musicForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input type="text" placeholder="Category (e.g. Bhajan, Mantra, Aarti)" value={musicForm.category} onChange={e=>setMusicForm({...musicForm, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input type="url" placeholder="Cover Art/Thumbnail URL (Optional: defaults to Youtube cover)" value={musicForm.coverUrl} onChange={e=>setMusicForm({...musicForm, coverUrl: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
               </div>
               <div className="flex gap-3">
-                <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Changes' : 'Upload Music'}</button>
+                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Track'}</button>
                 {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
               </div>
             </form>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Uploaded Music</h3>
-              {music.length === 0 && <p className="text-sm text-gray-500">No music uploaded yet.</p>}
+              <h3 className="font-bold text-lg border-b border-white/10 pb-2 flex justify-between items-center">
+                <span>Devotional Music Tracks ({music.length})</span>
+                <span className="text-xs text-gray-500 font-normal">Supabase DB</span>
+              </h3>
+              {music.length === 0 && <p className="text-sm text-gray-500">No custom devotional tracks uploaded yet.</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {music.map(m => (
-                  <div key={m.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center">
-                    <img src={m.coverUrl} alt="thumb" className="w-14 h-14 object-cover rounded-md bg-black" />
+                  <div key={m.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
+                    <img src={m.cover_url} alt="cover" className="w-14 h-14 object-cover rounded-md bg-black shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{m.trackTitle}</p>
-                      <p className="text-xs text-gray-400 truncate">{m.artist}</p>
+                      <p className="font-bold text-sm truncate">{m.track_title}</p>
+                      <p className="text-xs text-gray-400 truncate">{m.artist} • <span className="text-[#FF9933]">{m.category}</span></p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editMusic(m)} className="text-xs text-[#FF9933] font-bold">Edit</button>
-                      <button onClick={()=>deleteMusic(m.id)} className="text-xs text-red-500 font-bold">Delete</button>
+                      <button onClick={()=>editMusic(m)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                      <button onClick={()=>deleteMusic(m.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -334,31 +630,37 @@ function Admin() {
         {activeTab === 'shorts' && (
           <div className="animate-fade-in space-y-8">
             <form onSubmit={handleShortSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Short' : 'Add New Short'}</h2>
-              <textarea required rows="2" placeholder="Short Description" value={shortForm.description} onChange={e=>setShortForm({...shortForm, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
-              <input required type="text" placeholder="YouTube Short ID" value={shortForm.youtubeId} onChange={e=>setShortForm({...shortForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Divine Short (Supabase)' : 'Add New Divine Short (Supabase)'}</h2>
+              <div className="grid grid-cols-1 gap-4">
+                <input required type="text" placeholder="Shorts Title" value={shortForm.title} onChange={e=>setShortForm({...shortForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="YouTube Short ID (e.g. e9GgY2gH_nQ)" value={shortForm.youtubeId} onChange={e=>setShortForm({...shortForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <textarea required rows="2" placeholder="Short Description / Hashtags" value={shortForm.description} onChange={e=>setShortForm({...shortForm, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+              </div>
               <div className="flex gap-3">
-                <button type="submit" className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition">{editingId ? 'Save Changes' : 'Upload Short'}</button>
+                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Short'}</button>
                 {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
               </div>
             </form>
 
             <div className="space-y-4">
-              <h3 className="font-bold text-lg border-b border-white/10 pb-2">Uploaded Shorts</h3>
+              <h3 className="font-bold text-lg border-b border-white/10 pb-2 flex justify-between items-center">
+                <span>Active Divine Shorts ({shorts.length})</span>
+                <span className="text-xs text-gray-500 font-normal">Supabase DB</span>
+              </h3>
               {shorts.length === 0 && <p className="text-sm text-gray-500">No shorts uploaded yet.</p>}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {shorts.map(s => (
-                  <div key={s.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center">
+                  <div key={s.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
                     <div className="w-10 h-14 bg-black rounded-md flex items-center justify-center border border-white/10 shrink-0">
                       <span className="text-lg">📱</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{s.description}</p>
-                      <p className="text-xs text-gray-400 truncate">ID: {s.youtubeId}</p>
+                      <p className="font-bold text-sm truncate">{s.title}</p>
+                      <p className="text-xs text-gray-400 truncate">ID: {s.youtube_id}</p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editShort(s)} className="text-xs text-[#FF9933] font-bold">Edit</button>
-                      <button onClick={()=>deleteShort(s.id)} className="text-xs text-red-500 font-bold">Delete</button>
+                      <button onClick={()=>editShort(s)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                      <button onClick={()=>deleteShort(s.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -421,18 +723,15 @@ function Admin() {
               <button
                 key={tab.id}
                 onClick={() => {
-                  if (tab.id === 'home_link') {
-                    navigate('/home')
-                  } else {
-                    setActiveTab(tab.id); cancelEdit();
-                  }
+                  setActiveTab(tab.id);
+                  cancelEdit();
                 }}
                 className={`flex flex-col items-center justify-center min-w-[3.5rem] sm:min-w-[4rem] h-14 rounded-2xl transition-all duration-300 flex-shrink-0 px-1 ${
-                  isActive && tab.id !== 'home_link' ? 'bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_15px_rgba(255,153,51,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  isActive ? 'bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_15px_rgba(255,153,51,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <span className="text-xl mb-0.5">{tab.icon}</span>
-                <span className={`text-[9px] font-extrabold ${isActive && tab.id !== 'home_link' ? 'text-black' : 'text-gray-500'}`}>
+                <span className={`text-[9px] font-extrabold ${isActive ? 'text-black' : 'text-gray-500'}`}>
                   {tab.label}
                 </span>
               </button>
