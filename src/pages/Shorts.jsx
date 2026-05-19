@@ -60,6 +60,17 @@ function Shorts() {
               {/* Premium Phone Mockup aspect ratio container for perfect alignment */}
               <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
                 
+                {/* Subtle Floating Like & Interact on YouTube Button */}
+                <a 
+                  href={`https://www.youtube.com/shorts/${short.youtubeId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/75 hover:bg-black backdrop-blur-md border border-white/10 hover:border-[#FF9933]/50 text-white hover:text-[#FF9933] px-4 py-2.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shadow-xl pointer-events-auto select-none"
+                >
+                  <span>Like on YouTube</span>
+                  <span className="text-red-500 text-sm animate-pulse">❤️</span>
+                </a>
+
                 {/* Embedded YouTube Shorts Player with native YouTube interactions */}
                 <iframe
                   src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=0&loop=1&playlist=${short.youtubeId}&controls=1&modestbranding=0&rel=0&iv_load_policy=3`}
