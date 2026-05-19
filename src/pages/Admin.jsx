@@ -29,7 +29,7 @@ function Admin() {
   const [episodesList, setEpisodesList] = useState([])
   const [music, setMusic] = useState([])
   const [shorts, setShorts] = useState([])
-  
+
   // Active editing item ID
   const [editingId, setEditingId] = useState(null)
   const [editingSeriesId, setEditingSeriesId] = useState(null)
@@ -465,7 +465,7 @@ function Admin() {
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white pb-28 selection:bg-[#FF9933]/30">
-      
+
       {/* Top Header */}
       <div className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-white/10 px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -480,7 +480,7 @@ function Admin() {
 
       {/* Main Content Area */}
       <div className="p-5 max-w-4xl mx-auto space-y-8">
-        
+
         {/* VIDEOS TAB */}
         {activeTab === 'videos' && (
           <div className="animate-fade-in space-y-8">
@@ -520,20 +520,20 @@ function Admin() {
                         ))}
                       </select>
                     </div>
-                    <input required type="text" placeholder="Episode Title" value={episodeForm.title} onChange={e=>setEpisodeForm({...episodeForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                    <input required type="number" placeholder="Episode Number" value={episodeForm.episode_number} onChange={e=>setEpisodeForm({...episodeForm, episode_number: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                    <input required type="text" placeholder="YouTube Video ID" value={episodeForm.youtube_id} onChange={e=>setEpisodeForm({...episodeForm, youtube_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="text" placeholder="Episode Title" value={episodeForm.title} onChange={e => setEpisodeForm({ ...episodeForm, title: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="number" placeholder="Episode Number" value={episodeForm.episode_number} onChange={e => setEpisodeForm({ ...episodeForm, episode_number: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="text" placeholder="YouTube Video ID" value={episodeForm.youtube_id} onChange={e => setEpisodeForm({ ...episodeForm, youtube_id: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Custom Thumbnail (Optional)</label>
                       <div className="flex gap-2">
-                        <input type="url" placeholder="Optional URL (or auto-gen)" value={episodeForm.thumbnail_url} onChange={e=>setEpisodeForm({...episodeForm, thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <input type="url" placeholder="Optional URL (or auto-gen)" value={episodeForm.thumbnail_url} onChange={e => setEpisodeForm({ ...episodeForm, thumbnail_url: e.target.value })} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                         <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
                           <span>Upload</span>
                           <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'episode_thumbnail_url')} className="hidden" />
                         </label>
                       </div>
                     </div>
-                    <textarea placeholder="Episode Description (Optional)" rows="2" value={episodeForm.description} onChange={e=>setEpisodeForm({...episodeForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+                    <textarea placeholder="Episode Description (Optional)" rows="2" value={episodeForm.description} onChange={e => setEpisodeForm({ ...episodeForm, description: e.target.value })} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
                   </div>
                   <div className="flex gap-3">
                     <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingEpisodeId ? 'Save Episode' : 'Upload Episode'}</button>
@@ -558,8 +558,8 @@ function Admin() {
                             <p className="text-xs text-gray-400 truncate">{parentSeries ? parentSeries.title : 'No Series'} • EP {v.episode_number}</p>
                           </div>
                           <div className="flex flex-col gap-2 shrink-0">
-                            <button onClick={()=>editEpisode(v)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
-                            <button onClick={()=>deleteEpisode(v.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
+                            <button onClick={() => editEpisode(v)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                            <button onClick={() => deleteEpisode(v.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                           </div>
                         </div>
                       )
@@ -575,11 +575,11 @@ function Admin() {
                 <form onSubmit={handleSeriesSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
                   <h2 className="text-xl font-black text-[#FF9933]">{editingSeriesId ? 'Edit Series Category (Supabase)' : 'Create New Series Category (Supabase)'}</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input required type="text" placeholder="Series/Show Title" value={seriesForm.title} onChange={e=>setSeriesForm({...seriesForm, title: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <input required type="text" placeholder="Series/Show Title" value={seriesForm.title} onChange={e => setSeriesForm({ ...seriesForm, title: e.target.value })} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Mobile Thumbnail (Vertical)</label>
                       <div className="flex gap-2">
-                        <input type="url" placeholder="Mobile Thumbnail Image URL" value={seriesForm.thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <input type="url" placeholder="Mobile Thumbnail Image URL" value={seriesForm.thumbnail_url} onChange={e => setSeriesForm({ ...seriesForm, thumbnail_url: e.target.value })} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                         <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
                           <span>Upload</span>
                           <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'thumbnail_url')} className="hidden" />
@@ -590,14 +590,14 @@ function Admin() {
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Desktop Banner (Horizontal)</label>
                       <div className="flex gap-2">
-                        <input type="url" placeholder="Desktop Banner Image URL" value={seriesForm.desktop_thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, desktop_thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <input type="url" placeholder="Desktop Banner Image URL" value={seriesForm.desktop_thumbnail_url} onChange={e => setSeriesForm({ ...seriesForm, desktop_thumbnail_url: e.target.value })} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                         <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
                           <span>Upload</span>
                           <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'desktop_thumbnail_url')} className="hidden" />
                         </label>
                       </div>
                     </div>
-                    <textarea placeholder="Description / Summary (Used in Hero Carousel banner if selected)" rows="2" value={seriesForm.description} onChange={e=>setSeriesForm({...seriesForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+                    <textarea placeholder="Description / Summary (Used in Hero Carousel banner if selected)" rows="2" value={seriesForm.description} onChange={e => setSeriesForm({ ...seriesForm, description: e.target.value })} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
                   </div>
                   <div className="flex gap-3">
                     <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingSeriesId ? 'Save Series' : 'Create Series'}</button>
@@ -622,8 +622,8 @@ function Admin() {
                             <p className="text-xs text-gray-400 truncate">{count} Episodes</p>
                           </div>
                           <div className="flex flex-col gap-2 shrink-0">
-                            <button onClick={()=>editSeries(s)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
-                            <button onClick={()=>deleteSeries(s.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
+                            <button onClick={() => editSeries(s)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                            <button onClick={() => deleteSeries(s.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                           </div>
                         </div>
                       )
@@ -641,20 +641,20 @@ function Admin() {
             <form onSubmit={handleMusicSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
               <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Devotional Track (Supabase)' : 'Add New Devotional Track (Supabase)'}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input required type="text" placeholder="Track Title" value={musicForm.trackTitle} onChange={e=>setMusicForm({...musicForm, trackTitle: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e=>setMusicForm({...musicForm, artist: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="YouTube Video ID (for audio stream)" value={musicForm.youtubeId} onChange={e=>setMusicForm({...musicForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input type="text" placeholder="Category (e.g. Bhajan, Mantra, Aarti)" value={musicForm.category} onChange={e=>setMusicForm({...musicForm, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                    <div className="sm:col-span-2 space-y-1">
-                      <label className="block text-xs font-bold text-gray-400">Cover Art/Thumbnail URL (Optional)</label>
-                      <div className="flex gap-2">
-                        <input type="url" placeholder="Optional URL (or defaults to Youtube cover)" value={musicForm.coverUrl} onChange={e=>setMusicForm({...musicForm, coverUrl: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                        <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
-                          <span>Upload</span>
-                          <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'music_cover_url')} className="hidden" />
-                        </label>
-                      </div>
-                    </div>
+                <input required type="text" placeholder="Track Title" value={musicForm.trackTitle} onChange={e => setMusicForm({ ...musicForm, trackTitle: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e => setMusicForm({ ...musicForm, artist: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="YouTube Video ID (for audio stream)" value={musicForm.youtubeId} onChange={e => setMusicForm({ ...musicForm, youtubeId: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input type="text" placeholder="Category (e.g. Bhajan, Mantra, Aarti)" value={musicForm.category} onChange={e => setMusicForm({ ...musicForm, category: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="block text-xs font-bold text-gray-400">Cover Art/Thumbnail URL (Optional)</label>
+                  <div className="flex gap-2">
+                    <input type="url" placeholder="Optional URL (or defaults to Youtube cover)" value={musicForm.coverUrl} onChange={e => setMusicForm({ ...musicForm, coverUrl: e.target.value })} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
+                      <span>Upload</span>
+                      <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'music_cover_url')} className="hidden" />
+                    </label>
+                  </div>
+                </div>
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Track'}</button>
@@ -677,8 +677,8 @@ function Admin() {
                       <p className="text-xs text-gray-400 truncate">{m.artist} • <span className="text-[#FF9933]">{m.category}</span></p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editMusic(m)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
-                      <button onClick={()=>deleteMusic(m.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
+                      <button onClick={() => editMusic(m)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                      <button onClick={() => deleteMusic(m.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -693,9 +693,9 @@ function Admin() {
             <form onSubmit={handleShortSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
               <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Divine Short (Supabase)' : 'Add New Divine Short (Supabase)'}</h2>
               <div className="grid grid-cols-1 gap-4">
-                <input required type="text" placeholder="Shorts Title" value={shortForm.title} onChange={e=>setShortForm({...shortForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="YouTube Short ID (e.g. e9GgY2gH_nQ)" value={shortForm.youtubeId} onChange={e=>setShortForm({...shortForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <textarea required rows="2" placeholder="Short Description / Hashtags" value={shortForm.description} onChange={e=>setShortForm({...shortForm, description: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
+                <input required type="text" placeholder="Shorts Title" value={shortForm.title} onChange={e => setShortForm({ ...shortForm, title: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <input required type="text" placeholder="YouTube Short ID (e.g. e9GgY2gH_nQ)" value={shortForm.youtubeId} onChange={e => setShortForm({ ...shortForm, youtubeId: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <textarea required rows="2" placeholder="Short Description / Hashtags" value={shortForm.description} onChange={e => setShortForm({ ...shortForm, description: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Short'}</button>
@@ -720,8 +720,8 @@ function Admin() {
                       <p className="text-xs text-gray-400 truncate">ID: {s.youtube_id}</p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editShort(s)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
-                      <button onClick={()=>deleteShort(s.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
+                      <button onClick={() => editShort(s)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
+                      <button onClick={() => deleteShort(s.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
                     </div>
                   </div>
                 ))}
@@ -787,9 +787,8 @@ function Admin() {
                   setActiveTab(tab.id);
                   cancelEdit();
                 }}
-                className={`flex flex-col items-center justify-center min-w-[3.5rem] sm:min-w-[4rem] h-14 rounded-2xl transition-all duration-300 flex-shrink-0 px-1 ${
-                  isActive ? 'bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_15px_rgba(255,153,51,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
+                className={`flex flex-col items-center justify-center min-w-[3.5rem] sm:min-w-[4rem] h-14 rounded-2xl transition-all duration-300 flex-shrink-0 px-1 ${isActive ? 'bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_15px_rgba(255,153,51,0.3)] scale-105' : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 <span className="text-xl mb-0.5">{tab.icon}</span>
                 <span className={`text-[9px] font-extrabold ${isActive ? 'text-black' : 'text-gray-500'}`}>

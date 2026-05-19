@@ -2,57 +2,27 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 
-// Curated high-quality spiritual YouTube Shorts
-const SPIRITUAL_SHORTS = [
-  {
-    id: 's1',
-    youtubeId: 'e9GgY2gH_nQ',
-    title: 'Divine flute of Lord Krishna',
-    description: 'Listen to the beautiful melody that enchanted the entire universe. #Krishna #Spirituality',
-    likes: '124K',
-  },
-  {
-    id: 's2',
-    youtubeId: 'mPjYg-yB4Yc',
-    title: 'Bhagavad Gita Wisdom',
-    description: 'Lord Krishna teaching Arjuna the ultimate truth of life on the battlefield of Kurukshetra. #Gita #Wisdom',
-    likes: '98K',
-  },
-  {
-    id: 's3',
-    youtubeId: '_7zCO-vOQdM',
-    title: 'Mahadev Tandav Stotram',
-    description: 'The powerful energy of Lord Shiva. Experience the cosmic dance of creation and destruction. #Shiva #Mahadev',
-    likes: '256K',
-  },
-  {
-    id: 's4',
-    youtubeId: 'l2t9jZq9nS8',
-    title: 'Ram Mandir Darshan',
-    description: 'Jai Shree Ram! Immersive morning darshan of Ram Lalla in Ayodhya Dham. #RamMandir #Ayodhya',
-    likes: '412K',
-  }
-]
-
 function Shorts() {
   const [shortsData, setShortsData] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Muted and interactions states
+  // Muted and liked local states
   const [muted, setMuted] = useState(true)
   const [liked, setLiked] = useState(() => {
     return JSON.parse(localStorage.getItem('likedShorts') || '{}')
   })
-  const [comments, setComments] = useState(() => {
-    return JSON.parse(localStorage.getItem('shortsComments') || '{}')
-  })
+
+  // Comments state synced with Supabase
+  const [comments, setComments] = useState({}) // { [shortId]: Array of comments }
 
   // UI state
   const [showComments, setShowComments] = useState(false)
   const [selectedShortId, setSelectedShortId] = useState(null)
   const [newCommentText, setNewCommentText] = useState('')
   const [toastMessage, setToastMessage] = useState('')
+  const [loadingComments, setLoadingComments] = useState(false)
 
+  // Fetch all shorts from Supabase
   useEffect(() => {
     const fetchShorts = async () => {
       setLoading(true)
@@ -63,20 +33,10 @@ function Shorts() {
           .order('created_at', { ascending: false })
         
         if (!error && data) {
-          const dbShorts = data.map(s => ({
-            id: s.id,
-            youtubeId: s.youtube_id,
-            title: s.title || 'Divine Short',
-            description: s.description || '',
-            likes: '1.5K',
-          }))
-          setShortsData([...dbShorts, ...SPIRITUAL_SHORTS])
-        } else {
-          setShortsData(SPIRITUAL_SHORTS)
+          setShortsData(data)
         }
       } catch (err) {
-        console.error(err)
-        setShortsData(SPIRITUAL_SHORTS)
+        console.error('Error fetching shorts:', err)
       } finally {
         setLoading(false)
       }
@@ -84,28 +44,52 @@ function Shorts() {
     fetchShorts()
   }, [])
 
-  // Save liked state
-  const toggleLike = (id) => {
+  // Sync likes with Supabase database
+  const toggleLike = async (short) => {
+    const isLiked = liked[short.id]
+    const nextLikedState = !isLiked
+    
+    // Update local storage liked status
     setLiked(prev => {
-      const next = { ...prev, [id]: !prev[id] }
+      const next = { ...prev, [short.id]: nextLikedState }
       localStorage.setItem('likedShorts', JSON.stringify(next))
       return next
     })
+
+    // Calculate updated count
+    const increment = nextLikedState ? 1 : -1
+    const currentLikes = short.likes_count || 0
+    const targetLikes = Math.max(0, currentLikes + increment)
+
+    // Update local UI state immediately (Optimistic UI)
+    setShortsData(prev => prev.map(s => {
+      if (s.id === short.id) {
+        return { ...s, likes_count: targetLikes }
+      }
+      return s
+    }))
+
+    // Save update to Supabase
+    try {
+      await supabase
+        .from('shorts')
+        .update({ likes_count: targetLikes })
+        .eq('id', short.id)
+    } catch (err) {
+      console.error('Failed to sync like count to Supabase:', err)
+    }
   }
 
-  // Parse and display likes count dynamically
+  // Parse and display likes count
   const getLikesDisplay = (short) => {
-    const isLiked = liked[short.id]
-    const baseLikes = short.likes || '0'
-    if (isLiked) {
-      if (baseLikes.endsWith('K')) {
-        const val = parseFloat(baseLikes.replace('K', ''))
-        return `${(val + 0.1).toFixed(1)}K`
-      } else {
-        return parseInt(baseLikes) + 1
-      }
+    const count = short.likes_count || 0
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`
     }
-    return baseLikes
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`
+    }
+    return count.toString()
   }
 
   // Handle Share functionality
@@ -121,45 +105,92 @@ function Shorts() {
       })
   }
 
+  // Fetch comments dynamically for active short from Supabase
+  const fetchComments = async (shortId) => {
+    setLoadingComments(true)
+    try {
+      const { data, error } = await supabase
+        .from('short_comments')
+        .select('*')
+        .eq('short_id', shortId)
+        .order('created_at', { ascending: false })
+      
+      if (!error && data) {
+        setComments(prev => ({ ...prev, [shortId]: data }))
+      }
+    } catch (err) {
+      console.error('Error fetching comments:', err)
+    } finally {
+      setLoadingComments(false)
+    }
+  }
+
   // Comments slide-up sheet handlers
   const openComments = (shortId) => {
     setSelectedShortId(shortId)
     setShowComments(true)
+    fetchComments(shortId)
   }
 
   const getActiveComments = () => {
     if (!selectedShortId) return []
-    const customList = comments[selectedShortId] || []
-    
-    // Default spiritual comments based on short ID
-    const defaultComments = [
-      { id: 'd1', user: 'Sadhaka_Hari', text: 'Hari Om! What an incredibly peaceful vibe this has. 🙏', time: '1d ago' },
-      { id: 'd2', user: 'GitaSeeker', text: 'This changed my whole perspective today. Blessed to listen to this! 🌸', time: '12h ago' },
-      { id: 'd3', user: 'ShivaShakti', text: 'Jai Mahadev! The energy is cosmic. 🕉️', time: '3h ago' }
-    ]
-
-    return [...customList, ...defaultComments]
+    return comments[selectedShortId] || []
   }
 
-  const handleCommentSubmit = (e) => {
+  // Submit comment to Supabase
+  const handleCommentSubmit = async (e) => {
     e.preventDefault()
     if (!newCommentText.trim() || !selectedShortId) return
 
+    // Generate a beautiful, anonymous spiritual name
+    const randomSuffix = Math.floor(100 + Math.random() * 900)
+    const anonymousUser = `Sadhaka_${randomSuffix}`
+
     const newCommentObj = {
-      id: `c-${Date.now()}`,
-      user: 'You',
-      text: newCommentText.trim(),
-      time: 'Just now'
+      short_id: selectedShortId,
+      user_name: anonymousUser,
+      comment_text: newCommentText.trim()
     }
 
-    setComments(prev => {
-      const activeList = prev[selectedShortId] || []
-      const next = { ...prev, [selectedShortId]: [newCommentObj, ...activeList] }
-      localStorage.setItem('shortsComments', JSON.stringify(next))
-      return next
-    })
+    try {
+      const { data, error } = await supabase
+        .from('short_comments')
+        .insert([newCommentObj])
+        .select()
 
-    setNewCommentText('')
+      if (!error && data) {
+        // Prepend comment to state
+        setComments(prev => {
+          const activeList = prev[selectedShortId] || []
+          return { ...prev, [selectedShortId]: [data[0], ...activeList] }
+        })
+        setNewCommentText('')
+      } else {
+        throw error || new Error('Failed to post comment')
+      }
+    } catch (err) {
+      alert('Error posting comment: ' + err.message)
+    }
+  }
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Just now'
+    try {
+      const date = new Date(dateString)
+      const now = new Date()
+      const diffMs = now - date
+      const diffMins = Math.floor(diffMs / 60000)
+      const diffHours = Math.floor(diffMins / 60)
+      const diffDays = Math.floor(diffHours / 24)
+
+      if (diffMins < 1) return 'Just now'
+      if (diffMins < 60) return `${diffMins}m ago`
+      if (diffHours < 24) return `${diffHours}h ago`
+      return `${diffDays}d ago`
+    } catch (e) {
+      return 'Recent'
+    }
   }
 
   if (loading) return (
@@ -181,60 +212,67 @@ function Shorts() {
 
       {/* Scrollable Container */}
       <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-16 select-none">
-        {shortsData.map((short) => (
-          <div
-            key={short.id}
-            className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black"
-          >
-            {/* YouTube Shorts Embed */}
-            <div className="absolute inset-0 w-full h-[calc(100%-64px)] pb-16">
-              <iframe
-                src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${short.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0`}
-                title={short.title}
-                className="w-full h-full object-cover pointer-events-auto"
-                allow="autoplay; encrypted-media"
-                allowFullScreen
-              />
-            </div>
+        {shortsData.length === 0 ? (
+          <div className="h-[100dvh] flex flex-col items-center justify-center text-gray-500 text-sm p-8 text-center space-y-4">
+            <span className="text-3xl">🕉️</span>
+            <p className="font-bold text-gray-400">No Shorts Uploaded yet.</p>
+            <p className="text-xs text-gray-600 max-w-xs">Upload shorts using the Admin panel to populate this screen with beautiful divine highlights!</p>
+          </div>
+        ) : (
+          shortsData.map((short) => (
+            <div
+              key={short.id}
+              className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black"
+            >
+              {/* YouTube Shorts Embed */}
+              <div className="absolute inset-0 w-full h-[calc(100%-64px)] pb-16">
+                <iframe
+                  src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${short.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0`}
+                  title={short.title}
+                  className="w-full h-full object-cover pointer-events-auto"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              </div>
 
-            {/* Dark Overlay for UI Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
+              {/* Dark Overlay for UI Readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
 
-            {/* Sidebar Interactions (Right Side) */}
-            <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-30">
-              
-              {/* Mute/Volume Toggle */}
-              <button 
-                onClick={() => setMuted(!muted)} 
-                className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
-              >
-                <div className={`p-3 rounded-full backdrop-blur-md transition-all ${
-                  !muted ? 'bg-[#FF9933]/20 text-[#FF9933]' : 'bg-black/40 text-white'
-                }`}>
-                  {muted ? (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                    </svg>
-                  ) : (
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-xs font-bold">{muted ? 'Muted' : 'Unmuted'}</span>
-              </button>
+              {/* Sidebar Interactions (Right Side) */}
+              <div className="absolute right-4 bottom-24 flex flex-col items-center gap-6 z-30">
+                
+                {/* Mute/Volume Toggle */}
+                <button 
+                  onClick={() => setMuted(!muted)} 
+                  className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
+                >
+                  <div className={`p-3 rounded-full backdrop-blur-md transition-all ${
+                    !muted ? 'bg-[#FF9933]/20 text-[#FF9933]' : 'bg-black/40 text-white'
+                  }`}>
+                    {muted ? (
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                    ) : (
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs font-bold">{muted ? 'Muted' : 'Unmuted'}</span>
+                </button>
 
-              {/* Like Button */}
-              <button 
-                onClick={() => toggleLike(short.id)} 
-                className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
-              >
-                <div className={`p-3 rounded-full backdrop-blur-md transition-all ${
-                  liked[short.id] ? 'bg-red-500/20 text-red-500' : 'bg-black/40 text-white'
-                }`}>
-                  <svg className="w-6 h-6" fill={liked[short.id] ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                {/* Like Button */}
+                <button 
+                  onClick={() => toggleLike(short)} 
+                  className="flex flex-col items-center gap-1 active:scale-90 transition-transform"
+                >
+                  <div className={`p-3 rounded-full backdrop-blur-md transition-all ${
+                    liked[short.id] ? 'bg-red-500/20 text-red-500' : 'bg-black/40 text-white'
+                  }`}>
+                    <svg className="w-6 h-6" fill={liked[short.id] ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                   </svg>
                 </div>
                 <span className="text-xs font-bold">{getLikesDisplay(short)}</span>
@@ -277,7 +315,8 @@ function Shorts() {
             </div>
 
           </div>
-        ))}
+        ))
+      )}
       </div>
 
       {/* Comments Drawer Sheet */}
@@ -296,23 +335,27 @@ function Shorts() {
 
         {/* Comment List */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
-          {getActiveComments().length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-gray-500 text-xs">
+          {loadingComments ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="w-6 h-6 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : getActiveComments().length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-gray-500 text-xs text-center p-4">
               <span>No comments yet.</span>
-              <span>Be the first to share your thoughts! 🙏</span>
+              <span className="mt-1">Be the first to share your spiritual thoughts! 🙏</span>
             </div>
           ) : (
             getActiveComments().map(c => (
               <div key={c.id} className="flex gap-3 text-xs">
                 <div className="w-8 h-8 rounded-full bg-[#FF9933]/20 flex items-center justify-center text-[#FF9933] font-bold shrink-0">
-                  {c.user[0].toUpperCase()}
+                  {c.user_name[0].toUpperCase()}
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-black text-gray-300">{c.user}</span>
-                    <span className="text-[10px] text-gray-500">{c.time}</span>
+                    <span className="font-black text-gray-300">{c.user_name}</span>
+                    <span className="text-[10px] text-gray-500">{formatDate(c.created_at)}</span>
                   </div>
-                  <p className="text-gray-400 leading-relaxed">{c.text}</p>
+                  <p className="text-gray-400 leading-relaxed">{c.comment_text}</p>
                 </div>
               </div>
             ))
