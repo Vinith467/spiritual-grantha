@@ -45,8 +45,11 @@ function HeroBanner({ seriesList }) {
         
         {/* Horizontal Sliding Track */}
         <div
-          className="flex w-full h-full transition-transform duration-700 ease-in-out"
-          style={{ transform: `translate3d(-${current * 100}%, 0px, 0px)` }}
+          className="flex w-full h-full transition-transform ease-in-out"
+          style={{
+            transform: `translate3d(-${current * 100}%, 0px, 0px)`,
+            transitionDuration: '1200ms'
+          }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
