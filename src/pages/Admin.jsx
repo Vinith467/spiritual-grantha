@@ -29,6 +29,7 @@ function Admin() {
   const [episodesList, setEpisodesList] = useState([])
   const [music, setMusic] = useState([])
   const [shorts, setShorts] = useState([])
+  const [profiles, setProfiles] = useState([])
 
   // Active editing item ID
   const [editingId, setEditingId] = useState(null)
@@ -69,6 +70,11 @@ function Admin() {
     if (!error && data) setShorts(data)
   }, [])
 
+  const loadProfiles = useCallback(async () => {
+    const { data, error } = await supabase.from('profiles').select('*').order('created_at', { ascending: false })
+    if (!error && data) setProfiles(data)
+  }, [])
+
   useEffect(() => {
     if (localStorage.getItem('isAdmin') === 'true') {
       setAuthed(true)
@@ -77,13 +83,14 @@ function Admin() {
         loadBanners(),
         loadSeriesAndEpisodes(),
         loadMusic(),
-        loadShorts()
+        loadShorts(),
+        loadProfiles()
       ]).finally(() => setLoading(false))
     } else {
       alert('Access Denied: You are not authorized to view the Admin Dashboard.')
       navigate('/home')
     }
-  }, [navigate, loadBanners, loadSeriesAndEpisodes, loadMusic, loadShorts])
+  }, [navigate, loadBanners, loadSeriesAndEpisodes, loadMusic, loadShorts, loadProfiles])
 
   // ============================================================
   // BANNERS CRUD
@@ -450,6 +457,12 @@ function Admin() {
     }
   }
 
+  const getActiveThisWeekCount = () => {
+    const sevenDaysAgo = new Date()
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+    return profiles.filter(p => p.last_login && new Date(p.last_login) >= sevenDaysAgo).length
+  }
+
   if (!authed) return (
     <div className="bg-[#0a0a0a] min-h-screen flex items-center justify-center text-white">
       <div className="w-12 h-12 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
@@ -737,37 +750,42 @@ function Admin() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.1)]">
                 <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Devotees</p>
-                <p className="text-3xl font-black text-white">1,208</p>
+                <p className="text-3xl font-black text-white">{profiles.length}</p>
               </div>
               <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.1)]">
                 <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Active This Week</p>
-                <p className="text-3xl font-black text-[#FF9933]">842</p>
+                <p className="text-3xl font-black text-[#FF9933]">{getActiveThisWeekCount()}</p>
               </div>
             </div>
             <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
               <div className="px-6 py-4 border-b border-white/10 bg-white/5">
-                <h3 className="font-bold text-white">Recent Registrations</h3>
+                <h3 className="font-bold text-white">Devotee Registrations ({profiles.length})</h3>
               </div>
               <div className="divide-y divide-white/5">
-                {[
-                  { name: "Vinith Shetty", email: "vinuvinith0007@gmail.com", date: "Today", role: "Admin", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vinith" },
-                  { name: "Arjun Kumar", email: "arjun.k@example.com", date: "Yesterday", role: "User", img: "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun" },
-                ].map((user, i) => (
-                  <div key={i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition">
-                    <div className="flex items-center gap-4">
-                      <img src={user.img} alt={user.name} className="w-10 h-10 rounded-full bg-white/10" />
-                      <div>
-                        <p className="font-bold text-sm text-white">{user.name}</p>
-                        <p className="text-xs text-gray-500">{user.email}</p>
+                {profiles.length === 0 ? (
+                  <p className="p-6 text-sm text-gray-500 text-center">No devotees registered yet.</p>
+                ) : (
+                  profiles.map((user, i) => (
+                    <div key={user.id || i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition">
+                      <div className="flex items-center gap-4">
+                        <img 
+                          src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
+                          alt={user.name} 
+                          className="w-10 h-10 rounded-full bg-white/10 object-cover" 
+                        />
+                        <div>
+                          <p className="font-bold text-sm text-white">{user.name}</p>
+                          <p className="text-xs text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${user.role === 'Admin' ? 'bg-[#FF9933]/20 text-[#FF9933] border border-[#FF9933]/30' : 'bg-white/10 text-gray-400'}`}>
+                          {user.role}
+                        </span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${user.role === 'Admin' ? 'bg-[#FF9933]/20 text-[#FF9933] border border-[#FF9933]/30' : 'bg-white/10 text-gray-400'}`}>
-                        {user.role}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>

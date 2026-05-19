@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 const CLIENT_ID =
   "778407955821-lsjr8ffc36l94s4goorttq8ou52dk4i4.apps.googleusercontent.com";
@@ -104,11 +105,29 @@ function Login() {
         const ADMIN_EMAILS = [
           "vinuvinith0007@gmail.com"
         ];
+        
+        let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
           localStorage.setItem("isAdmin", "true");
           isUserAdmin = true;
+          role = 'Admin';
         } else {
           localStorage.setItem("isAdmin", "false");
+        }
+
+        // Upsert profile in Supabase to keep real devotee directory synced!
+        try {
+          await supabase.from('profiles').upsert([
+            {
+              email: email,
+              name: userInfo.name || 'Sadhaka',
+              avatar_url: userInfo.picture || '',
+              role: role,
+              last_login: new Date().toISOString()
+            }
+          ], { onConflict: 'email' })
+        } catch (dbErr) {
+          console.error("Failed to sync devotee profile in Supabase:", dbErr);
         }
       }
     } catch (err) {
