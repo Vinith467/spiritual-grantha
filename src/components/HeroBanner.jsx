@@ -48,7 +48,7 @@ function HeroBanner({ seriesList }) {
           className="flex w-full h-full transition-transform ease-in-out"
           style={{
             transform: `translate3d(-${current * 100}%, 0px, 0px)`,
-            transitionDuration: '1200ms'
+            transitionDuration: '2000ms'
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
