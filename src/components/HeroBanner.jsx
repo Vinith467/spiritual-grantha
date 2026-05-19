@@ -20,10 +20,7 @@ function HeroBanner({ seriesList }) {
 
   if (!seriesList || seriesList.length === 0) return <div className="h-64 bg-[#141414]" />
 
-  const series = seriesList[current]
-  const firstEpisode = series.episodes?.[0]
   const lastWatched = JSON.parse(localStorage.getItem('lastWatched') || 'null')
-  const isWatched = lastWatched && series.episodes?.some(ep => ep.id === lastWatched.id)
 
   function handleTouchStart(e) {
     touchStartX.current = e.touches[0].clientX
@@ -43,25 +40,66 @@ function HeroBanner({ seriesList }) {
 
   return (
     <div className="w-full px-6 md:px-0 pt-[60px] sm:pt-[72px] pb-3">
-      <div
-        className="relative group w-full overflow-hidden rounded-2xl md:rounded-none aspect-[2/3] md:aspect-[21/9] lg:aspect-[3/1] shadow-2xl select-none"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Banner Images */}
-        <picture key={`pic-${series.id}`} className="animate-fade-in">
-          <source media="(min-width: 768px)" srcSet={series.desktop_thumbnail_url || series.thumbnail_url} />
-          <img
-            src={series.thumbnail_url}
-            alt={series.title}
-            className="w-full h-full object-cover object-top sm:object-center"
-          />
-        </picture>
+      {/* Main Viewport Container */}
+      <div className="relative group w-full overflow-hidden rounded-2xl md:rounded-none aspect-[2/3] md:aspect-[21/9] lg:aspect-[3/1] shadow-2xl select-none">
+        
+        {/* Horizontal Sliding Track */}
+        <div
+          className="flex w-full h-full transition-transform duration-700 ease-in-out"
+          style={{ transform: `translate3d(-${current * 100}%, 0px, 0px)` }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {seriesList.map((series, i) => {
+            const firstEpisode = series.episodes?.[0]
+            const isWatched = lastWatched && series.episodes?.some(ep => ep.id === lastWatched.id)
 
-        {/* Shadow overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+            return (
+              <div key={series.id} className="w-full h-full shrink-0 relative flex-none">
+                {/* Banner Image */}
+                <picture>
+                  <source media="(min-width: 768px)" srcSet={series.desktop_thumbnail_url || series.thumbnail_url} />
+                  <img
+                    src={series.thumbnail_url}
+                    alt={series.title}
+                    className="w-full h-full object-cover object-top sm:object-center"
+                    draggable="false"
+                  />
+                </picture>
 
-        {/* Clickable Navigation Indicators */}
+                {/* Gradient Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+
+                {/* Content Info Area inside slide */}
+                <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 lg:px-20 pb-5 md:pb-12 z-10">
+                  <div className="max-w-2xl">
+                    {series.category && (
+                      <span className="text-[#FF9933] text-[10px] md:text-xs font-bold uppercase tracking-widest block mb-2">{series.category}</span>
+                    )}
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-1 md:mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
+                    <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
+                    {firstEpisode && (
+                      <button
+                        onClick={() => {
+                          if (isWatched) {
+                            navigate(`/watch/${lastWatched.id}`)
+                          } else {
+                            navigate(`/watch/${firstEpisode.id}`)
+                          }
+                        }}
+                        className="w-full sm:w-auto bg-white text-black px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
+                      >
+                        {isWatched ? 'Continue Watching' : 'Watch Now'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Clickable Navigation Indicators (Fixed) */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
           {seriesList.map((_, i) => (
             <button
@@ -73,7 +111,7 @@ function HeroBanner({ seriesList }) {
           ))}
         </div>
 
-        {/* Left Navigation Arrow Overlay (Laptop & Desktop) */}
+        {/* Left Navigation Arrow Overlay (Fixed) */}
         {seriesList.length > 1 && (
           <button
             onClick={(e) => {
@@ -87,7 +125,7 @@ function HeroBanner({ seriesList }) {
           </button>
         )}
 
-        {/* Right Navigation Arrow Overlay (Laptop & Desktop) */}
+        {/* Right Navigation Arrow Overlay (Fixed) */}
         {seriesList.length > 1 && (
           <button
             onClick={(e) => {
@@ -101,30 +139,6 @@ function HeroBanner({ seriesList }) {
           </button>
         )}
 
-        {/* Content Info Area */}
-        <div key={`info-${series.id}`} className="absolute bottom-0 left-0 right-0 px-4 md:px-12 lg:px-20 pb-5 md:pb-12 z-10 animate-fade-in">
-          <div className="max-w-2xl">
-            {series.category && (
-              <span className="text-[#FF9933] text-[10px] md:text-xs font-bold uppercase tracking-widest block mb-2">{series.category}</span>
-            )}
-            <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-1 md:mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
-            <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
-            {firstEpisode && (
-              <button
-                onClick={() => {
-                  if (isWatched) {
-                    navigate(`/watch/${lastWatched.id}`)
-                  } else {
-                    navigate(`/watch/${firstEpisode.id}`)
-                  }
-                }}
-                className="w-full sm:w-auto bg-white text-black px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
-              >
-                {isWatched ? 'Continue Watching' : 'Watch Now'}
-              </button>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   )
