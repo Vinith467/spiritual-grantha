@@ -18,7 +18,7 @@ import {
 function Admin() {
   const navigate = useNavigate()
   const [authed, setAuthed] = useState(false)
-  const [activeTab, setActiveTab] = useState('banners')
+  const [activeTab, setActiveTab] = useState('videos')
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -389,7 +389,6 @@ function Admin() {
   )
 
   const TABS = [
-    { id: 'banners', label: 'Banners', icon: <PictureOutlined /> },
     { id: 'videos', label: 'Videos', icon: <VideoCameraOutlined /> },
     { id: 'music', label: 'Music', icon: <CustomerServiceOutlined /> },
     { id: 'shorts', label: 'Shorts', icon: <MobileOutlined /> },
@@ -414,49 +413,6 @@ function Admin() {
       {/* Main Content Area */}
       <div className="p-5 max-w-4xl mx-auto space-y-8">
         
-        {/* BANNERS TAB */}
-        {activeTab === 'banners' && (
-          <div className="animate-fade-in space-y-8">
-            <form onSubmit={handleBannerSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Hero Banner (Supabase)' : 'Add New Hero Banner (Supabase)'}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input required type="text" placeholder="Banner Title" value={bannerForm.title} onChange={e=>setBannerForm({...bannerForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="text" placeholder="Target Video/Episode ID (to play when clicked)" value={bannerForm.targetId} onChange={e=>setBannerForm({...bannerForm, targetId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <textarea required rows="2" placeholder="Description" value={bannerForm.description} onChange={e=>setBannerForm({...bannerForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
-                <input required type="url" placeholder="Mobile Banner Image URL (Vertical)" value={bannerForm.mobileUrl} onChange={e=>setBannerForm({...bannerForm, mobileUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input required type="url" placeholder="Desktop Banner Image URL (Horizontal)" value={bannerForm.desktopUrl} onChange={e=>setBannerForm({...bannerForm, desktopUrl: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Publish Banner'}</button>
-                {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
-              </div>
-            </form>
-
-            <div className="space-y-4">
-              <h3 className="font-bold text-lg border-b border-white/10 pb-2 flex justify-between items-center">
-                <span>Active Hero Banners ({banners.length})</span>
-                <span className="text-xs text-gray-500 font-normal">Stored in Supabase Database</span>
-              </h3>
-              {banners.length === 0 && <p className="text-sm text-gray-500">No banners found in the database. Home page will fall back to active series.</p>}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {banners.map(b => (
-                  <div key={b.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
-                    <img src={b.desktop_url || b.mobile_url} alt="thumb" className="w-24 h-14 object-cover rounded-md bg-black shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{b.title}</p>
-                      <p className="text-xs text-gray-400 truncate">Target: {b.target_id}</p>
-                    </div>
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <button onClick={()=>editBanner(b)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>
-                      <button onClick={()=>deleteBanner(b.id)} className="text-xs text-red-500 font-bold flex items-center gap-1 hover:underline"><DeleteOutlined /> Delete</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* VIDEOS TAB */}
         {activeTab === 'videos' && (
           <div className="animate-fade-in space-y-8">
