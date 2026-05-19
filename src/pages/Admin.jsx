@@ -386,6 +386,18 @@ function Admin() {
     const file = e.target.files[0]
     if (!file) return
 
+    // Set immediate loading text in the target input field
+    const tempText = `Uploading: ${file.name}...`
+    if (field === 'thumbnail_url') {
+      setSeriesForm(prev => ({ ...prev, thumbnail_url: tempText }))
+    } else if (field === 'desktop_thumbnail_url') {
+      setSeriesForm(prev => ({ ...prev, desktop_thumbnail_url: tempText }))
+    } else if (field === 'episode_thumbnail_url') {
+      setEpisodeForm(prev => ({ ...prev, thumbnail_url: tempText }))
+    } else if (field === 'music_cover_url') {
+      setMusicForm(prev => ({ ...prev, coverUrl: tempText }))
+    }
+
     setLoading(true)
     try {
       const fileExt = file.name.split('.').pop()
@@ -421,9 +433,17 @@ function Admin() {
       } else if (field === 'music_cover_url') {
         setMusicForm(prev => ({ ...prev, coverUrl: urlData.publicUrl }))
       }
-
-      alert('Uploaded successfully!')
     } catch (err) {
+      // Revert loading text to empty string on failure
+      if (field === 'thumbnail_url') {
+        setSeriesForm(prev => ({ ...prev, thumbnail_url: '' }))
+      } else if (field === 'desktop_thumbnail_url') {
+        setSeriesForm(prev => ({ ...prev, desktop_thumbnail_url: '' }))
+      } else if (field === 'episode_thumbnail_url') {
+        setEpisodeForm(prev => ({ ...prev, thumbnail_url: '' }))
+      } else if (field === 'music_cover_url') {
+        setMusicForm(prev => ({ ...prev, coverUrl: '' }))
+      }
       alert('Upload failed: ' + err.message)
     } finally {
       setLoading(false)
