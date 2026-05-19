@@ -559,7 +559,7 @@ function Admin() {
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Mobile Thumbnail (Vertical)</label>
                       <div className="flex gap-2">
-                        <input required type="url" placeholder="Mobile Thumbnail Image URL" value={seriesForm.thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <input type="url" placeholder="Mobile Thumbnail Image URL" value={seriesForm.thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                         <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
                           <span>Upload</span>
                           <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'thumbnail_url')} className="hidden" />
@@ -570,7 +570,7 @@ function Admin() {
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Desktop Banner (Horizontal)</label>
                       <div className="flex gap-2">
-                        <input required type="url" placeholder="Desktop Banner Image URL" value={seriesForm.desktop_thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, desktop_thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <input type="url" placeholder="Desktop Banner Image URL" value={seriesForm.desktop_thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, desktop_thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                         <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
                           <span>Upload</span>
                           <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'desktop_thumbnail_url')} className="hidden" />
