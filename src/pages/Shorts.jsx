@@ -33,7 +33,11 @@ function Shorts() {
           .order('created_at', { ascending: false })
         
         if (!error && data) {
-          setShortsData(data)
+          const mapped = data.map(s => ({
+            ...s,
+            youtubeId: s.youtube_id
+          }))
+          setShortsData(mapped)
         }
       } catch (err) {
         console.error('Error fetching shorts:', err)
