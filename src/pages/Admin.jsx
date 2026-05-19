@@ -382,6 +382,54 @@ function Admin() {
     setShortForm({ title: 'Divine Short', description: '', youtubeId: '' })
   }
 
+  const handleFileUpload = async (e, field) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setLoading(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}-${Math.floor(Math.random() * 1000)}.${fileExt}`
+      const filePath = `uploads/${fileName}`
+
+      // Upload to "images" bucket
+      const { data, error } = await supabase.storage
+        .from('images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (error) {
+        if (error.message.includes('bucket') || error.message.includes('not found')) {
+          throw new Error('Please make sure you have a public storage bucket named "images" in your Supabase storage!')
+        }
+        throw error
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath)
+
+      if (field === 'thumbnail_url') {
+        setSeriesForm(prev => ({ ...prev, thumbnail_url: urlData.publicUrl }))
+      } else if (field === 'desktop_thumbnail_url') {
+        setSeriesForm(prev => ({ ...prev, desktop_thumbnail_url: urlData.publicUrl }))
+      } else if (field === 'episode_thumbnail_url') {
+        setEpisodeForm(prev => ({ ...prev, thumbnail_url: urlData.publicUrl }))
+      } else if (field === 'music_cover_url') {
+        setMusicForm(prev => ({ ...prev, coverUrl: urlData.publicUrl }))
+      }
+
+      alert('Uploaded successfully!')
+    } catch (err) {
+      alert('Upload failed: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (!authed) return (
     <div className="bg-[#0a0a0a] min-h-screen flex items-center justify-center text-white">
       <div className="w-12 h-12 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
@@ -455,7 +503,16 @@ function Admin() {
                     <input required type="text" placeholder="Episode Title" value={episodeForm.title} onChange={e=>setEpisodeForm({...episodeForm, title: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <input required type="number" placeholder="Episode Number" value={episodeForm.episode_number} onChange={e=>setEpisodeForm({...episodeForm, episode_number: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <input required type="text" placeholder="YouTube Video ID" value={episodeForm.youtube_id} onChange={e=>setEpisodeForm({...episodeForm, youtube_id: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                    <input type="url" placeholder="Thumbnail URL (Optional: auto generated from Youtube ID if empty)" value={episodeForm.thumbnail_url} onChange={e=>setEpisodeForm({...episodeForm, thumbnail_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Custom Thumbnail (Optional)</label>
+                      <div className="flex gap-2">
+                        <input type="url" placeholder="Optional URL (or auto-gen)" value={episodeForm.thumbnail_url} onChange={e=>setEpisodeForm({...episodeForm, thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
+                          <span>Upload</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'episode_thumbnail_url')} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
                     <textarea placeholder="Episode Description (Optional)" rows="2" value={episodeForm.description} onChange={e=>setEpisodeForm({...episodeForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
                   </div>
                   <div className="flex gap-3">
@@ -499,8 +556,27 @@ function Admin() {
                   <h2 className="text-xl font-black text-[#FF9933]">{editingSeriesId ? 'Edit Series Category (Supabase)' : 'Create New Series Category (Supabase)'}</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input required type="text" placeholder="Series/Show Title" value={seriesForm.title} onChange={e=>setSeriesForm({...seriesForm, title: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                    <input required type="url" placeholder="Mobile Thumbnail Image URL (Vertical)" value={seriesForm.thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, thumbnail_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                    <input required type="url" placeholder="Desktop Banner Image URL (Horizontal)" value={seriesForm.desktop_thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, desktop_thumbnail_url: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Mobile Thumbnail (Vertical)</label>
+                      <div className="flex gap-2">
+                        <input required type="url" placeholder="Mobile Thumbnail Image URL" value={seriesForm.thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
+                          <span>Upload</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'thumbnail_url')} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Desktop Banner (Horizontal)</label>
+                      <div className="flex gap-2">
+                        <input required type="url" placeholder="Desktop Banner Image URL" value={seriesForm.desktop_thumbnail_url} onChange={e=>setSeriesForm({...seriesForm, desktop_thumbnail_url: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
+                          <span>Upload</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'desktop_thumbnail_url')} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
                     <textarea placeholder="Description / Summary (Used in Hero Carousel banner if selected)" rows="2" value={seriesForm.description} onChange={e=>setSeriesForm({...seriesForm, description: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
                   </div>
                   <div className="flex gap-3">
@@ -549,7 +625,16 @@ function Admin() {
                 <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e=>setMusicForm({...musicForm, artist: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube Video ID (for audio stream)" value={musicForm.youtubeId} onChange={e=>setMusicForm({...musicForm, youtubeId: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input type="text" placeholder="Category (e.g. Bhajan, Mantra, Aarti)" value={musicForm.category} onChange={e=>setMusicForm({...musicForm, category: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input type="url" placeholder="Cover Art/Thumbnail URL (Optional: defaults to Youtube cover)" value={musicForm.coverUrl} onChange={e=>setMusicForm({...musicForm, coverUrl: e.target.value})} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                    <div className="sm:col-span-2 space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Cover Art/Thumbnail URL (Optional)</label>
+                      <div className="flex gap-2">
+                        <input type="url" placeholder="Optional URL (or defaults to Youtube cover)" value={musicForm.coverUrl} onChange={e=>setMusicForm({...musicForm, coverUrl: e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                        <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/10 rounded-xl px-4 flex items-center justify-center text-xs font-bold transition whitespace-nowrap">
+                          <span>Upload</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'music_cover_url')} className="hidden" />
+                        </label>
+                      </div>
+                    </div>
               </div>
               <div className="flex gap-3">
                 <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Track'}</button>
