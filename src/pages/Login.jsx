@@ -18,6 +18,7 @@ function Login() {
   const [userEmail, setUserEmail] = useState("");
   const [onboardingData, setOnboardingData] = useState({
     displayName: "",
+    phone: "",
     dharmaPath: "",
     contentPreference: [],
     sacredTime: "",
@@ -129,7 +130,7 @@ function Login() {
           localStorage.setItem("isAdmin", "false");
         }
 
-        // Upsert profile in Supabase to keep real devotee directory synced!
+        // Upsert profile in Supabase to keep real devotee profileSynced!
         try {
           await supabase.from('profiles').upsert([
             {
@@ -229,8 +230,17 @@ function Login() {
     try {
       const email = userEmail || localStorage.getItem("profileEmail");
       if (email) {
+        // Sync local storage immediately to welcome them!
+        if (onboardingData.displayName) {
+          localStorage.setItem("profileName", onboardingData.displayName);
+        }
+        if (onboardingData.phone) {
+          localStorage.setItem("profileContact", onboardingData.phone);
+        }
+
         await supabase.from('profiles').update({
           display_name: onboardingData.displayName || null,
+          phone: onboardingData.phone || null,
           dharma_path: onboardingData.dharmaPath || null,
           content_preference: onboardingData.contentPreference.length > 0 ? onboardingData.contentPreference : null,
           sacred_time: onboardingData.sacredTime || null,
@@ -250,9 +260,10 @@ function Login() {
     const stepsBackground = [
       "/assets/ram_sita.png",        // Step 1
       "/assets/vishnu_lakshmi.png",  // Step 2
-      "/assets/krishna_arjuna.png",   // Step 3
-      "/assets/krishna_radha.png",   // Step 4
-      "/assets/ram_sita.png"         // Step 5
+      "/assets/vishnu_lakshmi.png",  // Step 3
+      "/assets/krishna_arjuna.png",   // Step 4
+      "/assets/krishna_radha.png",   // Step 5
+      "/assets/ram_sita.png"         // Step 6
     ];
 
     return (
@@ -273,7 +284,7 @@ function Login() {
           {/* Progress Indicator */}
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              {[1, 2, 3, 4, 5].map((s) => (
+              {[1, 2, 3, 4, 5, 6].map((s) => (
                 <div 
                   key={s} 
                   className={`h-1.5 rounded-full transition-all duration-500 ${
@@ -287,7 +298,7 @@ function Login() {
               ))}
             </div>
             <span className="text-[10px] font-black tracking-wider text-gray-500 uppercase">
-              Step {currentStep} of 5
+              Step {currentStep} of 6
             </span>
           </div>
 
@@ -329,8 +340,32 @@ function Login() {
               </div>
             )}
 
-            {/* STEP 2: Dharma Path Motivations */}
+            {/* STEP 2: Mobile Number */}
             {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <span className="text-3xl inline-block mb-2">📱</span>
+                  <h2 className="text-[#FF9933] text-sm font-black tracking-widest uppercase mb-1">Contact Details</h2>
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">What is your mobile number?</h1>
+                </div>
+                <div className="space-y-2">
+                  <input 
+                    type="tel"
+                    required
+                    placeholder="Enter your contact number..."
+                    value={onboardingData.phone}
+                    onChange={(e) => setOnboardingData({ ...onboardingData, phone: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:border-[#FF9933] rounded-2xl px-5 py-4 text-center text-lg font-bold outline-none text-white transition placeholder-gray-600"
+                  />
+                  <p className="text-xs text-gray-500 text-center font-medium leading-relaxed">
+                    This lets us verify your devotee membership privileges securely.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Dharma Path Motivations */}
+            {currentStep === 3 && (
               <div className="space-y-4">
                 <div className="text-center">
                   <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Your Dharma Path</h2>
@@ -349,7 +384,7 @@ function Login() {
                       onClick={() => {
                         setOnboardingData({ ...onboardingData, dharmaPath: path });
                         // Smooth auto transition
-                        setTimeout(() => setCurrentStep(3), 250);
+                        setTimeout(() => setCurrentStep(4), 250);
                       }}
                       className={`w-full text-left px-5 py-3 rounded-xl border text-sm font-bold transition duration-300 flex items-center justify-between ${
                         onboardingData.dharmaPath === path
@@ -365,8 +400,8 @@ function Login() {
               </div>
             )}
 
-            {/* STEP 3: Content Preference */}
-            {currentStep === 3 && (
+            {/* STEP 4: Content Preference */}
+            {currentStep === 4 && (
               <div className="space-y-4">
                 <div className="text-center">
                   <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Content Preference</h2>
@@ -406,8 +441,8 @@ function Login() {
               </div>
             )}
 
-            {/* STEP 4: Sacred Time */}
-            {currentStep === 4 && (
+            {/* STEP 5: Sacred Time */}
+            {currentStep === 5 && (
               <div className="space-y-4">
                 <div className="text-center">
                   <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Your Sacred Time</h2>
@@ -424,7 +459,7 @@ function Login() {
                       key={time}
                       onClick={() => {
                         setOnboardingData({ ...onboardingData, sacredTime: time });
-                        setTimeout(() => setCurrentStep(5), 250);
+                        setTimeout(() => setCurrentStep(6), 250);
                       }}
                       className={`w-full text-left px-5 py-3.5 rounded-xl border text-sm font-bold transition duration-300 flex items-center justify-between ${
                         onboardingData.sacredTime === time
@@ -440,8 +475,8 @@ function Login() {
               </div>
             )}
 
-            {/* STEP 5: Language Selection */}
-            {currentStep === 5 && (
+            {/* STEP 6: Language Selection */}
+            {currentStep === 6 && (
               <div className="space-y-4">
                 <div className="text-center">
                   <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Language Comfort</h2>
@@ -486,13 +521,14 @@ function Login() {
               <button
                 disabled={
                   (currentStep === 1 && onboardingData.displayName.trim() === "") ||
-                  (currentStep === 2 && onboardingData.dharmaPath === "") ||
-                  (currentStep === 3 && onboardingData.contentPreference.length === 0) ||
-                  (currentStep === 4 && onboardingData.sacredTime === "") ||
-                  (currentStep === 5 && onboardingData.language === "")
+                  (currentStep === 2 && onboardingData.phone.trim() === "") ||
+                  (currentStep === 3 && onboardingData.dharmaPath === "") ||
+                  (currentStep === 4 && onboardingData.contentPreference.length === 0) ||
+                  (currentStep === 5 && onboardingData.sacredTime === "") ||
+                  (currentStep === 6 && onboardingData.language === "")
                 }
                 onClick={() => {
-                  if (currentStep < 5) {
+                  if (currentStep < 6) {
                     setCurrentStep(prev => prev + 1);
                   } else {
                     handleSkipOrComplete();
@@ -500,7 +536,7 @@ function Login() {
                 }}
                 className="flex-1 py-3.5 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-xs rounded-xl shadow-[0_0_20px_rgba(255,153,51,0.2)] hover:shadow-[0_0_30px_rgba(255,153,51,0.4)] transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none"
               >
-                {currentStep === 5 ? "Begin My Journey ✨" : "Continue"}
+                {currentStep === 6 ? "Begin My Journey ✨" : "Continue"}
               </button>
             </div>
 

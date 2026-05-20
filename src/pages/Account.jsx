@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
@@ -9,14 +10,68 @@ function Account() {
   const [contact, setContact] = useState('')
   const [avatar, setAvatar] = useState(null)
   const [isAdmin, setIsAdmin] = useState(false)
-  const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved'
+  const [profileEmail, setProfileEmail] = useState('')
+  
+  // Personalization States
+  const [displayName, setDisplayName] = useState('')
+  const [dharmaPath, setDharmaPath] = useState('')
+  const [contentPreference, setContentPreference] = useState([])
+  const [sacredTime, setSacredTime] = useState('')
+  const [language, setLanguage] = useState('')
+  
+  const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
 
-  // Load profile data from localStorage
+  // Load profile data from localStorage & Supabase
   useEffect(() => {
+    const email = localStorage.getItem('profileEmail') || ''
+    setProfileEmail(email)
+    setIsAdmin(localStorage.getItem('isAdmin') === 'true')
+    
+    // Load initial values from localStorage for instant display
     setName(localStorage.getItem('profileName') || 'Devotee')
     setContact(localStorage.getItem('profileContact') || '')
     setAvatar(localStorage.getItem('profileAvatar') || null)
-    setIsAdmin(localStorage.getItem('isAdmin') === 'true')
+
+    // Load rich personalization direct from Supabase
+    if (email) {
+      const fetchProfile = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('email', email.toLowerCase())
+            .single()
+          
+          if (!error && data) {
+            if (data.name) {
+              setName(data.name)
+              localStorage.setItem('profileName', data.name)
+            }
+            if (data.display_name) {
+              setDisplayName(data.display_name)
+              // If display name is present, greet them with it!
+              localStorage.setItem('profileName', data.display_name)
+              setName(data.display_name)
+            }
+            if (data.phone) {
+              setContact(data.phone)
+              localStorage.setItem('profileContact', data.phone)
+            }
+            if (data.avatar_url) {
+              setAvatar(data.avatar_url)
+              localStorage.setItem('profileAvatar', data.avatar_url)
+            }
+            if (data.dharma_path) setDharmaPath(data.dharma_path)
+            if (Array.isArray(data.content_preference)) setContentPreference(data.content_preference)
+            if (data.sacred_time) setSacredTime(data.sacred_time)
+            if (data.language) setLanguage(data.language)
+          }
+        } catch (err) {
+          console.error("Error retrieving Supabase devotee profile:", err)
+        }
+      }
+      fetchProfile()
+    }
   }, [])
 
   // Handle avatar upload and convert to base64
@@ -31,23 +86,55 @@ function Account() {
     }
   }
 
-  // Save profile to localStorage
-  const handleSave = (e) => {
+  // Toggle multi-select content preferences
+  const handleContentPreferenceToggle = (item) => {
+    setContentPreference(prev => {
+      const exists = prev.includes(item)
+      return exists ? prev.filter(p => p !== item) : [...prev, item]
+    })
+  }
+
+  // Save profile to Supabase & localStorage
+  const handleSave = async (e) => {
     e.preventDefault()
     setSaveStatus('saving')
     
-    setTimeout(() => {
-      localStorage.setItem('profileName', name)
-      localStorage.setItem('profileContact', contact)
-      if (avatar) {
-        localStorage.setItem('profileAvatar', avatar)
+    // Sync local storage immediately!
+    localStorage.setItem('profileName', displayName || name)
+    localStorage.setItem('profileContact', contact)
+    if (avatar) {
+      localStorage.setItem('profileAvatar', avatar)
+    }
+
+    try {
+      const email = profileEmail || localStorage.getItem('profileEmail')
+      if (email) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            name: displayName || name, // Update display name as primary greet name!
+            display_name: displayName || null,
+            phone: contact || null,
+            avatar_url: avatar || null,
+            dharma_path: dharmaPath || null,
+            content_preference: contentPreference.length > 0 ? contentPreference : null,
+            sacred_time: sacredTime || null,
+            language: language || null
+          })
+          .eq('email', email.toLowerCase())
+
+        if (error) throw error
       }
-      setSaveStatus('saved')
       
+      setSaveStatus('saved')
+    } catch (err) {
+      console.error("Error saving devotee profile to Supabase:", err)
+      setSaveStatus('error')
+    } finally {
       setTimeout(() => {
         setSaveStatus('idle')
       }, 2000)
-    }, 800)
+    }
   }
 
   // Sign out / Reset subscription
@@ -55,21 +142,30 @@ function Account() {
     if (window.confirm('Are you sure you want to sign out?')) {
       localStorage.removeItem('subscribed')
       localStorage.removeItem('isAdmin')
+      localStorage.removeItem('profileEmail')
+      localStorage.removeItem('profileName')
+      localStorage.removeItem('profileContact')
+      localStorage.removeItem('profileAvatar')
       window.location.href = '/login'
     }
   }
 
   return (
-    <div className="bg-[#141414] min-h-screen text-white pb-24">
+    <div className="bg-[#141414] min-h-screen text-white pb-28">
       {/* Top Navbar */}
       <Navbar />
 
-      <div className="px-4 sm:px-6 pt-24 max-w-md mx-auto">
-        <div className="bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-2xl p-6 sm:p-8 shadow-2xl relative">
+      <div className="px-4 sm:px-6 pt-24 max-w-lg mx-auto">
+        <div className="bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-3xl p-6 sm:p-8 shadow-2xl relative">
           
-          <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-[10px] font-bold text-[#FF9933] uppercase tracking-widest inline-block mb-6">
-            Profile Settings
-          </span>
+          <div className="flex justify-between items-center mb-6">
+            <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3.5 py-1 rounded-full text-[10px] font-bold text-[#FF9933] uppercase tracking-widest inline-block">
+              Devotee Profile Settings
+            </span>
+            <span className="text-[10px] text-gray-500 font-extrabold tracking-wider truncate max-w-[150px] uppercase">
+              {profileEmail}
+            </span>
+          </div>
 
           <form onSubmit={handleSave} className="space-y-6">
             
@@ -104,42 +200,142 @@ function Account() {
               <p className="text-gray-400 text-xs font-semibold">Tap to update avatar picture</p>
             </div>
 
-            {/* Name Input */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">Full Name</label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300"
-                placeholder="Enter your name"
-              />
+            {/* Standard Profile Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Full Name / Greeting Name Input */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">Spiritual Name (Greeting)</label>
+                <input
+                  type="text"
+                  required
+                  value={displayName || name}
+                  onChange={(e) => {
+                    setDisplayName(e.target.value)
+                    setName(e.target.value)
+                  }}
+                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold"
+                  placeholder="What should we call you?"
+                />
+              </div>
+
+              {/* Contact Number Input */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">Mobile Number</label>
+                <input
+                  type="tel"
+                  required
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold"
+                  placeholder="Enter contact number"
+                />
+              </div>
             </div>
 
-            {/* Contact Number Input */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">Contact Number</label>
-              <input
-                type="tel"
-                required
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300"
-                placeholder="Enter contact number"
-              />
+            {/* 🕉️ PERSONALIZATION SECTION */}
+            <div className="border-t border-white/10 pt-6 space-y-5">
+              <h3 className="text-sm font-black text-white tracking-widest uppercase flex items-center gap-2">
+                <span>🕉️ Dharma Journey & Personalization</span>
+              </h3>
+
+              {/* Dharma Path Select */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🔱 My Dharma Path</label>
+                <select
+                  value={dharmaPath}
+                  onChange={(e) => setDharmaPath(e.target.value)}
+                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
+                >
+                  <option value="">Choose Path...</option>
+                  <option value="🔱 I want to know my roots">🔱 I want to know my roots</option>
+                  <option value="📖 I want to learn the scriptures">📖 I want to learn the scriptures</option>
+                  <option value="🎵 I seek peace through devotion">🎵 I seek peace through devotion</option>
+                  <option value="👨‍👩‍👧 I want my family to know our culture">👨‍👩‍👧 I want my family to know our culture</option>
+                  <option value="✨ I am already on the path, want more">✨ I am already on the path, want more</option>
+                </select>
+              </div>
+
+              {/* Sacred connection hours */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🌅 Sacred Connection Time</label>
+                <select
+                  value={sacredTime}
+                  onChange={(e) => setSacredTime(e.target.value)}
+                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
+                >
+                  <option value="">Choose Hour...</option>
+                  <option value="🌅 Early morning (Brahma Muhurta)">🌅 Early morning (Brahma Muhurta)</option>
+                  <option value="☀️ During the day">☀️ During the day</option>
+                  <option value="🌆 Evening prayers time">🌆 Evening prayers time</option>
+                  <option value="🌙 Late night silence">🌙 Late night silence</option>
+                </select>
+              </div>
+
+              {/* Language Selection */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🇮🇳 Comfort Language</label>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
+                >
+                  <option value="">Choose Language...</option>
+                  <option value="🇮🇳 Hindi">🇮🇳 Hindi</option>
+                  <option value="🌺 Kannada">🌺 Kannada</option>
+                  <option value="🌴 Telugu">🌴 Telugu</option>
+                  <option value="🌸 Tamil">🌸 Tamil</option>
+                  <option value="🔵 English">🔵 English</option>
+                </select>
+              </div>
+
+              {/* Stories Calling to Soul (Pill-badge checkboxes) */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">📖 Stories Calling to My Soul</label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Ramayan",
+                    "Mahabharat",
+                    "Bhagwat Geeta",
+                    "Shiv Puran",
+                    "Hanuman Katha",
+                    "Devotional Music"
+                  ].map((pref) => {
+                    const isSelected = contentPreference.includes(pref)
+                    return (
+                      <button
+                        type="button"
+                        key={pref}
+                        onClick={() => handleContentPreferenceToggle(pref)}
+                        className={`px-3 py-2 rounded-xl border text-xs font-bold transition duration-300 flex items-center gap-1.5 ${
+                          isSelected
+                            ? "bg-[#FF9933]/15 border-[#FF9933] text-[#FF9933]"
+                            : "bg-white/5 border-white/5 hover:bg-white/10 text-gray-300"
+                        }`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] border ${
+                          isSelected ? "bg-[#FF9933] border-[#FF9933] text-black" : "border-white/20"
+                        }`}>
+                          {isSelected && "✓"}
+                        </span>
+                        <span>{pref}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
             </div>
 
             {/* Save Button */}
             <button
               type="submit"
               disabled={saveStatus === 'saving'}
-              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-sm py-3.5 rounded-xl transition duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-75"
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-sm py-4 rounded-xl transition duration-300 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-75 shadow-[0_0_25px_rgba(255,153,51,0.2)]"
             >
               {saveStatus === 'saving' && (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
               )}
-              {saveStatus === 'saved' ? 'Saved Successfully! 🙏' : 'Save Profile Settings'}
+              {saveStatus === 'saved' ? 'Saved Successfully! 🙏' : saveStatus === 'error' ? 'Failed to save! Please retry.' : 'Save Profile Settings'}
             </button>
 
           </form>
