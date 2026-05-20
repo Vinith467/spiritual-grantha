@@ -95,7 +95,7 @@ function Login() {
       if (userRes.ok) {
         const userInfo = await userRes.json();
         const email = userInfo.email?.toLowerCase();
-        
+
         // Auto-populate local profile with their real Google Account info!
         if (userInfo.name) localStorage.setItem("profileName", userInfo.name);
         if (userInfo.picture) localStorage.setItem("profileAvatar", userInfo.picture);
@@ -105,7 +105,7 @@ function Login() {
         const ADMIN_EMAILS = [
           "vinuvinith0007@gmail.com"
         ];
-        
+
         let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
           localStorage.setItem("isAdmin", "true");
@@ -165,7 +165,7 @@ function Login() {
           }),
         },
       );
-      
+
       // Successfully subscribed OR already subscribed (409 Conflict)
       if (res.status === 200 || res.status === 409) {
         localStorage.setItem("subscribed", "true");
@@ -193,40 +193,40 @@ function Login() {
   }
 
   return (
-    <div 
+    <div
       className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-[#FF9933]/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      
+
       {/* Background Gods Images (Fades in based on mouse position) */}
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
         {/* Vishnu Lakshmi */}
-        <img 
-          src="/assets/vishnu_lakshmi.png" 
-          alt="Vishnu Lakshmi" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+        <img
+          src="/assets/vishnu_lakshmi.png"
+          alt="Vishnu Lakshmi"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
           style={{ transformOrigin: 'center left' }}
         />
         {/* Ram Sita */}
-        <img 
-          src="/assets/ram_sita.png" 
-          alt="Ram Sita" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+        <img
+          src="/assets/ram_sita.png"
+          alt="Ram Sita"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
           style={{ transformOrigin: 'center left' }}
         />
         {/* Krishna Arjuna */}
-        <img 
-          src="/assets/krishna_arjuna.png" 
-          alt="Krishna Arjuna" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+        <img
+          src="/assets/krishna_arjuna.png"
+          alt="Krishna Arjuna"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
           style={{ transformOrigin: 'center right' }}
         />
         {/* Krishna Radha */}
-        <img 
-          src="/assets/krishna_radha.png" 
-          alt="Krishna Radha" 
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+        <img
+          src="/assets/krishna_radha.png"
+          alt="Krishna Radha"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
           style={{ transformOrigin: 'center right' }}
         />
       </div>
@@ -240,7 +240,7 @@ function Login() {
 
       {/* Main Content Area */}
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-8 sm:py-12 flex flex-col items-center justify-center min-h-[100dvh]">
-        
+
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
           <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_50px_rgba(255,153,51,0.15)] mb-4 sm:mb-6 ring-4 ring-black/50 shrink-0">
@@ -250,14 +250,14 @@ function Login() {
               className="w-full h-full object-cover"
             />
           </div>
-          
+
           <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-5xl font-black tracking-tighter text-center whitespace-nowrap mb-1 drop-shadow-lg shrink-0">
             Sanatan Dharma
           </h1>
           <h2 className="text-white text-2xl sm:text-3xl md:text-3xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
             Television
           </h2>
-          
+
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#FF9933]/60"></div>
             <p className="text-[#FF9933] text-sm sm:text-base font-medium tracking-wide text-center drop-shadow-md">
