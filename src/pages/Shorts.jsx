@@ -62,7 +62,7 @@ function Shorts() {
                 
                 {/* Subtle Floating Like & Interact on YouTube Button */}
                 <a 
-                  href={`https://www.youtube.com/shorts/${short.youtubeId}`}
+                  href={`https://www.google.com/url?q=https://www.youtube.com/shorts/${short.youtubeId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/75 hover:bg-black backdrop-blur-md border border-white/10 hover:border-[#FF9933]/50 text-white hover:text-[#FF9933] px-4 py-2.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shadow-xl pointer-events-auto select-none"

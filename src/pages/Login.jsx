@@ -63,7 +63,7 @@ function Login() {
   function handleYouTubeSubscribe() {
     localStorage.setItem("clickedYouTube", "true");
     window.open(
-      "https://www.youtube.com/@Vinu_s_shetty467?sub_confirmation=1",
+      "https://www.google.com/url?q=https://www.youtube.com/@Vinu_s_shetty467?sub_confirmation%3D1",
       "_blank",
     );
   }
