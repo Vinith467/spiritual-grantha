@@ -463,6 +463,56 @@ function Admin() {
     return profiles.filter(p => p.last_login && new Date(p.last_login) >= sevenDaysAgo).length
   }
 
+  const getDharmaPathStats = () => {
+    const stats = {}
+    let total = 0
+    profiles.forEach(p => {
+      if (p.dharma_path) {
+        stats[p.dharma_path] = (stats[p.dharma_path] || 0) + 1
+        total++
+      }
+    })
+    return { stats, total }
+  }
+
+  const getContentPreferenceStats = () => {
+    const stats = {}
+    let total = 0
+    profiles.forEach(p => {
+      if (Array.isArray(p.content_preference)) {
+        p.content_preference.forEach(pref => {
+          stats[pref] = (stats[pref] || 0) + 1
+          total++
+        })
+      }
+    })
+    return { stats, total }
+  }
+
+  const getSacredTimeStats = () => {
+    const stats = {}
+    let total = 0
+    profiles.forEach(p => {
+      if (p.sacred_time) {
+        stats[p.sacred_time] = (stats[p.sacred_time] || 0) + 1
+        total++
+      }
+    })
+    return { stats, total }
+  }
+
+  const getLanguageStats = () => {
+    const stats = {}
+    let total = 0
+    profiles.forEach(p => {
+      if (p.language) {
+        stats[p.language] = (stats[p.language] || 0) + 1
+        total++
+      }
+    })
+    return { stats, total }
+  }
+
   if (!authed) return (
     <div className="bg-[#0a0a0a] min-h-screen flex items-center justify-center text-white">
       <div className="w-12 h-12 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
@@ -744,52 +794,201 @@ function Admin() {
         )}
 
         {/* USERS TAB */}
-        {activeTab === 'users' && (
-          <div className="animate-fade-in space-y-6">
-            <h2 className="text-2xl font-black text-white">Devotee Directory</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.1)]">
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Devotees</p>
-                <p className="text-3xl font-black text-white">{profiles.length}</p>
+        {activeTab === 'users' && (() => {
+          const dharmaStats = getDharmaPathStats();
+          const contentStats = getContentPreferenceStats();
+          const timeStats = getSacredTimeStats();
+          const languageStats = getLanguageStats();
+
+          return (
+            <div className="animate-fade-in space-y-8 pb-10">
+              <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                Devotee Directory & Insights 📊
+              </h2>
+
+              {/* Total Counts Header Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.05)]">
+                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Registered Devotees</p>
+                  <p className="text-4xl font-black text-white">{profiles.length}</p>
+                </div>
+                <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.05)]">
+                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Active Devotees This Week</p>
+                  <p className="text-4xl font-black text-[#FF9933]">{getActiveThisWeekCount()}</p>
+                </div>
               </div>
-              <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.1)]">
-                <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Active This Week</p>
-                <p className="text-3xl font-black text-[#FF9933]">{getActiveThisWeekCount()}</p>
+
+              {/* Personalization Insights Charts Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Dharma Path Motivation */}
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                  <h3 className="font-bold text-sm text-[#FF9933] tracking-wide uppercase border-b border-white/5 pb-2 flex justify-between items-center">
+                    <span>🔱 Dharma Path Motivations</span>
+                    <span className="text-[10px] text-gray-500 font-normal">({dharmaStats.total} responses)</span>
+                  </h3>
+                  <div className="space-y-4">
+                    {dharmaStats.total === 0 ? (
+                      <p className="text-xs text-gray-500 italic text-center py-4">No data collected yet.</p>
+                    ) : (
+                      Object.entries(dharmaStats.stats).map(([key, value]) => {
+                        const percentage = Math.round((value / dharmaStats.total) * 100);
+                        return (
+                          <div key={key} className="space-y-1.5">
+                            <div className="flex justify-between text-xs font-bold text-gray-300">
+                              <span>{key}</span>
+                              <span className="text-[#FF9933]">{value} ({percentage}%)</span>
+                            </div>
+                            <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-[#FF9933] to-[#FF6600] rounded-full shadow-[0_0_10px_rgba(255,153,51,0.5)]" style={{ width: `${percentage}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Content Preference Stories */}
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                  <h3 className="font-bold text-sm text-[#FF9933] tracking-wide uppercase border-b border-white/5 pb-2 flex justify-between items-center">
+                    <span>📖 Stories Calling to Soul</span>
+                    <span className="text-[10px] text-gray-500 font-normal">({contentStats.total} selections)</span>
+                  </h3>
+                  <div className="space-y-4">
+                    {contentStats.total === 0 ? (
+                      <p className="text-xs text-gray-500 italic text-center py-4">No data collected yet.</p>
+                    ) : (
+                      Object.entries(contentStats.stats).map(([key, value]) => {
+                        const percentage = Math.round((value / profiles.length) * 100); // Percentage out of total devotees
+                        return (
+                          <div key={key} className="space-y-1.5">
+                            <div className="flex justify-between text-xs font-bold text-gray-300">
+                              <span>{key}</span>
+                              <span className="text-[#FF9933]">{value} ({percentage}%)</span>
+                            </div>
+                            <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-[#FF9933] to-[#FF6600] rounded-full shadow-[0_0_10px_rgba(255,153,51,0.5)]" style={{ width: `${percentage}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Sacred Time Connections */}
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                  <h3 className="font-bold text-sm text-[#FF9933] tracking-wide uppercase border-b border-white/5 pb-2 flex justify-between items-center">
+                    <span>🌅 Sacred Connection Hours</span>
+                    <span className="text-[10px] text-gray-500 font-normal">({timeStats.total} responses)</span>
+                  </h3>
+                  <div className="space-y-4">
+                    {timeStats.total === 0 ? (
+                      <p className="text-xs text-gray-500 italic text-center py-4">No data collected yet.</p>
+                    ) : (
+                      Object.entries(timeStats.stats).map(([key, value]) => {
+                        const percentage = Math.round((value / timeStats.total) * 100);
+                        return (
+                          <div key={key} className="space-y-1.5">
+                            <div className="flex justify-between text-xs font-bold text-gray-300">
+                              <span>{key}</span>
+                              <span className="text-[#FF9933]">{value} ({percentage}%)</span>
+                            </div>
+                            <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-[#FF9933] to-[#FF6600] rounded-full shadow-[0_0_10px_rgba(255,153,51,0.5)]" style={{ width: `${percentage}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                {/* Demographics & Comfort Language */}
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl space-y-4">
+                  <h3 className="font-bold text-sm text-[#FF9933] tracking-wide uppercase border-b border-white/5 pb-2 flex justify-between items-center">
+                    <span>🌸 Comfort Languages</span>
+                    <span className="text-[10px] text-gray-500 font-normal">({languageStats.total} responses)</span>
+                  </h3>
+                  <div className="space-y-4">
+                    {languageStats.total === 0 ? (
+                      <p className="text-xs text-gray-500 italic text-center py-4">No data collected yet.</p>
+                    ) : (
+                      Object.entries(languageStats.stats).map(([key, value]) => {
+                        const percentage = Math.round((value / languageStats.total) * 100);
+                        return (
+                          <div key={key} className="space-y-1.5">
+                            <div className="flex justify-between text-xs font-bold text-gray-300">
+                              <span>{key}</span>
+                              <span className="text-[#FF9933]">{value} ({percentage}%)</span>
+                            </div>
+                            <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-[#FF9933] to-[#FF6600] rounded-full shadow-[0_0_10px_rgba(255,153,51,0.5)]" style={{ width: `${percentage}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
               </div>
-            </div>
-            <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
-              <div className="px-6 py-4 border-b border-white/10 bg-white/5">
-                <h3 className="font-bold text-white">Devotee Registrations ({profiles.length})</h3>
-              </div>
-              <div className="divide-y divide-white/5">
-                {profiles.length === 0 ? (
-                  <p className="p-6 text-sm text-gray-500 text-center">No devotees registered yet.</p>
-                ) : (
-                  profiles.map((user, i) => (
-                    <div key={user.id || i} className="px-6 py-4 flex items-center justify-between hover:bg-white/5 transition">
-                      <div className="flex items-center gap-4">
-                        <img 
-                          src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
-                          alt={user.name} 
-                          className="w-10 h-10 rounded-full bg-white/10 object-cover" 
-                        />
-                        <div>
-                          <p className="font-bold text-sm text-white">{user.name}</p>
-                          <p className="text-xs text-gray-500">{user.email}</p>
+
+              {/* Devotee Listings Card */}
+              <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
+                <div className="px-6 py-4 border-b border-white/10 bg-white/5">
+                  <h3 className="font-bold text-white">Devotee Registrations ({profiles.length})</h3>
+                </div>
+                <div className="divide-y divide-white/5">
+                  {profiles.length === 0 ? (
+                    <p className="p-6 text-sm text-gray-500 text-center">No devotees registered yet.</p>
+                  ) : (
+                    profiles.map((user, i) => (
+                      <div key={user.id || i} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-white/5 transition gap-4">
+                        <div className="flex items-center gap-4">
+                          <img 
+                            src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} 
+                            alt={user.name} 
+                            className="w-10 h-10 rounded-full bg-white/10 object-cover" 
+                          />
+                          <div>
+                            <p className="font-bold text-sm text-white">
+                              {user.name} 
+                              {user.display_name && (
+                                <span className="text-[#FF9933] text-xs font-bold bg-[#FF9933]/10 px-2 py-0.5 rounded-full ml-2">
+                                  "{user.display_name}"
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+
+                        {/* Personalization badges inside list */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {user.language && (
+                            <span className="text-[10px] font-bold bg-white/5 text-gray-300 border border-white/10 px-2 py-1 rounded-full">
+                              {user.language}
+                            </span>
+                          )}
+                          {user.sacred_time && (
+                            <span className="text-[10px] font-bold bg-white/5 text-gray-300 border border-white/10 px-2 py-1 rounded-full">
+                              {user.sacred_time.split(' ')[0] /* Get emoji only */}
+                            </span>
+                          )}
+                          <span className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${user.role === 'Admin' ? 'bg-[#FF9933]/20 text-[#FF9933] border border-[#FF9933]/30' : 'bg-white/10 text-gray-400'}`}>
+                            {user.role}
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${user.role === 'Admin' ? 'bg-[#FF9933]/20 text-[#FF9933] border border-[#FF9933]/30' : 'bg-white/10 text-gray-400'}`}>
-                          {user.role}
-                        </span>
-                      </div>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
       </div>
 

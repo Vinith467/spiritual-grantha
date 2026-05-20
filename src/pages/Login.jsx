@@ -12,6 +12,18 @@ function Login() {
   const [cameBack, setCameBack] = useState(false);
   const [hoverZone, setHoverZone] = useState("none");
 
+  // Onboarding States
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [userEmail, setUserEmail] = useState("");
+  const [onboardingData, setOnboardingData] = useState({
+    displayName: "",
+    dharmaPath: "",
+    contentPreference: [],
+    sacredTime: "",
+    language: ""
+  });
+
   const handleMouseMove = (e) => {
     const { clientX } = e;
     const width = window.innerWidth;
@@ -87,6 +99,7 @@ function Login() {
   async function fetchUserInfoAndVerify(accessToken) {
     setStatus("subscribing");
     let isUserAdmin = false;
+    let emailAddress = "";
     try {
       // 1. Fetch user info from Google OAuth2 API
       const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
@@ -95,7 +108,8 @@ function Login() {
       if (userRes.ok) {
         const userInfo = await userRes.json();
         const email = userInfo.email?.toLowerCase();
-
+        emailAddress = email;
+        
         // Auto-populate local profile with their real Google Account info!
         if (userInfo.name) localStorage.setItem("profileName", userInfo.name);
         if (userInfo.picture) localStorage.setItem("profileAvatar", userInfo.picture);
@@ -105,7 +119,7 @@ function Login() {
         const ADMIN_EMAILS = [
           "vinuvinith0007@gmail.com"
         ];
-
+        
         let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
           localStorage.setItem("isAdmin", "true");
@@ -136,16 +150,16 @@ function Login() {
 
     // 2. Perform YouTube check or Admin bypass
     if (isUserAdmin) {
-      // Admin bypasses subscription check entirely! Log in instantly.
+      // Admin bypasses subscription check entirely!
       localStorage.setItem("subscribed", "true");
       localStorage.removeItem("clickedYouTube");
-      navigate("/home", { replace: true });
+      handleLoginSuccess(emailAddress);
     } else {
-      await subscribeToChannel(accessToken);
+      await subscribeToChannel(accessToken, emailAddress);
     }
   }
 
-  async function subscribeToChannel(accessToken) {
+  async function subscribeToChannel(accessToken, emailAddress) {
     try {
       const res = await fetch(
         "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet",
@@ -165,68 +179,377 @@ function Login() {
           }),
         },
       );
-
+      
       // Successfully subscribed OR already subscribed (409 Conflict)
       if (res.status === 200 || res.status === 409) {
         localStorage.setItem("subscribed", "true");
         localStorage.removeItem("clickedYouTube");
-        navigate("/home", { replace: true });
+        handleLoginSuccess(emailAddress);
       } else {
-        // Fallback: If YouTube API returns an error (e.g. no channel exists on their Google account)
-        // we still log them in to prevent frustration
+        // Fallback: If YouTube API returns an error
         localStorage.setItem("subscribed", "true");
         localStorage.removeItem("clickedYouTube");
-        navigate("/home", { replace: true });
+        handleLoginSuccess(emailAddress);
       }
     } catch {
       // Fallback on network/fetch errors
       localStorage.setItem("subscribed", "true");
       localStorage.removeItem("clickedYouTube");
-      navigate("/home", { replace: true });
+      handleLoginSuccess(emailAddress);
     }
   }
 
   function handleContinue() {
     localStorage.setItem("subscribed", "true");
     localStorage.removeItem("clickedYouTube");
-    navigate("/", { replace: true });
+    handleLoginSuccess("");
   }
 
+  // -------------------------------------------------------------
+  // ONBOARDING HANDLERS
+  // -------------------------------------------------------------
+  function handleLoginSuccess(email) {
+    const finalEmail = email || localStorage.getItem("profileEmail") || "";
+    setUserEmail(finalEmail);
+    setShowOnboarding(true);
+  }
+
+  const handleContentPreferenceToggle = (item) => {
+    setOnboardingData(prev => {
+      const exists = prev.contentPreference.includes(item);
+      const updated = exists 
+        ? prev.contentPreference.filter(p => p !== item)
+        : [...prev.contentPreference, item];
+      return { ...prev, contentPreference: updated };
+    });
+  };
+
+  const handleSkipOrComplete = async () => {
+    // Save to Supabase silently in background
+    try {
+      const email = userEmail || localStorage.getItem("profileEmail");
+      if (email) {
+        await supabase.from('profiles').update({
+          display_name: onboardingData.displayName || null,
+          dharma_path: onboardingData.dharmaPath || null,
+          content_preference: onboardingData.contentPreference.length > 0 ? onboardingData.contentPreference : null,
+          sacred_time: onboardingData.sacredTime || null,
+          language: onboardingData.language || null
+        }).eq('email', email.toLowerCase());
+      }
+    } catch (err) {
+      console.error("Silent save onboarding failed:", err);
+    }
+    navigate("/home", { replace: true });
+  };
+
+  // -------------------------------------------------------------
+  // RENDERING ONBOARDING SCREEN
+  // -------------------------------------------------------------
+  if (showOnboarding) {
+    const stepsBackground = [
+      "/assets/ram_sita.png",        // Step 1
+      "/assets/vishnu_lakshmi.png",  // Step 2
+      "/assets/krishna_arjuna.png",   // Step 3
+      "/assets/krishna_radha.png",   // Step 4
+      "/assets/ram_sita.png"         // Step 5
+    ];
+
+    return (
+      <div className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] text-white selection:bg-[#FF9933]/30 font-sans overflow-x-hidden">
+        
+        {/* Dynamic Spiritual Cinematic Background */}
+        <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
+          <img 
+            src={stepsBackground[currentStep - 1]} 
+            alt="Dharmic Background" 
+            className="absolute inset-0 w-full h-full object-cover object-top opacity-25 transition-all duration-1000 ease-out mix-blend-screen scale-100" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/30 via-[#0a0a0a]/90 to-[#0a0a0a]"></div>
+        </div>
+
+        {/* Floating Top Controls (Progress Indicator and Skip Button) */}
+        <div className="relative z-20 w-full max-w-lg mx-auto px-6 pt-8 flex items-center justify-between">
+          {/* Progress Indicator */}
+          <div className="flex items-center gap-3">
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <div 
+                  key={s} 
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    s === currentStep 
+                      ? "w-6 bg-gradient-to-r from-[#FF9933] to-[#FF6600]" 
+                      : s < currentStep 
+                        ? "w-2.5 bg-[#FF9933]/60" 
+                        : "w-1.5 bg-white/20"
+                  }`} 
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-black tracking-wider text-gray-500 uppercase">
+              Step {currentStep} of 5
+            </span>
+          </div>
+
+          {/* Skip Button */}
+          <button 
+            onClick={handleSkipOrComplete}
+            className="text-xs font-extrabold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full border border-white/5 transition active:scale-95"
+          >
+            Skip Journey
+          </button>
+        </div>
+
+        {/* Central Card container with full glassmorphism */}
+        <div className="relative z-10 flex-1 flex items-center justify-center p-6 w-full max-w-lg mx-auto">
+          
+          <div className="w-full bg-black/50 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] min-h-[380px] flex flex-col justify-between">
+            
+            {/* STEP 1: Name Personalization */}
+            {currentStep === 1 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <span className="text-3xl inline-block mb-2">🙏</span>
+                  <h2 className="text-[#FF9933] text-sm font-black tracking-widest uppercase mb-1">Jai Shri Ram</h2>
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">What should we call you?</h1>
+                </div>
+                <div className="space-y-2">
+                  <input 
+                    type="text"
+                    required
+                    placeholder="Enter your first name only..."
+                    value={onboardingData.displayName}
+                    onChange={(e) => setOnboardingData({ ...onboardingData, displayName: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 hover:border-white/20 focus:border-[#FF9933] rounded-2xl px-5 py-4 text-center text-lg font-bold outline-none text-white transition placeholder-gray-600"
+                  />
+                  <p className="text-xs text-gray-500 text-center font-medium leading-relaxed">
+                    This is just so we can greet you personally inside the television platform.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: Dharma Path Motivations */}
+            {currentStep === 2 && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Your Dharma Path</h2>
+                  <h1 className="text-xl sm:text-2xl font-black text-white">What brings you to Sanatan Dharma?</h1>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    "🔱 I want to know my roots",
+                    "📖 I want to learn the scriptures",
+                    "🎵 I seek peace through devotion",
+                    "👨‍👩‍👧 I want my family to know our culture",
+                    "✨ I am already on the path, want more"
+                  ].map((path) => (
+                    <button
+                      key={path}
+                      onClick={() => {
+                        setOnboardingData({ ...onboardingData, dharmaPath: path });
+                        // Smooth auto transition
+                        setTimeout(() => setCurrentStep(3), 250);
+                      }}
+                      className={`w-full text-left px-5 py-3 rounded-xl border text-sm font-bold transition duration-300 flex items-center justify-between ${
+                        onboardingData.dharmaPath === path
+                          ? "bg-gradient-to-r from-[#FF9933]/20 to-[#FF6600]/20 border-[#FF9933] text-[#FF9933]"
+                          : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300"
+                      }`}
+                    >
+                      <span>{path}</span>
+                      {onboardingData.dharmaPath === path && <span className="text-[#FF9933] font-bold">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: Content Preference */}
+            {currentStep === 3 && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Content Preference</h2>
+                  <h1 className="text-xl sm:text-2xl font-black text-white">Which stories call to your soul?</h1>
+                  <p className="text-[10px] text-gray-500 mt-1">Select all that apply (minimum 1)</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    "Ramayan",
+                    "Mahabharat",
+                    "Bhagwat Geeta",
+                    "Shiv Puran",
+                    "Hanuman Katha",
+                    "Devotional Music"
+                  ].map((pref) => {
+                    const isSelected = onboardingData.contentPreference.includes(pref);
+                    return (
+                      <button
+                        key={pref}
+                        onClick={() => handleContentPreferenceToggle(pref)}
+                        className={`px-4 py-3 rounded-xl border text-xs font-bold transition duration-300 text-center flex items-center justify-center gap-2 ${
+                          isSelected
+                            ? "bg-gradient-to-r from-[#FF9933]/20 to-[#FF6600]/20 border-[#FF9933] text-[#FF9933]"
+                            : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300"
+                        }`}
+                      >
+                        <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] border ${
+                          isSelected ? "bg-[#FF9933] border-[#FF9933] text-black" : "border-white/20"
+                        }`}>
+                          {isSelected && "✓"}
+                        </span>
+                        <span>{pref}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: Sacred Time */}
+            {currentStep === 4 && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Your Sacred Time</h2>
+                  <h1 className="text-xl sm:text-2xl font-black text-white">When do you connect with the divine?</h1>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    "🌅 Early morning (Brahma Muhurta)",
+                    "☀️ During the day",
+                    "🌆 Evening prayers time",
+                    "🌙 Late night silence"
+                  ].map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => {
+                        setOnboardingData({ ...onboardingData, sacredTime: time });
+                        setTimeout(() => setCurrentStep(5), 250);
+                      }}
+                      className={`w-full text-left px-5 py-3.5 rounded-xl border text-sm font-bold transition duration-300 flex items-center justify-between ${
+                        onboardingData.sacredTime === time
+                          ? "bg-gradient-to-r from-[#FF9933]/20 to-[#FF6600]/20 border-[#FF9933] text-[#FF9933]"
+                          : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300"
+                      }`}
+                    >
+                      <span>{time}</span>
+                      {onboardingData.sacredTime === time && <span className="text-[#FF9933] font-bold">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: Language Selection */}
+            {currentStep === 5 && (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <h2 className="text-gray-500 text-[10px] font-black tracking-widest uppercase mb-1">Language Comfort</h2>
+                  <h1 className="text-xl sm:text-2xl font-black text-white">Choose your experience language</h1>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    "🇮🇳 Hindi",
+                    "🌺 Kannada",
+                    "🌴 Telugu",
+                    "🌸 Tamil",
+                    "🔵 English"
+                  ].map((lang) => (
+                    <button
+                      key={lang}
+                      onClick={() => setOnboardingData({ ...onboardingData, language: lang })}
+                      className={`w-full text-left px-5 py-3 rounded-xl border text-sm font-bold transition duration-300 flex items-center justify-between ${
+                        onboardingData.language === lang
+                          ? "bg-gradient-to-r from-[#FF9933]/20 to-[#FF6600]/20 border-[#FF9933] text-[#FF9933]"
+                          : "bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/10 text-gray-300"
+                      }`}
+                    >
+                      <span>{lang}</span>
+                      {onboardingData.language === lang && <span className="text-[#FF9933] font-bold">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bottom Actions Row */}
+            <div className="flex gap-3 mt-6 pt-4 border-t border-white/5">
+              {currentStep > 1 && (
+                <button
+                  onClick={() => setCurrentStep(prev => prev - 1)}
+                  className="px-6 py-3.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl font-bold text-xs transition active:scale-95"
+                >
+                  Back
+                </button>
+              )}
+              
+              <button
+                disabled={
+                  (currentStep === 1 && onboardingData.displayName.trim() === "") ||
+                  (currentStep === 2 && onboardingData.dharmaPath === "") ||
+                  (currentStep === 3 && onboardingData.contentPreference.length === 0) ||
+                  (currentStep === 4 && onboardingData.sacredTime === "") ||
+                  (currentStep === 5 && onboardingData.language === "")
+                }
+                onClick={() => {
+                  if (currentStep < 5) {
+                    setCurrentStep(prev => prev + 1);
+                  } else {
+                    handleSkipOrComplete();
+                  }
+                }}
+                className="flex-1 py-3.5 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-xs rounded-xl shadow-[0_0_20px_rgba(255,153,51,0.2)] hover:shadow-[0_0_30px_rgba(255,153,51,0.4)] transition active:scale-95 disabled:opacity-50 disabled:active:scale-100 disabled:shadow-none"
+              >
+                {currentStep === 5 ? "Begin My Journey ✨" : "Continue"}
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // STANDARD SIGN-IN SCREEN
+  // -------------------------------------------------------------
   return (
-    <div
+    <div 
       className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-[#FF9933]/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-
+      
       {/* Background Gods Images (Fades in based on mouse position) */}
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
         {/* Vishnu Lakshmi */}
-        <img
-          src="/assets/vishnu_lakshmi.png"
-          alt="Vishnu Lakshmi"
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
+        <img 
+          src="/assets/vishnu_lakshmi.png" 
+          alt="Vishnu Lakshmi" 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Ram Sita */}
-        <img
-          src="/assets/ram_sita.png"
-          alt="Ram Sita"
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
+        <img 
+          src="/assets/ram_sita.png" 
+          alt="Ram Sita" 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Krishna Arjuna */}
-        <img
-          src="/assets/krishna_arjuna.png"
-          alt="Krishna Arjuna"
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
+        <img 
+          src="/assets/krishna_arjuna.png" 
+          alt="Krishna Arjuna" 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
         {/* Krishna Radha */}
-        <img
-          src="/assets/krishna_radha.png"
-          alt="Krishna Radha"
-          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`}
+        <img 
+          src="/assets/krishna_radha.png" 
+          alt="Krishna Radha" 
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
       </div>
@@ -240,7 +563,7 @@ function Login() {
 
       {/* Main Content Area */}
       <div className="relative z-10 w-full max-w-md mx-auto px-6 py-8 sm:py-12 flex flex-col items-center justify-center min-h-[100dvh]">
-
+        
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
           <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_50px_rgba(255,153,51,0.15)] mb-4 sm:mb-6 ring-4 ring-black/50 shrink-0">
@@ -250,14 +573,14 @@ function Login() {
               className="w-full h-full object-cover"
             />
           </div>
-
+          
           <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-5xl font-black tracking-tighter text-center whitespace-nowrap mb-1 drop-shadow-lg shrink-0">
             Sanatan Dharma
           </h1>
           <h2 className="text-white text-2xl sm:text-3xl md:text-3xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
             Television
           </h2>
-
+          
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#FF9933]/60"></div>
             <p className="text-[#FF9933] text-sm sm:text-base font-medium tracking-wide text-center drop-shadow-md">
