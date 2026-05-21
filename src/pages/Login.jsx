@@ -247,7 +247,7 @@ function Login() {
       </div>
 
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 py-8 sm:py-12 flex flex-col items-center justify-center min-h-[100dvh]">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-6 pt-32 sm:pb-8 flex flex-col items-center justify-end min-h-[100dvh]">
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
@@ -274,8 +274,10 @@ function Login() {
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>
           </div>
 
-          <p className="text-gray-300 text-sm sm:text-base md:text-lg mb-8 leading-relaxed px-4">
-            Unlock a lifetime of divine wisdom and sacred stories. Click <strong className="text-white">Continue with Google</strong> to sign in for free and begin your journey.
+          <p className="text-gray-200 text-[15px] sm:text-base md:text-lg mb-8 leading-relaxed px-1 text-center drop-shadow-md font-medium">
+            Unlock a lifetime of divine wisdom and sacred stories.<br className="hidden sm:block" />
+            <span className="block mt-1 sm:mt-0 sm:inline">Click <strong className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">Continue with Google</strong> to sign in for free</span><br className="hidden sm:block" />
+            <span className="block mt-1 sm:mt-0 sm:inline">and begin your journey.</span>
           </p>
 
           {/* Custom Language Selector Proxying Google Translate */}
@@ -329,9 +331,9 @@ function Login() {
           </div>
 
           {/* Footer */}
-          <div className="w-full text-center mt-8 shrink-0 space-y-3">
+          <div className="w-full text-center mt-4 shrink-0 space-y-3">
             {/* Terms and Privacy */}
-            <div className="mt-8 text-center text-xs font-medium">
+            <div className="mt-4 text-center text-xs font-medium">
               <div className="flex justify-center space-x-4 text-gray-500">
                 <a href="/privacy" className="hover:text-white transition-colors duration-300 uppercase tracking-widest">Privacy Policy</a>
                 <span className="text-gray-700">•</span>
