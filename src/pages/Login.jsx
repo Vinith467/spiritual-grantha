@@ -268,7 +268,7 @@ function Login() {
           {/* Language Selector */}
           <div className="w-full mb-6">
             <select
-              value={i18n.language}
+              value={(i18n.language || 'en').substring(0, 2)}
               onChange={changeLanguage}
               className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
             >

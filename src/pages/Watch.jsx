@@ -68,6 +68,7 @@ function Watch() {
   }, [id])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchEpisode()
   }, [fetchEpisode])
 

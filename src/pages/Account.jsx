@@ -272,10 +272,11 @@ function Account() {
               <div className="space-y-1">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🇮🇳 {t('account.comfort_language')}</label>
                 <select
-                  value={language}
+                  value={(i18n.language || 'en').substring(0, 2)}
                   onChange={(e) => {
-                    setLanguage(e.target.value);
-                    i18n.changeLanguage(e.target.value);
+                    const newLang = e.target.value;
+                    setLanguage(newLang);
+                    i18n.changeLanguage(newLang);
                   }}
                   className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
                 >
