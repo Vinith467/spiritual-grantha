@@ -19,8 +19,12 @@ function Account() {
   const [contentPreference, setContentPreference] = useState([])
   const [sacredTime, setSacredTime] = useState('')
   const [selectedLang, setSelectedLang] = useState(() => {
-    const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
-    return match ? match[1] : 'en';
+    try {
+      const match = typeof document !== 'undefined' ? document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/) : null;
+      return match ? match[1] : 'en';
+    } catch(e) {
+      return 'en';
+    }
   });
   
   const handleLanguageChange = (newLang) => {

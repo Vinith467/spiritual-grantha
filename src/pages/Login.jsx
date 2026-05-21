@@ -11,8 +11,12 @@ function Login() {
   const [status, setStatus] = useState("idle");
   const [hoverZone, setHoverZone] = useState("none");
   const [selectedLang, setSelectedLang] = useState(() => {
-    const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
-    return match ? match[1] : 'en';
+    try {
+      const match = typeof document !== 'undefined' ? document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/) : null;
+      return match ? match[1] : 'en';
+    } catch(e) {
+      return 'en';
+    }
   });
 
   const handleLanguageChange = (newLang) => {
@@ -201,7 +205,7 @@ function Login() {
   // -------------------------------------------------------------
   return (
     <div 
-      className="fixed inset-0 w-full h-[100dvh] flex flex-col bg-[#0a0a0a] overflow-hidden selection:bg-[#FF9933]/30"
+      className="fixed inset-0 md:relative md:inset-auto w-full h-[100dvh] md:h-auto md:min-h-[100dvh] flex flex-col bg-[#0a0a0a] overflow-hidden md:overflow-x-hidden md:overflow-y-auto selection:bg-[#FF9933]/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -250,7 +254,7 @@ function Login() {
       </div>
 
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-12 pt-16 sm:pb-8 sm:pt-8 md:pt-4 flex flex-col items-center justify-end md:justify-center h-full">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-12 pt-16 sm:pb-12 sm:pt-16 md:pt-12 flex flex-col items-center justify-end md:justify-center h-full md:min-h-screen">
         
         {/* Top Header & Center Content */}
         <div className="flex flex-col items-center w-full mb-4 sm:mb-8">
