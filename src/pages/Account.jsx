@@ -17,7 +17,6 @@ function Account() {
   const [dharmaPath, setDharmaPath] = useState('')
   const [contentPreference, setContentPreference] = useState([])
   const [sacredTime, setSacredTime] = useState('')
-  const [language, setLanguage] = useState('')
   
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
 
@@ -64,7 +63,6 @@ function Account() {
             if (data.dharma_path) setDharmaPath(data.dharma_path)
             if (Array.isArray(data.content_preference)) setContentPreference(data.content_preference)
             if (data.sacred_time) setSacredTime(data.sacred_time)
-            if (data.language) setLanguage(data.language)
           }
         } catch (err) {
           console.error("Error retrieving Supabase devotee profile:", err)
@@ -118,8 +116,7 @@ function Account() {
             avatar_url: avatar || null,
             dharma_path: dharmaPath || null,
             content_preference: contentPreference.length > 0 ? contentPreference : null,
-            sacred_time: sacredTime || null,
-            language: language || null
+            sacred_time: sacredTime || null
           })
           .eq('email', email.toLowerCase())
 
@@ -271,22 +268,7 @@ function Account() {
                 </select>
               </div>
 
-              {/* Language Selection */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🇮🇳 Comfort Language</label>
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
-                >
-                  <option value="">Choose Language...</option>
-                  <option value="🇮🇳 Hindi">🇮🇳 Hindi</option>
-                  <option value="🌺 Kannada">🌺 Kannada</option>
-                  <option value="🌴 Telugu">🌴 Telugu</option>
-                  <option value="🌸 Tamil">🌸 Tamil</option>
-                  <option value="🔵 English">🔵 English</option>
-                </select>
-              </div>
+
 
               {/* Stories Calling to Soul (Pill-badge checkboxes) */}
               <div className="space-y-2">
