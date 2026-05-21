@@ -8,11 +8,11 @@ import { useTranslation } from 'react-i18next'
 function Account() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
-  const [name, setName] = useState('')
-  const [contact, setContact] = useState('')
-  const [avatar, setAvatar] = useState(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [profileEmail, setProfileEmail] = useState('')
+  const [name, setName] = useState(localStorage.getItem('profileName') || 'Devotee')
+  const [contact, setContact] = useState(localStorage.getItem('profileContact') || '')
+  const [avatar, setAvatar] = useState(localStorage.getItem('profileAvatar') || null)
+  const [isAdmin] = useState(localStorage.getItem('isAdmin') === 'true')
+  const [profileEmail] = useState(localStorage.getItem('profileEmail') || '')
   
   // Personalization States
   const [displayName, setDisplayName] = useState('')
@@ -23,18 +23,10 @@ function Account() {
   
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
 
-  // Load profile data from localStorage & Supabase
+  // Load profile data from Supabase
   useEffect(() => {
-    const email = localStorage.getItem('profileEmail') || ''
-    setProfileEmail(email)
-    setIsAdmin(localStorage.getItem('isAdmin') === 'true')
-    
-    // Load initial values from localStorage for instant display
-    setName(localStorage.getItem('profileName') || 'Devotee')
-    setContact(localStorage.getItem('profileContact') || '')
-    setAvatar(localStorage.getItem('profileAvatar') || null)
-
     // Load rich personalization direct from Supabase
+    const email = profileEmail;
     if (email) {
       const fetchProfile = async () => {
         try {
@@ -77,7 +69,7 @@ function Account() {
       }
       fetchProfile()
     }
-  }, [])
+  }, [profileEmail, i18n])
 
   // Handle avatar upload and convert to base64
   const handleAvatarChange = (e) => {
@@ -287,11 +279,11 @@ function Account() {
                   }}
                   className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
                 >
-                  <option value="en">🔵 English</option>
-                  <option value="hi">🇮🇳 Hindi / हिंदी</option>
-                  <option value="kn">🌺 Kannada / ಕನ್ನಡ</option>
-                  <option value="te">🌴 Telugu / తెలుగు</option>
-                  <option value="ta">🌸 Tamil / தமிழ்</option>
+                  <option value="en"> English</option>
+                  <option value="hi"> Hindi / हिंदी</option>
+                  <option value="kn"> Kannada / ಕನ್ನಡ</option>
+                  <option value="te"> Telugu / తెలుగు</option>
+                  <option value="ta"> Tamil / தமிழ்</option>
                 </select>
               </div>
 
