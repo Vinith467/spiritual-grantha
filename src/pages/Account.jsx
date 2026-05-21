@@ -18,7 +18,10 @@ function Account() {
   const [dharmaPath, setDharmaPath] = useState('')
   const [contentPreference, setContentPreference] = useState([])
   const [sacredTime, setSacredTime] = useState('')
-  const [selectedLang, setSelectedLang] = useState('en')
+  const [selectedLang, setSelectedLang] = useState(() => {
+    const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+    return match ? match[1] : 'en';
+  });
   
   const handleLanguageChange = (newLang) => {
     setSelectedLang(newLang);

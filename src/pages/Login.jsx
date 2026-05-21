@@ -10,7 +10,10 @@ function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("idle");
   const [hoverZone, setHoverZone] = useState("none");
-  const [selectedLang, setSelectedLang] = useState("en");
+  const [selectedLang, setSelectedLang] = useState(() => {
+    const match = document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/);
+    return match ? match[1] : 'en';
+  });
 
   const handleLanguageChange = (newLang) => {
     setSelectedLang(newLang);
