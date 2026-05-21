@@ -1,10 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { PlaySquareOutlined, CustomerServiceOutlined, HomeFilled, InfoCircleOutlined, UserOutlined } from '@ant-design/icons'
+import { useTranslation } from 'react-i18next'
 
 function BottomNavbar() {
   const navigate = useNavigate()
   const location = useLocation()
+  const { t } = useTranslation()
   const [avatar, setAvatar] = useState(null)
 
   // Listen to profile updates (using storage event and custom interval for reactive updates)
@@ -33,7 +35,7 @@ function BottomNavbar() {
         }`}
       >
         <PlaySquareOutlined className="text-[24px]" />
-        <span className="text-[10px] font-bold tracking-wider">Shorts</span>
+        <span className="text-[10px] font-bold tracking-wider">{t('nav.shorts')}</span>
       </button>
 
       {/* Music Option */}
@@ -44,7 +46,7 @@ function BottomNavbar() {
         }`}
       >
         <CustomerServiceOutlined className="text-[24px]" />
-        <span className="text-[10px] font-bold tracking-wider">Music</span>
+        <span className="text-[10px] font-bold tracking-wider">{t('nav.music')}</span>
       </button>
 
       {/* Home (Accented Center Button) */}
@@ -63,7 +65,7 @@ function BottomNavbar() {
         }`}
       >
         <InfoCircleOutlined className="text-[24px]" />
-        <span className="text-[10px] font-bold tracking-wider">About</span>
+        <span className="text-[10px] font-bold tracking-wider">{t('nav.about')}</span>
       </button>
 
       {/* Account Option */}
@@ -84,7 +86,7 @@ function BottomNavbar() {
         ) : (
           <UserOutlined className="text-[24px]" />
         )}
-        <span className="text-[10px] font-bold tracking-wider">Account</span>
+        <span className="text-[10px] font-bold tracking-wider">{t('nav.account')}</span>
       </button>
 
     </div>
