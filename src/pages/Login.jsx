@@ -198,7 +198,7 @@ function Login() {
   // -------------------------------------------------------------
   return (
     <div 
-      className="relative min-h-screen w-full flex flex-col bg-[#0a0a0a] overflow-x-hidden selection:bg-[#FF9933]/30"
+      className="fixed inset-0 w-full h-[100dvh] flex flex-col bg-[#0a0a0a] overflow-hidden selection:bg-[#FF9933]/30"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
@@ -247,11 +247,11 @@ function Login() {
       </div>
 
       {/* Main Content Area */}
-      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-6 pt-32 sm:pb-8 flex flex-col items-center justify-end min-h-[100dvh]">
+      <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-12 pt-16 sm:pb-12 sm:pt-32 flex flex-col items-center justify-end h-full">
         
         {/* Top Header & Center Content */}
-        <div className="flex flex-col items-center w-full mb-6 sm:mb-8">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_50px_rgba(255,153,51,0.15)] mb-4 sm:mb-6 ring-4 ring-black/50 shrink-0">
+        <div className="flex flex-col items-center w-full mb-4 sm:mb-8">
+          <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_50px_rgba(255,153,51,0.15)] mb-3 sm:mb-6 ring-4 ring-black/50 shrink-0">
             <img
               src="/icon-192.png"
               alt="Grantha"
@@ -266,7 +266,7 @@ function Login() {
             Television
           </h2>
           
-          <div className="flex items-center justify-center w-full mb-6">
+          <div className="flex items-center justify-center w-full mb-4 sm:mb-6">
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>
             <p className="mx-3 sm:mx-4 text-[#FF9933] font-medium text-xs sm:text-sm md:text-base tracking-widest whitespace-nowrap notranslate">
               धर्मो रक्षति रक्षितः
@@ -274,7 +274,7 @@ function Login() {
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>
           </div>
 
-          <p className="text-gray-200 text-[15px] sm:text-base md:text-lg mb-8 leading-relaxed px-1 text-center drop-shadow-md font-medium">
+          <p className="text-gray-200 text-[14px] sm:text-base md:text-lg mb-6 sm:mb-8 leading-relaxed px-1 text-center drop-shadow-md font-medium shrink-0">
             Unlock a lifetime of divine wisdom and sacred stories.<br className="hidden sm:block" />
             <span className="block mt-1 sm:mt-0 sm:inline">Click <strong className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">Continue with Google</strong> to sign in for free</span><br className="hidden sm:block" />
             <span className="block mt-1 sm:mt-0 sm:inline">and begin your journey.</span>
