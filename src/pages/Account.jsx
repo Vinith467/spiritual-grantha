@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import LanguageSelector from '../components/LanguageSelector'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
@@ -17,7 +18,28 @@ function Account() {
   const [dharmaPath, setDharmaPath] = useState('')
   const [contentPreference, setContentPreference] = useState([])
   const [sacredTime, setSacredTime] = useState('')
+  const [selectedLang, setSelectedLang] = useState('en')
   
+  const handleLanguageChange = (newLang) => {
+    setSelectedLang(newLang);
+    const googleSelect = document.querySelector(".goog-te-combo");
+    if (googleSelect) {
+      googleSelect.value = newLang;
+      let event;
+      if (typeof window.Event === 'function') {
+        event = new window.Event("change", { bubbles: true, cancelable: true });
+      } else {
+        event = document.createEvent('HTMLEvents');
+        event.initEvent('change', true, true);
+      }
+      googleSelect.dispatchEvent(event);
+    } else {
+      document.cookie = `googtrans=/en/${newLang}; path=/`;
+      document.cookie = `googtrans=/en/${newLang}; path=/; domain=${window.location.hostname}`;
+      window.location.reload();
+    }
+  };
+
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
 
   // Load profile data from Supabase
@@ -261,9 +283,13 @@ function Account() {
               </div>
 
               {/* Language Selection */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🇮🇳 Comfort Language</label>
-                <div id="google_translate_element" className="w-full overflow-hidden rounded-xl border border-white/10 bg-[#141414] px-4 py-2 [&>div]:inline-block"></div>
+              <div className="space-y-1 relative z-50">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">🇮🇳 Comfort Language</label>
+                <LanguageSelector 
+                  selectedLang={selectedLang} 
+                  onLanguageChange={handleLanguageChange} 
+                />
+                <div id="google_translate_element"></div>
               </div>
 
               {/* Stories Calling to Soul (Pill-badge checkboxes) */}

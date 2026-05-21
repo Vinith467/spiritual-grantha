@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+/* Hide Google Translate UI elements safely so events still fire */
+#google_translate_element {
+  position: absolute !important;
+  opacity: 0 !important;
+  z-index: -1000 !important;
+  pointer-events: none !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+}
+
+.skiptranslate iframe {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}

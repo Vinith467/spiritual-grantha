@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import LanguageSelector from "../components/LanguageSelector";
 const CLIENT_ID =
   "778407955821-lsjr8ffc36l94s4goorttq8ou52dk4i4.apps.googleusercontent.com";
 const CHANNEL_ID = "UCNIsckaXm3JOTRrmhQVGD2g";
@@ -9,6 +10,27 @@ function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("idle");
   const [hoverZone, setHoverZone] = useState("none");
+  const [selectedLang, setSelectedLang] = useState("en");
+
+  const handleLanguageChange = (newLang) => {
+    setSelectedLang(newLang);
+    const googleSelect = document.querySelector(".goog-te-combo");
+    if (googleSelect) {
+      googleSelect.value = newLang;
+      let event;
+      if (typeof window.Event === 'function') {
+        event = new window.Event("change", { bubbles: true, cancelable: true });
+      } else {
+        event = document.createEvent('HTMLEvents');
+        event.initEvent('change', true, true);
+      }
+      googleSelect.dispatchEvent(event);
+    } else {
+      document.cookie = `googtrans=/en/${newLang}; path=/`;
+      document.cookie = `googtrans=/en/${newLang}; path=/; domain=${window.location.hostname}`;
+      window.location.reload();
+    }
+  };
 
   const handleMouseMove = (e) => {
     const { clientX } = e;
@@ -258,10 +280,16 @@ function Login() {
             Experience the divine journey of Sanatan Dharma through our curated collection of sacred stories, chants, and wisdom.
           </p>
 
-          {/* Language Selector */}
-          <div className="w-full mb-6 flex justify-center">
-            <div id="google_translate_element" className="w-full text-center overflow-hidden rounded-xl border border-white/10 bg-[#141414] py-1 [&>div]:inline-block"></div>
+          {/* Custom Language Selector Proxying Google Translate */}
+          <div className="w-full mb-6 z-50 relative">
+            <LanguageSelector 
+              selectedLang={selectedLang} 
+              onLanguageChange={handleLanguageChange} 
+            />
           </div>
+
+          {/* Hidden Original Google Element */}
+          <div id="google_translate_element"></div>
 
           {/* Status Messages */}
           {status === "subscribing" && (
