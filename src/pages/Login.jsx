@@ -258,12 +258,12 @@ function Login() {
   // -------------------------------------------------------------
   if (showOnboarding) {
     const stepsBackground = [
-      "/assets/ram_sita.png",        // Step 1
-      "/assets/vishnu_lakshmi.png",  // Step 2
-      "/assets/vishnu_lakshmi.png",  // Step 3
-      "/assets/krishna_arjuna.png",   // Step 4
-      "/assets/krishna_radha.png",   // Step 5
-      "/assets/ram_sita.png"         // Step 6
+      "/assets/ram_sita.webp",        // Step 1
+      "/assets/vishnu_lakshmi.webp",  // Step 2
+      "/assets/vishnu_lakshmi.webp",  // Step 3
+      "/assets/krishna_arjuna.webp",   // Step 4
+      "/assets/krishna_radha.webp",   // Step 5
+      "/assets/ram_sita.webp"         // Step 6
     ];
 
     return (
@@ -562,29 +562,33 @@ function Login() {
       <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
         {/* Vishnu Lakshmi */}
         <img 
-          src="/assets/vishnu_lakshmi.png" 
+          src="/assets/vishnu_lakshmi.webp" 
           alt="Vishnu Lakshmi" 
+          fetchpriority="high"
           className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Ram Sita */}
         <img 
-          src="/assets/ram_sita.png" 
+          src="/assets/ram_sita.webp" 
           alt="Ram Sita" 
+          loading="lazy"
           className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center left' }}
         />
         {/* Krishna Arjuna */}
         <img 
-          src="/assets/krishna_arjuna.png" 
+          src="/assets/krishna_arjuna.webp" 
           alt="Krishna Arjuna" 
+          loading="lazy"
           className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
         {/* Krishna Radha */}
         <img 
-          src="/assets/krishna_radha.png" 
+          src="/assets/krishna_radha.webp" 
           alt="Krishna Radha" 
+          loading="lazy"
           className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
           style={{ transformOrigin: 'center right' }}
         />
