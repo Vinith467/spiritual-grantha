@@ -272,11 +272,11 @@ function Login() {
               onChange={changeLanguage}
               className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
             >
-              <option value="en">🔵 English</option>
-              <option value="hi">🇮🇳 Hindi / हिंदी</option>
-              <option value="kn">🌺 Kannada / ಕನ್ನಡ</option>
-              <option value="te">🌴 Telugu / తెలుగు</option>
-              <option value="ta">🌸 Tamil / தமிழ்</option>
+              <option value="en"> English</option>
+              <option value="hi"> Hindi / हिंदी</option>
+              <option value="kn"> Kannada / ಕನ್ನಡ</option>
+              <option value="te"> Telugu / తెలుగు</option>
+              <option value="ta"> Tamil / தமிழ்</option>
             </select>
           </div>
 
