@@ -16,7 +16,7 @@ function HeroBanner({ seriesList }) {
     }, 6000)
 
     return () => clearInterval(timer)
-  }, [current, seriesList?.length])
+  }, [current, seriesList])
 
   if (!seriesList || seriesList.length === 0) return <div className="h-64 bg-[#141414]" />
 
@@ -53,7 +53,7 @@ function HeroBanner({ seriesList }) {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {seriesList.map((series, i) => {
+          {seriesList.map((series) => {
             const firstEpisode = series.episodes?.[0]
             const isWatched = lastWatched && series.episodes?.some(ep => ep.id === lastWatched.id)
 
