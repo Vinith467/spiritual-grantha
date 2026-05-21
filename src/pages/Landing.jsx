@@ -6,12 +6,18 @@ function Landing() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   // Initialize values directly to avoid synchronous setState inside useEffect which causes an extra render
   const [isIOS] = useState(() => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()))
-  const [isStandalone, setIsStandalone] = useState(() => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone)
 
   useEffect(() => {
     // If already logged in, take them straight to the app feed
     if (localStorage.getItem('subscribed') === 'true') {
       navigate('/home', { replace: true })
+      return
+    }
+
+    // If opened as a standalone PWA, take them directly to login
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+      navigate('/login', { replace: true })
+      return
     }
 
     const handleBeforeInstallPrompt = (e) => {
@@ -23,14 +29,16 @@ function Landing() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     
-    // Optional: detect when installed
-    window.addEventListener('appinstalled', () => {
+    // Detect when installed and automatically redirect to login
+    const handleAppInstalled = () => {
       setDeferredPrompt(null)
-      setIsStandalone(true)
-    })
+      navigate('/login', { replace: true })
+    }
+    window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+      window.removeEventListener('appinstalled', handleAppInstalled)
     }
   }, [navigate])
 
@@ -80,19 +88,7 @@ function Landing() {
           To get the best experience, please install our premium spiritual streaming platform directly on your device.
         </p>
 
-        {isStandalone ? (
-           <div className="w-full p-6 bg-green-500/10 border border-green-500/20 rounded-2xl mb-8 flex flex-col items-center">
-             <span className="text-4xl block mb-2">🎉</span>
-             <h2 className="text-xl font-bold text-green-400 mb-2">App Installed!</h2>
-             <p className="text-gray-300 text-sm mb-6">You can now proceed to sign in and enjoy the content.</p>
-             <button
-                onClick={() => navigate('/login')}
-                className="w-full sm:w-auto px-10 py-3 bg-white text-black font-extrabold rounded-xl hover:bg-gray-200 transition-all active:scale-95 shadow-lg"
-             >
-                Continue to Sign In
-             </button>
-           </div>
-        ) : isIOS ? (
+        {isIOS ? (
           <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 mb-8 text-left relative overflow-hidden shadow-2xl">
              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[50px]"></div>
              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">

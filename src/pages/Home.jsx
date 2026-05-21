@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+
 import { supabase } from '../lib/supabase'
 import Navbar from '../components/Navbar'
 import HeroBanner from '../components/HeroBanner'
@@ -12,7 +12,6 @@ function Home() {
   const [loading, setLoading] = useState(true)
 
   const fetchSeries = useCallback(async () => {
-    setLoading(true)
     let supabaseSeries = []
     try {
       const { data } = await supabase
@@ -64,6 +63,7 @@ function Home() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSeries()
   }, [fetchSeries])
 
