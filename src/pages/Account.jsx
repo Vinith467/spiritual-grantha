@@ -3,11 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
-import { useTranslation } from 'react-i18next'
 
 function Account() {
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation()
   const [name, setName] = useState(localStorage.getItem('profileName') || 'Devotee')
   const [contact, setContact] = useState(localStorage.getItem('profileContact') || '')
   const [avatar, setAvatar] = useState(localStorage.getItem('profileAvatar') || null)
@@ -19,7 +17,6 @@ function Account() {
   const [dharmaPath, setDharmaPath] = useState('')
   const [contentPreference, setContentPreference] = useState([])
   const [sacredTime, setSacredTime] = useState('')
-  const [language, setLanguage] = useState(i18n.language)
   
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
 
@@ -58,10 +55,6 @@ function Account() {
             if (data.dharma_path) setDharmaPath(data.dharma_path)
             if (Array.isArray(data.content_preference)) setContentPreference(data.content_preference)
             if (data.sacred_time) setSacredTime(data.sacred_time)
-            if (data.language) {
-              setLanguage(data.language)
-              i18n.changeLanguage(data.language)
-            }
           }
         } catch (err) {
           console.error("Error retrieving Supabase devotee profile:", err)
@@ -69,7 +62,7 @@ function Account() {
       }
       fetchProfile()
     }
-  }, [profileEmail, i18n])
+  }, [profileEmail])
 
   // Handle avatar upload and convert to base64
   const handleAvatarChange = (e) => {
@@ -115,8 +108,7 @@ function Account() {
             avatar_url: avatar || null,
             dharma_path: dharmaPath || null,
             content_preference: contentPreference.length > 0 ? contentPreference : null,
-            sacred_time: sacredTime || null,
-            language: language || null
+            sacred_time: sacredTime || null
           })
           .eq('email', email.toLowerCase())
 
@@ -157,7 +149,7 @@ function Account() {
           
           <div className="flex justify-between items-center mb-6">
             <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3.5 py-1 rounded-full text-[10px] font-bold text-[#FF9933] uppercase tracking-widest inline-block">
-              {t('account.title')}
+              My Account
             </span>
             <span className="text-[10px] text-gray-500 font-extrabold tracking-wider truncate max-w-[150px] uppercase">
               {profileEmail}
@@ -201,7 +193,7 @@ function Account() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Full Name / Greeting Name Input */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">{t('account.display_name')}</label>
+                <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">Your Personal Details</label>
                 <input
                   type="text"
                   required
@@ -217,7 +209,7 @@ function Account() {
 
               {/* Contact Number Input */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">{t('account.contact_number')}</label>
+                <label className="text-xs font-bold text-[#FF9933] uppercase tracking-wider block">Contact Number</label>
                 <input
                   type="tel"
                   required
@@ -232,12 +224,12 @@ function Account() {
             {/* 🕉️ PERSONALIZATION SECTION */}
             <div className="border-t border-white/10 pt-6 space-y-5">
               <h3 className="text-sm font-black text-white tracking-widest uppercase flex items-center gap-2">
-                <span>🕉️ {t('account.dharma_journey')}</span>
+                <span>🕉️ Your Dharma Journey</span>
               </h3>
 
               {/* Dharma Path Select */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🔱 {t('account.motivation')}</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🔱 Motivation</label>
                 <select
                   value={dharmaPath}
                   onChange={(e) => setDharmaPath(e.target.value)}
@@ -254,7 +246,7 @@ function Account() {
 
               {/* Sacred connection hours */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🌅 {t('account.sacred_time')}</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🌅 Sacred Connection Time</label>
                 <select
                   value={sacredTime}
                   onChange={(e) => setSacredTime(e.target.value)}
@@ -270,27 +262,13 @@ function Account() {
 
               {/* Language Selection */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🇮🇳 {t('account.comfort_language')}</label>
-                <select
-                  value={(i18n.language || 'en').substring(0, 2)}
-                  onChange={(e) => {
-                    const newLang = e.target.value;
-                    setLanguage(newLang);
-                    i18n.changeLanguage(newLang);
-                  }}
-                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
-                >
-                  <option value="en"> English</option>
-                  <option value="hi"> Hindi / हिंदी</option>
-                  <option value="kn"> Kannada / ಕನ್ನಡ</option>
-                  <option value="te"> Telugu / తెలుగు</option>
-                  <option value="ta"> Tamil / தமிழ்</option>
-                </select>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">🇮🇳 Comfort Language</label>
+                <div id="google_translate_element" className="w-full overflow-hidden rounded-xl border border-white/10 bg-[#141414] px-4 py-2 [&>div]:inline-block"></div>
               </div>
 
               {/* Stories Calling to Soul (Pill-badge checkboxes) */}
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">📖 {t('account.stories')}</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block">📖 Stories Calling to your Soul</label>
                 <div className="flex flex-wrap gap-2">
                   {[
                     "Ramayan",
@@ -335,7 +313,7 @@ function Account() {
               {saveStatus === 'saving' && (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
               )}
-              {saveStatus === 'saved' ? t('account.saved') : saveStatus === 'error' ? t('account.error') : t('account.save')}
+              {saveStatus === 'saved' ? 'Saved Successfully ✓' : saveStatus === 'error' ? 'Error Saving Profile' : 'Save Profile'}
             </button>
 
           </form>
@@ -350,7 +328,7 @@ function Account() {
               onClick={handleSignOut}
               className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-bold text-xs px-4 py-2.5 rounded-xl transition"
             >
-              {t('account.sign_out')}
+              Sign out from device
             </button>
           </div>
 
@@ -366,7 +344,7 @@ function Account() {
                   onClick={() => navigate('/admin')}
                   className="bg-[#FF9933] hover:bg-[#FF6600] text-black font-extrabold text-xs px-4 py-2.5 rounded-xl transition duration-300 active:scale-95 shadow-[0_0_15px_rgba(255,153,51,0.25)] border border-[#FF9933]/50"
                 >
-                  {t('nav.admin')}
+                  Dashboard
                 </button>
               </div>
             </div>

@@ -1,20 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import { useTranslation } from 'react-i18next';
 const CLIENT_ID =
   "778407955821-lsjr8ffc36l94s4goorttq8ou52dk4i4.apps.googleusercontent.com";
 const CHANNEL_ID = "UCNIsckaXm3JOTRrmhQVGD2g";
 
 function Login() {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
   const [status, setStatus] = useState("idle");
   const [hoverZone, setHoverZone] = useState("none");
-
-  const changeLanguage = (e) => {
-    i18n.changeLanguage(e.target.value);
-  };
 
   const handleMouseMove = (e) => {
     const { clientX } = e;
@@ -109,7 +103,6 @@ function Login() {
               name: userInfo.name || 'Sadhaka',
               avatar_url: userInfo.picture || '',
               role: role,
-              language: i18n.language,
               last_login: new Date().toISOString()
             }
           ], { onConflict: 'email' })
@@ -245,10 +238,10 @@ function Login() {
           </div>
           
           <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-5xl font-black tracking-tighter text-center whitespace-nowrap mb-1 drop-shadow-lg shrink-0">
-            {t('login.title')}
+            Sanatan Dharma
           </h1>
           <h2 className="text-white text-2xl sm:text-3xl md:text-3xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
-            {t('login.television')}
+            Television
           </h2>
           
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
@@ -262,22 +255,12 @@ function Login() {
 
         <div className="w-full flex flex-col items-center">
           <p className="text-gray-300 text-sm sm:text-base text-center mb-6 leading-relaxed font-medium px-2 shrink-0">
-            {t('login.subtitle')}
+            Experience the divine journey of Sanatan Dharma through our curated collection of sacred stories, chants, and wisdom.
           </p>
 
           {/* Language Selector */}
-          <div className="w-full mb-6">
-            <select
-              value={(i18n.language || 'en').substring(0, 2)}
-              onChange={changeLanguage}
-              className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300"
-            >
-              <option value="en"> English</option>
-              <option value="hi"> Hindi / हिंदी</option>
-              <option value="kn"> Kannada / ಕನ್ನಡ</option>
-              <option value="te"> Telugu / తెలుగు</option>
-              <option value="ta"> Tamil / தமிழ்</option>
-            </select>
+          <div className="w-full mb-6 flex justify-center">
+            <div id="google_translate_element" className="w-full text-center overflow-hidden rounded-xl border border-white/10 bg-[#141414] py-1 [&>div]:inline-block"></div>
           </div>
 
           {/* Status Messages */}
@@ -310,7 +293,7 @@ function Login() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               <span className="text-gray-800 font-bold text-sm sm:text-base md:text-lg">
-                {status === "signing" ? "Opening Google..." : t('login.btn_continue')}
+                {status === "signing" ? "Opening Google..." : "Continue with Google"}
               </span>
             </button>
 
@@ -319,12 +302,12 @@ function Login() {
           {/* Footer */}
           <div className="w-full text-center mt-8 shrink-0 space-y-3">
             <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium tracking-wide">
-              {t('login.terms')}
+              By continuing, you agree to our
             </p>
             <div className="flex items-center justify-center gap-3 text-[10px] text-gray-600 font-semibold tracking-wider uppercase">
-              <a href="/privacy" className="hover:text-[#FF9933] hover:underline transition">{t('login.privacy_policy')}</a>
+              <a href="/privacy" className="hover:text-[#FF9933] hover:underline transition">Privacy Policy</a>
               <span className="text-gray-800">•</span>
-              <a href="/terms" className="hover:text-[#FF9933] hover:underline transition">{t('login.terms_of_service')}</a>
+              <a href="/terms" className="hover:text-[#FF9933] hover:underline transition">Terms of Service</a>
             </div>
           </div>
         </div>
