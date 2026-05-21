@@ -266,18 +266,16 @@ function Login() {
             Television
           </h2>
           
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-r from-transparent to-[#FF9933]/60"></div>
-            <p className="text-[#FF9933] text-sm sm:text-base font-medium tracking-wide text-center drop-shadow-md">
+          <div className="flex items-center justify-center w-full mb-6">
+            <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>
+            <p className="mx-3 sm:mx-4 text-[#FF9933] font-medium text-xs sm:text-sm md:text-base tracking-widest whitespace-nowrap notranslate">
               धर्मो रक्षति रक्षितः
             </p>
-            <div className="h-[1px] w-8 sm:w-12 bg-gradient-to-l from-transparent to-[#FF9933]/60"></div>
+            <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>
           </div>
-        </div>
 
-        <div className="w-full flex flex-col items-center">
-          <p className="text-gray-300 text-sm sm:text-base text-center mb-6 leading-relaxed font-medium px-2 shrink-0">
-            Experience the divine journey of Sanatan Dharma through our curated collection of sacred stories, chants, and wisdom.
+          <p className="text-gray-300 text-sm sm:text-base md:text-lg mb-8 leading-relaxed px-4">
+            Unlock a lifetime of divine wisdom and sacred stories. Click <strong className="text-white">Continue with Google</strong> to sign in for free and begin your journey.
           </p>
 
           {/* Custom Language Selector Proxying Google Translate */}
@@ -332,11 +330,8 @@ function Login() {
 
           {/* Footer */}
           <div className="w-full text-center mt-8 shrink-0 space-y-3">
-            {/* Terms and Encouragement */}
+            {/* Terms and Privacy */}
             <div className="mt-8 text-center text-xs font-medium">
-              <p className="mb-4 text-gray-300 text-sm leading-relaxed max-w-sm mx-auto">
-                Unlock a lifetime of divine wisdom and sacred stories. Click <strong className="text-white">Continue with Google</strong> to sign in for free and begin your journey.
-              </p>
               <div className="flex justify-center space-x-4 text-gray-500">
                 <a href="/privacy" className="hover:text-white transition-colors duration-300 uppercase tracking-widest">Privacy Policy</a>
                 <span className="text-gray-700">•</span>
