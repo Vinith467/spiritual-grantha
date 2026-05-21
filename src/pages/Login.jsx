@@ -9,7 +9,6 @@ const CHANNEL_ID = "UCNIsckaXm3JOTRrmhQVGD2g";
 function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("idle");
-  const [cameBack, setCameBack] = useState(false);
   const [hoverZone, setHoverZone] = useState("none");
 
   // Onboarding States
@@ -48,19 +47,6 @@ function Login() {
       navigate("/home", { replace: true });
     }
 
-    if (localStorage.getItem("clickedYouTube") === "true") {
-      setCameBack(true);
-    }
-
-    function handleVisibilityChange() {
-      if (document.visibilityState === "visible") {
-        if (localStorage.getItem("clickedYouTube") === "true") {
-          setCameBack(true);
-        }
-      }
-    }
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
     const script = document.createElement("script");
     script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
@@ -68,18 +54,11 @@ function Login() {
     document.body.appendChild(script);
 
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (document.body.contains(script)) document.body.removeChild(script);
     };
   }, [navigate]);
 
-  function handleYouTubeSubscribe() {
-    localStorage.setItem("clickedYouTube", "true");
-    window.open(
-      "https://www.google.com/url?q=https://www.youtube.com/@Vinu_s_shetty467?sub_confirmation%3D1",
-      "_blank",
-    );
-  }
+
 
   async function handleGoogleLogin() {
     setStatus("signing");
@@ -200,11 +179,7 @@ function Login() {
     }
   }
 
-  function handleContinue() {
-    localStorage.setItem("subscribed", "true");
-    localStorage.removeItem("clickedYouTube");
-    handleLoginSuccess("");
-  }
+
 
   // -------------------------------------------------------------
   // ONBOARDING HANDLERS
@@ -632,7 +607,7 @@ function Login() {
 
         <div className="w-full flex flex-col items-center">
           <p className="text-gray-300 text-sm sm:text-base text-center mb-6 leading-relaxed font-medium px-2 shrink-0">
-            Subscribe to our YouTube channel to unlock free access to all spiritual content.
+            Sign in with Google to unlock free access to all spiritual content.
           </p>
 
           {/* Status Messages */}
@@ -665,54 +640,16 @@ function Login() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
               <span className="text-gray-800 font-bold text-sm sm:text-base md:text-lg">
-                {status === "signing" ? "Opening Google..." : "Subscribe with Google"}
+                {status === "signing" ? "Opening Google..." : "Continue with Google"}
               </span>
             </button>
 
-            <div className="flex items-center gap-3 sm:gap-4 py-1 sm:py-2">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-              <span className="text-gray-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest">or</span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-            </div>
-
-            <button
-              onClick={handleYouTubeSubscribe}
-              className="w-full flex items-center justify-center gap-3 bg-[#FF0000] hover:bg-[#E60000] active:scale-[0.98] transition-all duration-300 text-white px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,0,0,0.15)] hover:shadow-[0_0_40px_rgba(255,0,0,0.25)] border border-red-500/20"
-            >
-              <svg className="w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-              </svg>
-              <span className="font-bold text-sm sm:text-base md:text-lg tracking-wide">
-                Subscribe on YouTube
-              </span>
-            </button>
           </div>
-
-          {cameBack && (
-            <div className="w-full mt-6 shrink-0">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF9933]/30 to-transparent"></div>
-                <span className="text-[#FF9933] text-[10px] sm:text-sm font-bold uppercase tracking-widest drop-shadow-md">Almost Done!</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#FF9933]/30 to-transparent"></div>
-              </div>
-              <button
-                onClick={handleContinue}
-                className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF9933] to-[#FF6600] hover:from-[#FFAA55] hover:to-[#FF8822] active:scale-[0.98] transition-all duration-300 text-black px-6 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-[0_0_30px_rgba(255,153,51,0.2)] hover:shadow-[0_0_40px_rgba(255,153,51,0.3)] border border-[#FF9933]/50"
-              >
-                <span className="font-extrabold text-sm sm:text-base md:text-lg tracking-wide">
-                  I've Subscribed — Watch Now
-                </span>
-                <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          )}
 
           {/* Footer */}
           <div className="w-full text-center mt-8 shrink-0 space-y-3">
             <p className="text-gray-500 text-[10px] sm:text-xs md:text-sm font-medium tracking-wide">
-              Free forever for subscribers. One time only.
+              Free forever. One time Google Sign in only.
             </p>
             <div className="flex items-center justify-center gap-3 text-[10px] text-gray-600 font-semibold tracking-wider uppercase">
               <a href="/privacy" className="hover:text-[#FF9933] hover:underline transition">Privacy Policy</a>
