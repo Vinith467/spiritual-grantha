@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { useAuth } from "../lib/AuthContext";
 import { useGoogleTranslate } from "../lib/useGoogleTranslate";
 import LanguageSelector from "../components/LanguageSelector";
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -13,6 +14,8 @@ function Login() {
   const { selectedLang, handleLanguageChange } = useGoogleTranslate();
 
 
+
+  const { signIn, setAdminStatus, updateProfile } = useAuth();
 
   const handleMouseMove = (e) => {
     const { clientX } = e;
@@ -48,8 +51,6 @@ function Login() {
     };
   }, [navigate]);
 
-
-
   async function handleGoogleLogin() {
     setStatus("signing");
     try {
@@ -81,7 +82,6 @@ function Login() {
   async function fetchUserInfoAndVerify(accessToken) {
     setStatus("subscribing");
     let isUserAdmin = false;
-    let emailAddress = "";
     try {
       // 1. Fetch user info from Google OAuth2 API
       const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
@@ -90,12 +90,13 @@ function Login() {
       if (userRes.ok) {
         const userInfo = await userRes.json();
         const email = userInfo.email?.toLowerCase();
-        emailAddress = email;
         
         // Auto-populate local profile with their real Google Account info!
-        if (userInfo.name) localStorage.setItem("profileName", userInfo.name);
-        if (userInfo.picture) localStorage.setItem("profileAvatar", userInfo.picture);
-        if (email) localStorage.setItem("profileEmail", email);
+        updateProfile({
+          name: userInfo.name || 'Sadhaka',
+          email: email || '',
+          avatar: userInfo.picture || null
+        });
 
         // Security check: Verify if they match the admin google accounts list
         const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
@@ -105,11 +106,11 @@ function Login() {
         
         let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
-          localStorage.setItem("isAdmin", "true");
+          setAdminStatus(true);
           isUserAdmin = true;
           role = 'Admin';
         } else {
-          localStorage.setItem("isAdmin", "false");
+          setAdminStatus(false);
         }
 
         // Upsert profile in Supabase to keep real devotee profileSynced!
@@ -134,7 +135,7 @@ function Login() {
     // 2. Perform YouTube check or Admin bypass
     if (isUserAdmin) {
       // Admin bypasses subscription check entirely!
-      localStorage.setItem("subscribed", "true");
+      signIn();
       localStorage.removeItem("clickedYouTube");
       handleLoginSuccess();
     } else {
@@ -165,7 +166,7 @@ function Login() {
       
       // Successfully subscribed OR already subscribed (409 Conflict)
       if (res.status === 200 || res.status === 409) {
-        localStorage.setItem("subscribed", "true");
+        signIn();
         localStorage.removeItem("clickedYouTube");
         handleLoginSuccess();
       } else {
@@ -179,8 +180,6 @@ function Login() {
       setStatus("error");
     }
   }
-
-
 
   function handleLoginSuccess() {
     navigate("/home", { replace: true });
