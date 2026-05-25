@@ -46,8 +46,15 @@ function Login() {
     script.defer = true;
     document.body.appendChild(script);
 
+    const ytScript = document.createElement("script");
+    ytScript.src = "https://apis.google.com/js/platform.js";
+    ytScript.async = true;
+    ytScript.defer = true;
+    document.body.appendChild(ytScript);
+
     return () => {
       if (document.body.contains(script)) document.body.removeChild(script);
+      if (document.body.contains(ytScript)) document.body.removeChild(ytScript);
     };
   }, [navigate]);
 
@@ -63,7 +70,7 @@ function Login() {
       
       const client = window.google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
-        scope: "https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+        scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
         callback: async (tokenResponse) => {
           if (tokenResponse.error) {
             setStatus("error");
@@ -132,57 +139,10 @@ function Login() {
       console.error("Error retrieving Google user details:", err);
     }
 
-    // 2. Perform YouTube check or Admin bypass
-    if (isUserAdmin) {
-      // Admin bypasses subscription check entirely!
-      signIn();
-      localStorage.removeItem("clickedYouTube");
-      handleLoginSuccess();
-    } else {
-      await subscribeToChannel(accessToken);
-    }
-  }
-
-  async function subscribeToChannel(accessToken) {
-    try {
-      const res = await fetch(
-        "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            snippet: {
-              resourceId: {
-                kind: "youtube#channel",
-                channelId: CHANNEL_ID,
-              },
-            },
-          }),
-        },
-      );
-      
-      // Successfully subscribed OR already subscribed (409 Conflict)
-      if (res.status === 200 || res.status === 409) {
-        signIn();
-        localStorage.removeItem("clickedYouTube");
-        handleLoginSuccess();
-      } else {
-        // Fallback: If YouTube API returns an error (e.g. user has no YT channel)
-        console.warn('YouTube subscription failed with status:', res.status, '- Granting fallback access');
-        signIn();
-        localStorage.removeItem("clickedYouTube");
-        handleLoginSuccess();
-      }
-    } catch (err) {
-      // Fallback on network/fetch errors
-      console.warn('YouTube subscription network error:', err, '- Granting fallback access');
-      signIn();
-      localStorage.removeItem("clickedYouTube");
-      handleLoginSuccess();
-    }
+    // 2. Grant Access
+    signIn();
+    localStorage.removeItem("clickedYouTube");
+    handleLoginSuccess();
   }
 
   function handleLoginSuccess() {
@@ -302,11 +262,11 @@ function Login() {
           )}
 
           {/* Buttons */}
-          <div className="w-full space-y-3 shrink-0">
+          <div className="w-full space-y-4 shrink-0 flex flex-col items-center">
             <button
               onClick={handleGoogleLogin}
               disabled={status === "subscribing" || status === "signing"}
-              className="w-full relative group flex items-center justify-center gap-3 bg-white text-gray-900 py-4 sm:py-5 px-6 rounded-2xl font-extrabold text-[16px] sm:text-lg transition-all duration-300 transform hover:scale-[1.03] shadow-[0_0_40px_rgba(255,153,51,0.5)] hover:shadow-[0_0_60px_rgba(255,153,51,0.8)] border border-[#FF9933]/30 mb-8 overflow-hidden disabled:opacity-70 disabled:hover:scale-100"
+              className="w-full relative group flex items-center justify-center gap-3 bg-white text-gray-900 py-4 sm:py-5 px-6 rounded-2xl font-extrabold text-[16px] sm:text-lg transition-all duration-300 transform hover:scale-[1.03] shadow-[0_0_40px_rgba(255,153,51,0.5)] hover:shadow-[0_0_60px_rgba(255,153,51,0.8)] border border-[#FF9933]/30 overflow-hidden disabled:opacity-70 disabled:hover:scale-100"
             >
               {/* Shine effect overlay */}
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[#FF9933]/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
@@ -322,6 +282,16 @@ function Login() {
               </span>
             </button>
 
+            {/* Official YouTube Subscribe Widget */}
+            <div className="mt-2 bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/10 shadow-lg">
+              <div 
+                className="g-ytsubscribe" 
+                data-channelid={CHANNEL_ID} 
+                data-layout="full" 
+                data-theme="dark" 
+                data-count="default"
+              ></div>
+            </div>
           </div>
 
           {/* Footer */}
