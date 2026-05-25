@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import LanguageSelector from '../components/LanguageSelector'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
@@ -18,34 +19,7 @@ function Account() {
   const [dharmaPath, setDharmaPath] = useState('')
   const [contentPreference, setContentPreference] = useState([])
   const [sacredTime, setSacredTime] = useState('')
-  const [selectedLang, setSelectedLang] = useState(() => {
-    try {
-      const match = typeof document !== 'undefined' ? document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/) : null;
-      return match ? match[1] : 'en';
-    } catch(e) {
-      return 'en';
-    }
-  });
-  
-  const handleLanguageChange = (newLang) => {
-    setSelectedLang(newLang);
-    const googleSelect = document.querySelector(".goog-te-combo");
-    if (googleSelect) {
-      googleSelect.value = newLang;
-      let event;
-      if (typeof window.Event === 'function') {
-        event = new window.Event("change", { bubbles: true, cancelable: true });
-      } else {
-        event = document.createEvent('HTMLEvents');
-        event.initEvent('change', true, true);
-      }
-      googleSelect.dispatchEvent(event);
-    } else {
-      document.cookie = `googtrans=/en/${newLang}; path=/`;
-      document.cookie = `googtrans=/en/${newLang}; path=/; domain=${window.location.hostname}`;
-      window.location.reload();
-    }
-  };
+  const { selectedLang, handleLanguageChange } = useGoogleTranslate()
 
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
 
@@ -100,6 +74,8 @@ function Account() {
       const reader = new FileReader()
       reader.onloadend = () => {
         setAvatar(reader.result)
+        // Notify BottomNavbar immediately
+        window.dispatchEvent(new Event('profileUpdated'))
       }
       reader.readAsDataURL(file)
     }
@@ -124,6 +100,8 @@ function Account() {
     if (avatar) {
       localStorage.setItem('profileAvatar', avatar)
     }
+    // Notify other components (e.g. BottomNavbar) of profile changes
+    window.dispatchEvent(new Event('profileUpdated'))
 
     try {
       const email = profileEmail || localStorage.getItem('profileEmail')
@@ -292,11 +270,10 @@ function Account() {
               {/* Language Selection */}
               <div className="space-y-1 relative z-50">
                 <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">🇮🇳 Comfort Language</label>
-                <LanguageSelector 
+              <LanguageSelector 
                   selectedLang={selectedLang} 
                   onLanguageChange={handleLanguageChange} 
                 />
-                <div id="google_translate_element"></div>
               </div>
 
               {/* Stories Calling to Soul (Pill-badge checkboxes) */}

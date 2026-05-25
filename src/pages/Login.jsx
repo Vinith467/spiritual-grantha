@@ -1,43 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+import { useGoogleTranslate } from "../lib/useGoogleTranslate";
 import LanguageSelector from "../components/LanguageSelector";
-const CLIENT_ID =
-  "778407955821-lsjr8ffc36l94s4goorttq8ou52dk4i4.apps.googleusercontent.com";
-const CHANNEL_ID = "UCNIsckaXm3JOTRrmhQVGD2g";
+const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const CHANNEL_ID = import.meta.env.VITE_YOUTUBE_CHANNEL_ID;
 
 function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("idle");
   const [hoverZone, setHoverZone] = useState("none");
-  const [selectedLang, setSelectedLang] = useState(() => {
-    try {
-      const match = typeof document !== 'undefined' ? document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/) : null;
-      return match ? match[1] : 'en';
-    } catch(e) {
-      return 'en';
-    }
-  });
+  const { selectedLang, handleLanguageChange } = useGoogleTranslate();
 
-  const handleLanguageChange = (newLang) => {
-    setSelectedLang(newLang);
-    const googleSelect = document.querySelector(".goog-te-combo");
-    if (googleSelect) {
-      googleSelect.value = newLang;
-      let event;
-      if (typeof window.Event === 'function') {
-        event = new window.Event("change", { bubbles: true, cancelable: true });
-      } else {
-        event = document.createEvent('HTMLEvents');
-        event.initEvent('change', true, true);
-      }
-      googleSelect.dispatchEvent(event);
-    } else {
-      document.cookie = `googtrans=/en/${newLang}; path=/`;
-      document.cookie = `googtrans=/en/${newLang}; path=/; domain=${window.location.hostname}`;
-      window.location.reload();
-    }
-  };
+
 
   const handleMouseMove = (e) => {
     const { clientX } = e;
@@ -111,9 +86,10 @@ function Login() {
         if (email) localStorage.setItem("profileEmail", email);
 
         // Security check: Verify if they match the admin google accounts list
-        const ADMIN_EMAILS = [
-          "vinuvinith0007@gmail.com"
-        ];
+        const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+          .split(',')
+          .map(e => e.trim().toLowerCase())
+          .filter(Boolean);
         
         let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
@@ -148,13 +124,13 @@ function Login() {
       // Admin bypasses subscription check entirely!
       localStorage.setItem("subscribed", "true");
       localStorage.removeItem("clickedYouTube");
-      handleLoginSuccess(emailAddress);
+      handleLoginSuccess();
     } else {
-      await subscribeToChannel(accessToken, emailAddress);
+      await subscribeToChannel(accessToken);
     }
   }
 
-  async function subscribeToChannel(accessToken, emailAddress) {
+  async function subscribeToChannel(accessToken) {
     try {
       const res = await fetch(
         "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet",
@@ -179,18 +155,16 @@ function Login() {
       if (res.status === 200 || res.status === 409) {
         localStorage.setItem("subscribed", "true");
         localStorage.removeItem("clickedYouTube");
-        handleLoginSuccess(emailAddress);
+        handleLoginSuccess();
       } else {
-        // Fallback: If YouTube API returns an error
-        localStorage.setItem("subscribed", "true");
-        localStorage.removeItem("clickedYouTube");
-        handleLoginSuccess(emailAddress);
+        // YouTube API returned an unexpected error — do NOT grant access
+        console.error('YouTube subscription check failed with status:', res.status);
+        setStatus("error");
       }
-    } catch {
-      // Fallback on network/fetch errors
-      localStorage.setItem("subscribed", "true");
-      localStorage.removeItem("clickedYouTube");
-      handleLoginSuccess(emailAddress);
+    } catch (err) {
+      // Network error — do NOT grant access silently
+      console.error('YouTube subscription network error:', err);
+      setStatus("error");
     }
   }
 
@@ -295,8 +269,6 @@ function Login() {
             />
           </div>
 
-          {/* Hidden Original Google Element */}
-          <div id="google_translate_element"></div>
 
           {/* Status Messages */}
           {status === "subscribing" && (

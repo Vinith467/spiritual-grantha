@@ -27,7 +27,7 @@ function InstallButton() {
   if (showSubscribe) return (
     <a
     
-      href="https://www.youtube.com/@YourChannelHandle?sub_confirmation=1"
+      href={`https://www.youtube.com/channel/${import.meta.env.VITE_YOUTUBE_CHANNEL_ID || 'UCNIsckaXm3JOTRrmhQVGD2g'}?sub_confirmation=1`}
       target="_blank"
       rel="noreferrer"
       className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold text-sm"

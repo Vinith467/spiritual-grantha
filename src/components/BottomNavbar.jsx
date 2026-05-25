@@ -7,7 +7,7 @@ function BottomNavbar() {
   const location = useLocation()
   const [avatar, setAvatar] = useState(null)
 
-  // Listen to profile updates (using storage event and custom interval for reactive updates)
+  // Listen for profile updates via custom events (no more polling)
   useEffect(() => {
     const loadAvatar = () => {
       const savedAvatar = localStorage.getItem('profileAvatar')
@@ -15,9 +15,13 @@ function BottomNavbar() {
     }
     loadAvatar()
 
-    // Refresh avatar every second to keep it responsive to edits on the Account page
-    const interval = setInterval(loadAvatar, 1000)
-    return () => clearInterval(interval)
+    // React to profile changes from AuthContext or other tabs
+    window.addEventListener('profileUpdated', loadAvatar)
+    window.addEventListener('storage', loadAvatar)
+    return () => {
+      window.removeEventListener('profileUpdated', loadAvatar)
+      window.removeEventListener('storage', loadAvatar)
+    }
   }, [])
 
   const isActive = (path) => location.pathname === path

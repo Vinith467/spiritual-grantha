@@ -32,7 +32,7 @@ function About() {
                 Who We Are
               </h3>
               <p className="pl-3 border-l border-white/10">
-                We are a dedicated group of seekers, tech enthusiasts, and devotees bound by a shared love for our ancient culture. **Sanatan Dharma Television** is born from our collective aspiration to create a premium, ad-free digital sanctuary for sacred epics, chants, teachings, and spiritual literature.
+                We are a dedicated group of seekers, tech enthusiasts, and devotees bound by a shared love for our ancient culture. <strong>Sanatan Dharma Television</strong> is born from our collective aspiration to create a premium, ad-free digital sanctuary for sacred epics, chants, teachings, and spiritual literature.
               </p>
             </div>
 

@@ -31,9 +31,11 @@ function Admin() {
   const [profiles, setProfiles] = useState([])
 
   // Active editing item ID
-  const [editingId, setEditingId] = useState(null)
+  const [editingBannerId, setEditingBannerId] = useState(null)
   const [editingSeriesId, setEditingSeriesId] = useState(null)
   const [editingEpisodeId, setEditingEpisodeId] = useState(null)
+  const [editingMusicId, setEditingMusicId] = useState(null)
+  const [editingShortId, setEditingShortId] = useState(null)
 
   // Video Sub-Tab state: 'episodes' or 'series'
   const [videoSubTab, setVideoSubTab] = useState('episodes')
@@ -107,15 +109,15 @@ function Admin() {
     }
 
     try {
-      if (editingId) {
-        const { error } = await supabase.from('banners').update(payload).eq('id', editingId)
+      if (editingBannerId) {
+        const { error } = await supabase.from('banners').update(payload).eq('id', editingBannerId)
         if (error) throw error
       } else {
         const { error } = await supabase.from('banners').insert([payload])
         if (error) throw error
       }
       setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
-      setEditingId(null)
+      setEditingBannerId(null)
       await loadBanners()
     } catch (err) {
       alert('Error saving banner: ' + err.message)
@@ -133,7 +135,7 @@ function Admin() {
       mobileUrl: item.mobile_url || '',
       desktopUrl: item.desktop_url || ''
     })
-    setEditingId(item.id)
+    setEditingBannerId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -283,15 +285,15 @@ function Admin() {
     }
 
     try {
-      if (editingId) {
-        const { error } = await supabase.from('music_tracks').update(payload).eq('id', editingId)
+      if (editingMusicId) {
+        const { error } = await supabase.from('music_tracks').update(payload).eq('id', editingMusicId)
         if (error) throw error
       } else {
         const { error } = await supabase.from('music_tracks').insert([payload])
         if (error) throw error
       }
       setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
-      setEditingId(null)
+      setEditingMusicId(null)
       await loadMusic()
     } catch (err) {
       alert('Error saving music: ' + err.message)
@@ -308,7 +310,7 @@ function Admin() {
       coverUrl: item.cover_url || '',
       category: item.category || 'Devotional'
     })
-    setEditingId(item.id)
+    setEditingMusicId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -339,15 +341,15 @@ function Admin() {
     }
 
     try {
-      if (editingId) {
-        const { error } = await supabase.from('shorts').update(payload).eq('id', editingId)
+      if (editingShortId) {
+        const { error } = await supabase.from('shorts').update(payload).eq('id', editingShortId)
         if (error) throw error
       } else {
         const { error } = await supabase.from('shorts').insert([payload])
         if (error) throw error
       }
       setShortForm({ title: 'Divine Short', description: '', youtubeId: '' })
-      setEditingId(null)
+      setEditingShortId(null)
       await loadShorts()
     } catch (err) {
       alert('Error saving short: ' + err.message)
@@ -381,9 +383,11 @@ function Admin() {
   }
 
   const cancelEdit = () => {
-    setEditingId(null)
+    setEditingBannerId(null)
     setEditingSeriesId(null)
     setEditingEpisodeId(null)
+    setEditingMusicId(null)
+    setEditingShortId(null)
     setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
     setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
     setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })

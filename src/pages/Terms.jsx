@@ -1,4 +1,7 @@
+import { useNavigate } from 'react-router-dom'
+
 function Terms() {
+  const navigate = useNavigate()
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white py-12 px-6 sm:px-8 selection:bg-[#FF9933]/30">
       <div className="max-w-3xl mx-auto bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-2xl p-6 sm:p-10 shadow-2xl">
@@ -27,7 +30,7 @@ function Terms() {
           <section className="space-y-2">
             <h2 className="text-base font-extrabold text-[#FF9933] uppercase tracking-wider">2. Google Sign-In & YouTube Integration</h2>
             <p>
-              Our Service utilizes **Google Sign-In** to verify your subscription status to our YouTube channel in order to grant you free premium access to our catalog. 
+              Our Service utilizes <strong>Google Sign-In</strong> to verify your subscription status to our YouTube channel in order to grant you free premium access to our catalog. 
             </p>
             <p className="mt-1">
               By logging in through Google, you authorize the Service to fetch your basic profile (name, email, avatar image) and verify your subscription. You also agree to be bound by YouTube's Terms of Service which you can read here: <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-[#FF9933] hover:underline">YouTube Terms of Service</a>.
@@ -65,7 +68,7 @@ function Terms() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
-          <button onClick={() => window.history.back()} className="bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-xs px-5 py-2.5 rounded-xl transition hover:scale-105 active:scale-95">
+          <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')} className="bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-xs px-5 py-2.5 rounded-xl transition hover:scale-105 active:scale-95">
             ← Return to Previous Page
           </button>
         </div>

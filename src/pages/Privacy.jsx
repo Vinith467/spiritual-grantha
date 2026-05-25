@@ -1,4 +1,7 @@
+import { useNavigate } from 'react-router-dom'
+
 function Privacy() {
+  const navigate = useNavigate()
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white py-12 px-6 sm:px-8 selection:bg-[#FF9933]/30">
       <div className="max-w-3xl mx-auto bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-2xl p-6 sm:p-10 shadow-2xl">
@@ -44,14 +47,14 @@ function Privacy() {
           <section className="space-y-2">
             <h2 className="text-base font-extrabold text-[#FF9933] uppercase tracking-wider">3. Data Retention and Storage</h2>
             <p>
-              Your personal profile details (Name, Contact Number, and Avatar image URL) are stored **locally inside your browser's localStorage** on your device. We do not transmit or store your profile image or personal details on external backend servers, ensuring complete privacy.
+              Your personal profile details (Name, Contact Number, and Avatar image URL) are stored <strong>locally inside your browser's localStorage</strong> on your device. We do not transmit or store your profile image or personal details on external backend servers, ensuring complete privacy.
             </p>
           </section>
 
           <section className="space-y-2">
             <h2 className="text-base font-extrabold text-[#FF9933] uppercase tracking-wider">4. Third-Party Services and APIs</h2>
             <p>
-              Our Service utilizes **YouTube API Services** to verify channel subscription status. By using our Service, you agree to be bound by the YouTube Terms of Service and acknowledge the Google Privacy Policy. You can review their policies here:
+              Our Service utilizes <strong>YouTube API Services</strong> to verify channel subscription status. By using our Service, you agree to be bound by the YouTube Terms of Service and acknowledge the Google Privacy Policy. You can review their policies here:
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li><a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-[#FF9933] hover:underline">YouTube Terms of Service</a></li>
@@ -72,7 +75,7 @@ function Privacy() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
-          <button onClick={() => window.history.back()} className="bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-xs px-5 py-2.5 rounded-xl transition hover:scale-105 active:scale-95">
+          <button onClick={() => window.history.length > 1 ? navigate(-1) : navigate('/')} className="bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-extrabold text-xs px-5 py-2.5 rounded-xl transition hover:scale-105 active:scale-95">
             ← Return to Previous Page
           </button>
         </div>
