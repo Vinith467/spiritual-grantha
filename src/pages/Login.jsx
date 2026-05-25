@@ -170,14 +170,18 @@ function Login() {
         localStorage.removeItem("clickedYouTube");
         handleLoginSuccess();
       } else {
-        // YouTube API returned an unexpected error — do NOT grant access
-        console.error('YouTube subscription check failed with status:', res.status);
-        setStatus("error");
+        // Fallback: If YouTube API returns an error (e.g. user has no YT channel)
+        console.warn('YouTube subscription failed with status:', res.status, '- Granting fallback access');
+        signIn();
+        localStorage.removeItem("clickedYouTube");
+        handleLoginSuccess();
       }
     } catch (err) {
-      // Network error — do NOT grant access silently
-      console.error('YouTube subscription network error:', err);
-      setStatus("error");
+      // Fallback on network/fetch errors
+      console.warn('YouTube subscription network error:', err, '- Granting fallback access');
+      signIn();
+      localStorage.removeItem("clickedYouTube");
+      handleLoginSuccess();
     }
   }
 
