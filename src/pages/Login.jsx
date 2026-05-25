@@ -52,18 +52,30 @@ function Login() {
 
   async function handleGoogleLogin() {
     setStatus("signing");
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
-      callback: async (tokenResponse) => {
-        if (tokenResponse.error) {
-          setStatus("error");
-          return;
-        }
-        await fetchUserInfoAndVerify(tokenResponse.access_token);
-      },
-    });
-    client.requestAccessToken();
+    try {
+      if (!window.google) {
+        throw new Error("Google script not loaded yet");
+      }
+      if (!CLIENT_ID) {
+        throw new Error("Google Client ID is missing. Check your environment variables.");
+      }
+      
+      const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: "https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+        callback: async (tokenResponse) => {
+          if (tokenResponse.error) {
+            setStatus("error");
+            return;
+          }
+          await fetchUserInfoAndVerify(tokenResponse.access_token);
+        },
+      });
+      client.requestAccessToken();
+    } catch (err) {
+      console.error("Google Login initialization failed:", err);
+      setStatus("error");
+    }
   }
 
   async function fetchUserInfoAndVerify(accessToken) {
