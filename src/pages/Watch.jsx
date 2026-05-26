@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
@@ -9,6 +9,8 @@ function Watch() {
   const [episode, setEpisode] = useState(null)
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
+  const iframeRef = useRef(null)
+  const playerInstanceRef = useRef(null)
 
   const fetchEpisode = useCallback(async () => {
     // 1. Check local admin videos first
@@ -73,33 +75,73 @@ function Watch() {
   }, [fetchEpisode])
 
   useEffect(() => {
-    const handleMessage = (event) => {
-      // Check if message origin is from YouTube
-      if (!event.origin.includes('youtube.com')) return
+    // 1. Ensure YouTube script is injected
+    if (!window.YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
 
-      try {
-        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data
-        
-        // YouTube event when state changes
-        const isEnded =
-          (data.event === 'onStateChange' && data.info === 0) ||
-          (data.event === 'infoDelivery' && data.info && data.info.playerState === 0)
+    let intervalId
 
-        if (isEnded) {
-          const currentIndex = seriesEpisodes.findIndex(ep => ep.id === episode.id)
-          if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
-            const nextEpisode = seriesEpisodes[currentIndex + 1]
-            navigate(`/watch/${nextEpisode.id}`, { replace: true })
+    const initPlayer = () => {
+      if (!iframeRef.current || !window.YT || !window.YT.Player) return
+
+      // Clean up previous instance if any
+      if (playerInstanceRef.current) {
+        try {
+          playerInstanceRef.current.destroy()
+        } catch (e) {
+          // ignore
+        }
+        playerInstanceRef.current = null
+      }
+
+      playerInstanceRef.current = new window.YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: (event) => {
+            // event.data === 0 represents ended (YT.PlayerState.ENDED)
+            if (event.data === 0) {
+              const currentIndex = seriesEpisodes.findIndex(ep => ep.id === (episode && episode.id))
+              if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+                const nextEpisode = seriesEpisodes[currentIndex + 1]
+                navigate(`/watch/${nextEpisode.id}`, { replace: true })
+              }
+            }
           }
         }
-      } catch (e) {
-        // Skip messages that aren't valid JSON or not interesting
+      })
+    }
+
+    // Wait until YT is ready
+    if (window.YT && window.YT.Player) {
+      initPlayer()
+    } else {
+      intervalId = setInterval(() => {
+        if (window.YT && window.YT.Player) {
+          clearInterval(intervalId)
+          initPlayer()
+        }
+      }, 200)
+
+      const prevCallback = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        if (prevCallback) prevCallback()
+        initPlayer()
       }
     }
 
-    window.addEventListener('message', handleMessage)
     return () => {
-      window.removeEventListener('message', handleMessage)
+      if (intervalId) clearInterval(intervalId)
+      if (playerInstanceRef.current) {
+        try {
+          playerInstanceRef.current.destroy()
+        } catch (e) {
+          // ignore
+        }
+        playerInstanceRef.current = null
+      }
     }
   }, [episode, seriesEpisodes, navigate])
 
@@ -138,7 +180,7 @@ function Watch() {
       {/* Video Player */}
       <div className="w-full bg-black aspect-video">
         <iframe
-          id="youtube-player"
+          ref={iframeRef}
           src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0&enablejsapi=1`}
           className="w-full h-full"
           allowFullScreen
