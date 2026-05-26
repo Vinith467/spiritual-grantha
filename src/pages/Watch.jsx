@@ -10,6 +10,15 @@ function Watch() {
   const [episode, setEpisode] = useState(null)
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
+  const [isForceLandscape, setIsForceLandscape] = useState(false)
+  
+  const [watchedEpisodes, setWatchedEpisodes] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('watched_episodes') || '[]')
+    } catch {
+      return []
+    }
+  })
   const fetchEpisode = useCallback(async () => {
     // 1. Check local admin videos first
     const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
@@ -73,6 +82,13 @@ function Watch() {
   }, [fetchEpisode])
 
   const handleVideoEnd = () => {
+    const watched = JSON.parse(localStorage.getItem('watched_episodes') || '[]')
+    if (!watched.includes(id)) {
+      watched.push(id)
+      localStorage.setItem('watched_episodes', JSON.stringify(watched))
+      setWatchedEpisodes(watched)
+    }
+
     const currentIndex = seriesEpisodes.findIndex(ep => ep.id === id)
     if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
       const nextEpisode = seriesEpisodes[currentIndex + 1]
@@ -113,7 +129,20 @@ function Watch() {
       
 
       {/* Video Player */}
-      <div className="w-full bg-black aspect-video">
+      <div 
+        className={isForceLandscape 
+          ? "fixed top-0 left-0 w-[100vh] h-[100vw] z-[9999] origin-top-left rotate-90 -translate-y-full bg-black" 
+          : "w-full bg-black aspect-video relative"
+        }
+      >
+        {isForceLandscape && (
+          <button 
+            onClick={() => setIsForceLandscape(false)}
+            className="absolute top-4 right-4 z-[10000] bg-black/60 text-white p-3 rounded-full backdrop-blur-md border border-white/20 active:scale-95 transition-transform flex items-center justify-center shadow-2xl"
+          >
+            ✕
+          </button>
+        )}
         <YouTube
           videoId={episode.youtube_id}
           opts={{
@@ -132,7 +161,15 @@ function Watch() {
 
       {/* Episode info */}
       <div className="px-4 py-4 border-b border-white/10">
-        <h1 className="text-lg md:text-2xl font-bold mb-1">{episode.title}</h1>
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <h1 className="text-lg md:text-2xl font-bold">{episode.title}</h1>
+          <button 
+            onClick={() => setIsForceLandscape(true)}
+            className="shrink-0 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors border border-white/10"
+          >
+            <span className="text-lg leading-none mb-0.5">⤢</span> Rotate
+          </button>
+        </div>
         {episode.description && (
           <p className="text-gray-400 text-sm leading-relaxed">{episode.description}</p>
         )}
@@ -163,8 +200,14 @@ function Watch() {
                     className="w-full h-full object-cover"
                   />
                   {ep.id === episode.id && (
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="w-7 h-7 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
+                      <div className="bg-black/60 border border-[#FF9933]/50 px-3 py-1.5 rounded-full flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_rgba(255,153,51,0.3)]">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF9933] opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF9933]"></span>
+                        </span>
+                        <span className="text-[#FF9933] text-[10px] font-black uppercase tracking-widest">Playing</span>
+                      </div>
                     </div>
                   )}
                   {ep.id !== episode.id && (
@@ -172,6 +215,12 @@ function Watch() {
                       <div className="bg-white/80 rounded-full w-8 h-8 flex items-center justify-center">
                         <span className="text-black text-sm ml-0.5">&#9654;</span>
                       </div>
+                    </div>
+                  )}
+                  {watchedEpisodes.includes(ep.id) && ep.id !== episode.id && (
+                    <div className="absolute top-2 right-2 bg-black/80 backdrop-blur-md px-1.5 py-0.5 rounded border border-white/10 flex items-center gap-1 shadow-sm">
+                      <span className="text-[#4CAF50] text-[10px] font-bold">✓</span>
+                      <span className="text-gray-300 text-[8px] font-bold uppercase tracking-wider">Watched</span>
                     </div>
                   )}
                 </div>
