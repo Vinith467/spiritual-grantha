@@ -112,9 +112,11 @@ function Watch() {
       <nav className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 sticky top-0 z-50 transition-all duration-300">
         <button
           onClick={() => navigate(-1)}
-          className="text-white bg-white/10 hover:bg-white/20 rounded-full w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center transition active:scale-95 shrink-0 font-bold"
+          className="group relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-all duration-300 active:scale-90 shrink-0 shadow-lg hover:shadow-white/5"
         >
-          ←
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
         </button>
         <img
           src="/icon-192.png"
@@ -139,9 +141,11 @@ function Watch() {
         {isForceLandscape && (
           <button 
             onClick={() => setIsForceLandscape(false)}
-            className="absolute top-4 right-4 z-[10000] bg-black/60 text-white p-3 rounded-full backdrop-blur-md border border-white/20 active:scale-95 transition-transform flex items-center justify-center shadow-2xl"
+            className="absolute top-6 right-6 z-[10000] w-12 h-12 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-xl border border-white/20 text-white/80 hover:text-white hover:bg-white/10 transition-all duration-300 active:scale-90 shadow-[0_8px_32px_rgba(0,0,0,0.5)] group"
           >
-            ✕
+            <svg className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         )}
         <YouTube
