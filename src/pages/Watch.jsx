@@ -10,6 +10,8 @@ function Watch() {
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
   const hasTriggeredNextRef = useRef(false)
+  const iframeRef = useRef(null)
+  const playerInstanceRef = useRef(null)
 
   useEffect(() => {
     hasTriggeredNextRef.current = false
@@ -78,58 +80,103 @@ function Watch() {
   }, [fetchEpisode])
 
   useEffect(() => {
-    const handleMessage = (event) => {
-      // Check if message origin is from YouTube or if we can parse it
-      if (!event.origin.includes('youtube.com') && !event.origin.includes('youtube-nocookie.com')) return
+    // 1. Ensure YouTube script is injected
+    if (!window.YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
 
-      try {
-        let data = event.data
-        if (typeof data === 'string') {
-          // Sometimes data is a stringified JSON
-          if (data.startsWith('{')) {
-            data = JSON.parse(data)
-          }
+    let progressInterval
+    let initIntervalId
+
+    const initPlayer = () => {
+      if (!iframeRef.current || !window.YT || !window.YT.Player) return
+
+      // Clean up previous instance if any
+      if (playerInstanceRef.current) {
+        try {
+          playerInstanceRef.current.destroy()
+        } catch (e) {
+          // ignore
         }
+        playerInstanceRef.current = null
+      }
 
-        if (data && typeof data === 'object') {
-          let shouldTrigger = false
+      playerInstanceRef.current = new window.YT.Player(iframeRef.current, {
+        events: {
+          onReady: () => {
+            // Actively poll playback progress every 500ms
+            progressInterval = setInterval(() => {
+              const player = playerInstanceRef.current
+              if (player && typeof player.getCurrentTime === 'function' && typeof player.getDuration === 'function') {
+                const currentTime = player.getCurrentTime()
+                const duration = player.getDuration()
 
-          // 1. Direct state change check (0 is ended)
-          const isEnded =
-            (data.event === 'onStateChange' && Number(data.info) === 0) ||
-            (data.event === 'infoDelivery' && data.info && Number(data.info.playerState) === 0)
-
-          if (isEnded) {
-            shouldTrigger = true
-          }
-
-          // 2. Continuous time-remaining check (essential for mobile/PWAs where video stops 1-2s before end)
-          if (data.info && typeof data.info.currentTime === 'number' && typeof data.info.duration === 'number') {
-            const timeRemaining = data.info.duration - data.info.currentTime
-            if (data.info.duration > 0 && timeRemaining >= 0 && timeRemaining <= 2.0) {
-              shouldTrigger = true
+                if (duration > 0) {
+                  const timeRemaining = duration - currentTime
+                  // Trigger transition if within 2.0s of ending
+                  if (timeRemaining >= 0 && timeRemaining <= 2.0 && !hasTriggeredNextRef.current) {
+                    const currentIndex = seriesEpisodes.findIndex(ep => ep.id === id)
+                    if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+                      hasTriggeredNextRef.current = true
+                      clearInterval(progressInterval)
+                      const nextEpisode = seriesEpisodes[currentIndex + 1]
+                      navigate(`/watch/${nextEpisode.id}`, { replace: true })
+                    }
+                  }
+                }
+              }
+            }, 500)
+          },
+          onStateChange: (event) => {
+            // Backup check: standard ended state (0)
+            if (event.data === 0 && !hasTriggeredNextRef.current) {
+              const currentIndex = seriesEpisodes.findIndex(ep => ep.id === id)
+              if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+                hasTriggeredNextRef.current = true
+                if (progressInterval) clearInterval(progressInterval)
+                const nextEpisode = seriesEpisodes[currentIndex + 1]
+                navigate(`/watch/${nextEpisode.id}`, { replace: true })
+              }
             }
           }
-
-          if (shouldTrigger && !hasTriggeredNextRef.current) {
-            const currentIndex = seriesEpisodes.findIndex(ep => ep.id === (episode && episode.id))
-            if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
-              hasTriggeredNextRef.current = true
-              const nextEpisode = seriesEpisodes[currentIndex + 1]
-              navigate(`/watch/${nextEpisode.id}`, { replace: true })
-            }
-          }
         }
-      } catch (e) {
-        // Skip malformed/unrelated messages
+      })
+    }
+
+    // Wait until YT is ready
+    if (window.YT && window.YT.Player) {
+      initPlayer()
+    } else {
+      initIntervalId = setInterval(() => {
+        if (window.YT && window.YT.Player) {
+          clearInterval(initIntervalId)
+          initPlayer()
+        }
+      }, 200)
+
+      const prevCallback = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        if (prevCallback) prevCallback()
+        initPlayer()
       }
     }
 
-    window.addEventListener('message', handleMessage)
     return () => {
-      window.removeEventListener('message', handleMessage)
+      if (initIntervalId) clearInterval(initIntervalId)
+      if (progressInterval) clearInterval(progressInterval)
+      if (playerInstanceRef.current) {
+        try {
+          playerInstanceRef.current.destroy()
+        } catch (e) {
+          // ignore
+        }
+        playerInstanceRef.current = null
+      }
     }
-  }, [episode, seriesEpisodes, navigate])
+  }, [id, seriesEpisodes.length, navigate])
 
   if (!episode) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
@@ -166,6 +213,7 @@ function Watch() {
       {/* Video Player */}
       <div className="w-full bg-black aspect-video">
         <iframe
+          ref={iframeRef}
           src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
           className="w-full h-full"
           allowFullScreen
