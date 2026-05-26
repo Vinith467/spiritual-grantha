@@ -9,6 +9,11 @@ function Watch() {
   const [episode, setEpisode] = useState(null)
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
+  const hasTriggeredNextRef = useRef(false)
+
+  useEffect(() => {
+    hasTriggeredNextRef.current = false
+  }, [id])
 
   const fetchEpisode = useCallback(async () => {
     // 1. Check local admin videos first
@@ -87,14 +92,29 @@ function Watch() {
         }
 
         if (data && typeof data === 'object') {
-          // 0 represents ended in YouTube player state
+          let shouldTrigger = false
+
+          // 1. Direct state change check (0 is ended)
           const isEnded =
             (data.event === 'onStateChange' && Number(data.info) === 0) ||
             (data.event === 'infoDelivery' && data.info && Number(data.info.playerState) === 0)
 
           if (isEnded) {
+            shouldTrigger = true
+          }
+
+          // 2. Continuous time-remaining check (essential for mobile/PWAs where video stops 1-2s before end)
+          if (data.info && typeof data.info.currentTime === 'number' && typeof data.info.duration === 'number') {
+            const timeRemaining = data.info.duration - data.info.currentTime
+            if (data.info.duration > 0 && timeRemaining >= 0 && timeRemaining <= 2.0) {
+              shouldTrigger = true
+            }
+          }
+
+          if (shouldTrigger && !hasTriggeredNextRef.current) {
             const currentIndex = seriesEpisodes.findIndex(ep => ep.id === (episode && episode.id))
             if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+              hasTriggeredNextRef.current = true
               const nextEpisode = seriesEpisodes[currentIndex + 1]
               navigate(`/watch/${nextEpisode.id}`, { replace: true })
             }
