@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
+import YouTube from 'react-youtube'
 
 function Watch() {
   const { id } = useParams()
@@ -9,27 +10,6 @@ function Watch() {
   const [episode, setEpisode] = useState(null)
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
-  const hasTriggeredNextRef = useRef(false)
-  const currentTimeRef = useRef(0)
-  const durationRef = useRef(0)
-  
-  const seriesEpisodesRef = useRef([])
-  const episodeRef = useRef(null)
-
-  useEffect(() => {
-    seriesEpisodesRef.current = seriesEpisodes
-  }, [seriesEpisodes])
-
-  useEffect(() => {
-    episodeRef.current = episode
-  }, [episode])
-
-  useEffect(() => {
-    hasTriggeredNextRef.current = false
-    currentTimeRef.current = 0
-    durationRef.current = 0
-  }, [id])
-
   const fetchEpisode = useCallback(async () => {
     // 1. Check local admin videos first
     const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
@@ -92,82 +72,13 @@ function Watch() {
     fetchEpisode()
   }, [fetchEpisode])
 
-  useEffect(() => {
-    const handleMessage = (event) => {
-      try {
-        let data = event.data
-        if (typeof data === 'string') {
-          data = JSON.parse(data)
-        }
-
-        if (data && typeof data === 'object') {
-          // Verify it's a YouTube event
-          if (data.event !== 'onStateChange' && data.event !== 'infoDelivery' && data.event !== 'initialDelivery') return
-
-          // 1. Keep track of continuous playback position
-          if (data.info) {
-            if (typeof data.info.currentTime === 'number') {
-              currentTimeRef.current = data.info.currentTime
-            }
-            if (typeof data.info.duration === 'number') {
-              durationRef.current = data.info.duration
-            }
-          }
-
-          // 2. Determine if the video has ended or paused very close to completion
-          let shouldTrigger = false
-
-          // Case A: Direct ended state (0)
-          const isEnded =
-            (data.event === 'onStateChange' && Number(data.info) === 0) ||
-            (data.event === 'infoDelivery' && data.info && Number(data.info.playerState) === 0)
-
-          if (isEnded) {
-            shouldTrigger = true
-          }
-
-          // Case B: Continuous time remaining check (stops early at 3:05 / 3:06)
-          const duration = durationRef.current
-          const currentTime = currentTimeRef.current
-          if (duration > 0) {
-            const timeRemaining = duration - currentTime
-            if (timeRemaining >= 0 && timeRemaining <= 2.5) {
-              shouldTrigger = true
-            }
-          }
-
-          // Case C: Paused (2) state within 3 seconds of total duration (safeguard for stalling)
-          const isPaused =
-            (data.event === 'onStateChange' && Number(data.info) === 2) ||
-            (data.event === 'infoDelivery' && data.info && Number(data.info.playerState) === 2)
-
-          if (isPaused && duration > 0) {
-            const timeRemaining = duration - currentTime
-            if (timeRemaining >= 0 && timeRemaining <= 3.0) {
-              shouldTrigger = true
-            }
-          }
-
-          if (shouldTrigger && !hasTriggeredNextRef.current) {
-            const currentEpisodes = seriesEpisodesRef.current
-            const currentIndex = currentEpisodes.findIndex(ep => ep.id === id)
-            if (currentIndex !== -1 && currentIndex < currentEpisodes.length - 1) {
-              hasTriggeredNextRef.current = true
-              const nextEpisode = currentEpisodes[currentIndex + 1]
-              navigate(`/watch/${nextEpisode.id}`, { replace: true })
-            }
-          }
-        }
-      } catch (e) {
-        // Skip malformed/unrelated messages
-      }
+  const handleVideoEnd = () => {
+    const currentIndex = seriesEpisodes.findIndex(ep => ep.id === id)
+    if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+      const nextEpisode = seriesEpisodes[currentIndex + 1]
+      navigate(`/watch/${nextEpisode.id}`, { replace: true })
     }
-
-    window.addEventListener('message', handleMessage)
-    return () => {
-      window.removeEventListener('message', handleMessage)
-    }
-  }, [id, navigate])
+  }
 
   if (!episode) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
@@ -203,11 +114,19 @@ function Watch() {
 
       {/* Video Player */}
       <div className="w-full bg-black aspect-video">
-        <iframe
-          src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
+        <YouTube
+          videoId={episode.youtube_id}
+          opts={{
+            width: '100%',
+            height: '100%',
+            playerVars: {
+              autoplay: 1,
+              rel: 0,
+              modestbranding: 1
+            },
+          }}
           className="w-full h-full"
-          allowFullScreen
-          allow="autoplay; encrypted-media"
+          onEnd={handleVideoEnd}
         />
       </div>
 
