@@ -11,6 +11,7 @@ function Watch() {
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
   const [isForceLandscape, setIsForceLandscape] = useState(false)
+  const [player, setPlayer] = useState(null)
   
   const [watchedEpisodes, setWatchedEpisodes] = useState(() => {
     try {
@@ -80,6 +81,59 @@ function Watch() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchEpisode()
   }, [fetchEpisode])
+
+  useEffect(() => {
+    if (!player || !episode) return
+    const interval = setInterval(async () => {
+      try {
+        const state = await player.getPlayerState()
+        // 1 is Playing
+        if (state === 1) {
+          const currentTime = await player.getCurrentTime()
+          const duration = await player.getDuration()
+          
+          if (currentTime > 0 && duration > 0) {
+            const progressData = JSON.parse(localStorage.getItem('sdtv_progress') || '{}')
+            
+            // If they are within 10 seconds of the end, remove it from continue watching
+            if (currentTime > duration - 10) {
+              delete progressData[id]
+            } else {
+              progressData[id] = {
+                id: episode.id,
+                youtube_id: episode.youtube_id,
+                title: episode.title,
+                series_title: series?.title || '',
+                time: currentTime,
+                duration: duration,
+                updatedAt: Date.now(),
+                thumbnail_url: episode.thumbnail_url || `https://img.youtube.com/vi/${episode.youtube_id}/hqdefault.jpg`
+              }
+            }
+            localStorage.setItem('sdtv_progress', JSON.stringify(progressData))
+          }
+        }
+      } catch (err) {
+        console.error("Error saving progress", err)
+      }
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [player, id, episode, series])
+
+  const handlePlayerReady = (event) => {
+    setPlayer(event.target)
+    
+    // Resume playback if we have saved progress
+    try {
+      const progressData = JSON.parse(localStorage.getItem('sdtv_progress') || '{}')
+      const savedTime = progressData[id]?.time || 0
+      if (savedTime > 0) {
+        event.target.seekTo(savedTime, true)
+      }
+    } catch (err) {
+      console.error("Error loading progress", err)
+    }
+  }
 
   const handleVideoEnd = () => {
     const watched = JSON.parse(localStorage.getItem('watched_episodes') || '[]')
@@ -160,6 +214,7 @@ function Watch() {
             },
           }}
           className="w-full h-full"
+          onReady={handlePlayerReady}
           onEnd={handleVideoEnd}
         />
       </div>

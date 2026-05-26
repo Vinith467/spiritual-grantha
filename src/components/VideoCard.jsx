@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 
-function VideoCard({ episode }) {
+function VideoCard({ episode, progress }) {
   const navigate = useNavigate()
 
   return (
@@ -14,7 +14,15 @@ function VideoCard({ episode }) {
           alt={episode.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        {progress !== undefined && (
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20 backdrop-blur-sm z-10">
+            <div 
+              className="h-full bg-[#FF9933] shadow-[0_0_10px_rgba(255,153,51,0.5)] transition-all duration-300" 
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
           <div className="bg-white bg-opacity-80 rounded-full w-8 h-8 flex items-center justify-center">
             <span className="text-black text-sm ml-0.5">&#9654;</span>
           </div>
