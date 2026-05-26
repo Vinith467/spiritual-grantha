@@ -12,6 +12,17 @@ function Watch() {
   const hasTriggeredNextRef = useRef(false)
   const currentTimeRef = useRef(0)
   const durationRef = useRef(0)
+  
+  const seriesEpisodesRef = useRef([])
+  const episodeRef = useRef(null)
+
+  useEffect(() => {
+    seriesEpisodesRef.current = seriesEpisodes
+  }, [seriesEpisodes])
+
+  useEffect(() => {
+    episodeRef.current = episode
+  }, [episode])
 
   useEffect(() => {
     hasTriggeredNextRef.current = false
@@ -83,9 +94,6 @@ function Watch() {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      // Check if message origin is from YouTube or if we can parse it
-      if (!event.origin.includes('youtube.com') && !event.origin.includes('youtube-nocookie.com')) return
-
       try {
         let data = event.data
         if (typeof data === 'string') {
@@ -93,6 +101,9 @@ function Watch() {
         }
 
         if (data && typeof data === 'object') {
+          // Verify it's a YouTube event
+          if (data.event !== 'onStateChange' && data.event !== 'infoDelivery' && data.event !== 'initialDelivery') return
+
           // 1. Keep track of continuous playback position
           if (data.info) {
             if (typeof data.info.currentTime === 'number') {
@@ -138,10 +149,11 @@ function Watch() {
           }
 
           if (shouldTrigger && !hasTriggeredNextRef.current) {
-            const currentIndex = seriesEpisodes.findIndex(ep => ep.id === id)
-            if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+            const currentEpisodes = seriesEpisodesRef.current
+            const currentIndex = currentEpisodes.findIndex(ep => ep.id === id)
+            if (currentIndex !== -1 && currentIndex < currentEpisodes.length - 1) {
               hasTriggeredNextRef.current = true
-              const nextEpisode = seriesEpisodes[currentIndex + 1]
+              const nextEpisode = currentEpisodes[currentIndex + 1]
               navigate(`/watch/${nextEpisode.id}`, { replace: true })
             }
           }
@@ -155,7 +167,7 @@ function Watch() {
     return () => {
       window.removeEventListener('message', handleMessage)
     }
-  }, [id, seriesEpisodes, navigate])
+  }, [id, navigate])
 
   if (!episode) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
