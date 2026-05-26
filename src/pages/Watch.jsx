@@ -73,58 +73,33 @@ function Watch() {
   }, [fetchEpisode])
 
   useEffect(() => {
-    // 1. Ensure YouTube script is injected
-    if (!window.YT) {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      const firstScriptTag = document.getElementsByTagName('script')[0]
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-    }
+    const handleMessage = (event) => {
+      // Check if message origin is from YouTube
+      if (!event.origin.includes('youtube.com')) return
 
-    let player
-    let intervalId
+      try {
+        const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data
+        
+        // YouTube event when state changes
+        const isEnded =
+          (data.event === 'onStateChange' && data.info === 0) ||
+          (data.event === 'infoDelivery' && data.info && data.info.playerState === 0)
 
-    const setupPlayer = () => {
-      if (window.YT && window.YT.Player) {
-        player = new window.YT.Player('youtube-player', {
-          events: {
-            onStateChange: (event) => {
-              // 0 means ended (YT.PlayerState.ENDED)
-              if (event.data === 0) {
-                const currentIndex = seriesEpisodes.findIndex(ep => ep.id === episode.id)
-                if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
-                  const nextEpisode = seriesEpisodes[currentIndex + 1]
-                  navigate(`/watch/${nextEpisode.id}`, { replace: true })
-                }
-              }
-            }
+        if (isEnded) {
+          const currentIndex = seriesEpisodes.findIndex(ep => ep.id === episode.id)
+          if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+            const nextEpisode = seriesEpisodes[currentIndex + 1]
+            navigate(`/watch/${nextEpisode.id}`, { replace: true })
           }
-        })
-        if (intervalId) clearInterval(intervalId)
-      }
-    }
-
-    if (window.YT && window.YT.Player) {
-      setupPlayer()
-    } else {
-      intervalId = setInterval(() => {
-        if (window.YT && window.YT.Player) {
-          setupPlayer()
         }
-      }, 300)
-      
-      const previousCallback = window.onYouTubeIframeAPIReady
-      window.onYouTubeIframeAPIReady = () => {
-        if (previousCallback) previousCallback()
-        setupPlayer()
+      } catch (e) {
+        // Skip messages that aren't valid JSON or not interesting
       }
     }
 
+    window.addEventListener('message', handleMessage)
     return () => {
-      if (intervalId) clearInterval(intervalId)
-      if (player && player.destroy) {
-        player.destroy()
-      }
+      window.removeEventListener('message', handleMessage)
     }
   }, [episode, seriesEpisodes, navigate])
 
