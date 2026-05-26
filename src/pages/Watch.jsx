@@ -9,8 +9,6 @@ function Watch() {
   const [episode, setEpisode] = useState(null)
   const [seriesEpisodes, setSeriesEpisodes] = useState([])
   const [series, setSeries] = useState(null)
-  const iframeRef = useRef(null)
-  const playerInstanceRef = useRef(null)
 
   const fetchEpisode = useCallback(async () => {
     // 1. Check local admin videos first
@@ -75,73 +73,41 @@ function Watch() {
   }, [fetchEpisode])
 
   useEffect(() => {
-    // 1. Ensure YouTube script is injected
-    if (!window.YT) {
-      const tag = document.createElement('script')
-      tag.src = 'https://www.youtube.com/iframe_api'
-      const firstScriptTag = document.getElementsByTagName('script')[0]
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
-    }
+    const handleMessage = (event) => {
+      // Check if message origin is from YouTube or if we can parse it
+      if (!event.origin.includes('youtube.com') && !event.origin.includes('youtube-nocookie.com')) return
 
-    let intervalId
-
-    const initPlayer = () => {
-      if (!iframeRef.current || !window.YT || !window.YT.Player) return
-
-      // Clean up previous instance if any
-      if (playerInstanceRef.current) {
-        try {
-          playerInstanceRef.current.destroy()
-        } catch (e) {
-          // ignore
+      try {
+        let data = event.data
+        if (typeof data === 'string') {
+          // Sometimes data is a stringified JSON
+          if (data.startsWith('{')) {
+            data = JSON.parse(data)
+          }
         }
-        playerInstanceRef.current = null
-      }
 
-      playerInstanceRef.current = new window.YT.Player(iframeRef.current, {
-        events: {
-          onStateChange: (event) => {
-            // event.data === 0 represents ended (YT.PlayerState.ENDED)
-            if (event.data === 0) {
-              const currentIndex = seriesEpisodes.findIndex(ep => ep.id === (episode && episode.id))
-              if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
-                const nextEpisode = seriesEpisodes[currentIndex + 1]
-                navigate(`/watch/${nextEpisode.id}`, { replace: true })
-              }
+        if (data && typeof data === 'object') {
+          // 0 represents ended in YouTube player state
+          const isEnded =
+            (data.event === 'onStateChange' && Number(data.info) === 0) ||
+            (data.event === 'infoDelivery' && data.info && Number(data.info.playerState) === 0)
+
+          if (isEnded) {
+            const currentIndex = seriesEpisodes.findIndex(ep => ep.id === (episode && episode.id))
+            if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+              const nextEpisode = seriesEpisodes[currentIndex + 1]
+              navigate(`/watch/${nextEpisode.id}`, { replace: true })
             }
           }
         }
-      })
-    }
-
-    // Wait until YT is ready
-    if (window.YT && window.YT.Player) {
-      initPlayer()
-    } else {
-      intervalId = setInterval(() => {
-        if (window.YT && window.YT.Player) {
-          clearInterval(intervalId)
-          initPlayer()
-        }
-      }, 200)
-
-      const prevCallback = window.onYouTubeIframeAPIReady
-      window.onYouTubeIframeAPIReady = () => {
-        if (prevCallback) prevCallback()
-        initPlayer()
+      } catch (e) {
+        // Skip malformed/unrelated messages
       }
     }
 
+    window.addEventListener('message', handleMessage)
     return () => {
-      if (intervalId) clearInterval(intervalId)
-      if (playerInstanceRef.current) {
-        try {
-          playerInstanceRef.current.destroy()
-        } catch (e) {
-          // ignore
-        }
-        playerInstanceRef.current = null
-      }
+      window.removeEventListener('message', handleMessage)
     }
   }, [episode, seriesEpisodes, navigate])
 
@@ -180,8 +146,7 @@ function Watch() {
       {/* Video Player */}
       <div className="w-full bg-black aspect-video">
         <iframe
-          ref={iframeRef}
-          src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0&enablejsapi=1`}
+          src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`}
           className="w-full h-full"
           allowFullScreen
           allow="autoplay; encrypted-media"
