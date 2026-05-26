@@ -72,6 +72,62 @@ function Watch() {
     fetchEpisode()
   }, [fetchEpisode])
 
+  useEffect(() => {
+    // 1. Ensure YouTube script is injected
+    if (!window.YT) {
+      const tag = document.createElement('script')
+      tag.src = 'https://www.youtube.com/iframe_api'
+      const firstScriptTag = document.getElementsByTagName('script')[0]
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag)
+    }
+
+    let player
+    let intervalId
+
+    const setupPlayer = () => {
+      if (window.YT && window.YT.Player) {
+        player = new window.YT.Player('youtube-player', {
+          events: {
+            onStateChange: (event) => {
+              // 0 means ended (YT.PlayerState.ENDED)
+              if (event.data === 0) {
+                const currentIndex = seriesEpisodes.findIndex(ep => ep.id === episode.id)
+                if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
+                  const nextEpisode = seriesEpisodes[currentIndex + 1]
+                  navigate(`/watch/${nextEpisode.id}`, { replace: true })
+                }
+              }
+            }
+          }
+        })
+        if (intervalId) clearInterval(intervalId)
+      }
+    }
+
+    if (window.YT && window.YT.Player) {
+      setupPlayer()
+    } else {
+      intervalId = setInterval(() => {
+        if (window.YT && window.YT.Player) {
+          setupPlayer()
+        }
+      }, 300)
+      
+      const previousCallback = window.onYouTubeIframeAPIReady
+      window.onYouTubeIframeAPIReady = () => {
+        if (previousCallback) previousCallback()
+        setupPlayer()
+      }
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+      if (player && player.destroy) {
+        player.destroy()
+      }
+    }
+  }, [episode, seriesEpisodes, navigate])
+
   if (!episode) return (
     <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
       <div className="text-center">
@@ -107,7 +163,8 @@ function Watch() {
       {/* Video Player */}
       <div className="w-full bg-black aspect-video">
         <iframe
-          src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0`}
+          id="youtube-player"
+          src={`https://www.youtube.com/embed/${episode.youtube_id}?autoplay=1&rel=0&enablejsapi=1`}
           className="w-full h-full"
           allowFullScreen
           allow="autoplay; encrypted-media"
