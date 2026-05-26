@@ -131,9 +131,10 @@ function Watch() {
       {/* Video Player */}
       <div 
         className={isForceLandscape 
-          ? "fixed top-0 left-0 w-[100vh] h-[100vw] z-[9999] origin-top-left rotate-90 -translate-y-full bg-black" 
+          ? "fixed top-0 left-0 w-[100vh] h-[100vw] z-[9999] origin-top-left bg-black" 
           : "w-full bg-black aspect-video relative"
         }
+        style={isForceLandscape ? { transform: 'rotate(90deg) translateY(-100%)' } : {}}
       >
         {isForceLandscape && (
           <button 
