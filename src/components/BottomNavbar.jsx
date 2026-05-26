@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { PlaySquareOutlined, CustomerServiceOutlined, HomeFilled, InfoCircleOutlined, UserOutlined } from '@ant-design/icons'
+import { haptics } from '../utils/haptics'
 
 function BottomNavbar() {
   const navigate = useNavigate()
@@ -26,12 +27,17 @@ function BottomNavbar() {
 
   const isActive = (path) => location.pathname === path
 
+  const handleNav = (path) => {
+    haptics.selection()
+    navigate(path)
+  }
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-t border-[#FF9933]/15 px-4 py-2 flex justify-around items-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
       
       {/* Shorts Option */}
       <button
-        onClick={() => navigate('/shorts')}
+        onClick={() => handleNav('/shorts')}
         className={`flex flex-col items-center gap-1 transition-all duration-300 ${
           isActive('/shorts') ? 'text-[#FF9933] scale-110' : 'text-gray-400 hover:text-gray-200'
         }`}
@@ -42,7 +48,7 @@ function BottomNavbar() {
 
       {/* Music Option */}
       <button
-        onClick={() => navigate('/music')}
+        onClick={() => handleNav('/music')}
         className={`flex flex-col items-center gap-1 transition-all duration-300 ${
           isActive('/music') ? 'text-[#FF9933] scale-110' : 'text-gray-400 hover:text-gray-200'
         }`}
@@ -53,7 +59,7 @@ function BottomNavbar() {
 
       {/* Home (Accented Center Button) */}
       <button
-        onClick={() => navigate('/home')}
+        onClick={() => handleNav('/home')}
         className={`flex flex-col items-center justify-center -translate-y-4 w-14 h-14 rounded-full bg-gradient-to-br from-[#FF9933] to-[#FF6600] text-black shadow-[0_0_25px_rgba(255,153,51,0.45)] hover:shadow-[0_0_35px_rgba(255,153,51,0.65)] hover:scale-110 active:scale-95 transition-all duration-300 border-4 border-[#0a0a0a]`}
       >
         <HomeFilled className="text-[24px]" />
@@ -61,7 +67,7 @@ function BottomNavbar() {
 
       {/* About Us Option */}
       <button
-        onClick={() => navigate('/about')}
+        onClick={() => handleNav('/about')}
         className={`flex flex-col items-center gap-1 transition-all duration-300 ${
           isActive('/about') ? 'text-[#FF9933] scale-110' : 'text-gray-400 hover:text-gray-200'
         }`}
@@ -72,7 +78,7 @@ function BottomNavbar() {
 
       {/* Account Option */}
       <button
-        onClick={() => navigate('/account')}
+        onClick={() => handleNav('/account')}
         className={`flex flex-col items-center gap-1 transition-all duration-300 ${
           isActive('/account') ? 'text-[#FF9933] scale-110' : 'text-gray-400 hover:text-gray-200'
         }`}

@@ -96,8 +96,21 @@ function Music() {
   }, [])
 
   if (loading) return (
-    <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
-      <div className="w-10 h-10 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+    <div className="bg-[#141414] min-h-screen text-white pb-24">
+      <Navbar />
+      <div className="px-4 sm:px-6 md:px-8 pt-20 max-w-5xl mx-auto flex flex-col md:flex-row gap-6">
+        <div className="flex-1 bg-white/5 rounded-2xl p-4 sm:p-6 shadow-lg animate-pulse h-[400px] relative overflow-hidden">
+          <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+        </div>
+        <div className="flex-1 flex flex-col min-w-0 gap-3">
+          {[1,2,3,4].map(i => (
+             <div key={i} className="flex gap-3 items-center rounded-xl p-2.5 bg-white/5 h-20 animate-pulse relative overflow-hidden">
+               <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+             </div>
+          ))}
+        </div>
+      </div>
+      <BottomNavbar />
     </div>
   )
 

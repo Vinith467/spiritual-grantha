@@ -1,11 +1,15 @@
 import { useNavigate } from 'react-router-dom'
+import { haptics } from '../utils/haptics'
 
 function VideoCard({ episode, progress }) {
   const navigate = useNavigate()
 
   return (
     <div
-      onClick={() => navigate(`/watch/${episode.id}`)}
+      onClick={() => {
+        haptics.selection()
+        navigate(`/watch/${episode.id}`)
+      }}
       className="min-w-[120px] max-w-[120px] md:min-w-[160px] md:max-w-[160px] cursor-pointer group flex-shrink-0"
     >
       <div className="relative overflow-hidden rounded-md aspect-[2/3]">

@@ -33,9 +33,11 @@ function Shorts() {
   }, [])
 
   if (loading) return (
-    <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white flex flex-col items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin mb-4" />
-      <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Loading YouTube Shorts...</p>
+    <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
+      <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-white/5 animate-pulse">
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+      </div>
+      <BottomNavbar />
     </div>
   )
 

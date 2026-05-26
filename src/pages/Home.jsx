@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar'
 import HeroBanner from '../components/HeroBanner'
 import VideoRow from '../components/VideoRow'
 import BottomNavbar from '../components/BottomNavbar'
+import SkeletonRow from '../components/SkeletonRow'
 
 import VideoCard from '../components/VideoCard'
 
@@ -83,9 +84,14 @@ function Home() {
       <Navbar />
       
       {loading ? (
-        <div className="h-64 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
-        </div>
+        <>
+          <div className="h-[60vh] w-full bg-white/5 animate-pulse bg-gradient-to-t from-[#141414] to-transparent border-b border-white/5" />
+          <div className="pb-10 -mt-4 relative z-10 pt-4">
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+          </div>
+        </>
       ) : (
         <>
           <HeroBanner seriesList={bannerList} />

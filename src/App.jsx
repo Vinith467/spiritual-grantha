@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import { useAuth } from './lib/AuthContext'
 import ScrollToTop from './components/ScrollToTop'
 import Landing from './pages/Landing'
@@ -13,6 +14,9 @@ import About from './pages/About'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
+import { AnimatePresence } from 'framer-motion'
+import PageTransition from './components/PageTransition'
+import OfflineScreen from './components/OfflineScreen'
 
 function ProtectedRoute({ children }) {
   const { isSubscribed } = useAuth()
@@ -27,58 +31,92 @@ function AdminRoute({ children }) {
 }
 
 function App() {
+  const location = useLocation()
+  const [isOffline, setIsOffline] = useState(!navigator.onLine)
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
   return (
     <>
       <ScrollToTop />
-      <Routes>
-        {/* Public routes — visible to everyone including Google bots */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
+      {isOffline && <OfflineScreen />}
 
-        {/* Protected routes — require Google subscription */}
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        } />
-        <Route path="/watch/:id" element={
-          <ProtectedRoute>
-            <Watch />
-          </ProtectedRoute>
-        } />
-        <Route path="/shorts" element={
-          <ProtectedRoute>
-            <Shorts />
-          </ProtectedRoute>
-        } />
-        <Route path="/music" element={
-          <ProtectedRoute>
-            <Music />
-          </ProtectedRoute>
-        } />
-        <Route path="/account" element={
-          <ProtectedRoute>
-            <Account />
-          </ProtectedRoute>
-        } />
-        <Route path="/about" element={
-          <ProtectedRoute>
-            <About />
-          </ProtectedRoute>
-        } />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          {/* Public routes — visible to everyone including Google bots */}
+          <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+          <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+          <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
 
-        {/* Admin — requires both subscription AND admin role */}
-        <Route path="/admin" element={
-          <AdminRoute>
-            <Admin />
-          </AdminRoute>
-        } />
+          {/* Protected routes — require Google subscription */}
+          <Route path="/home" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Home />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/watch/:id" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Watch />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/shorts" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Shorts />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/music" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Music />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/account" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Account />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/about" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <About />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
 
-        {/* 404 catch-all */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* Admin — requires both subscription AND admin role */}
+          <Route path="/admin" element={
+            <AdminRoute>
+              <PageTransition>
+                <Admin />
+              </PageTransition>
+            </AdminRoute>
+          } />
+
+          {/* 404 catch-all */}
+          <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
     </>
   )
 }

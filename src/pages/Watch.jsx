@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 import YouTube from 'react-youtube'
+import { haptics } from '../utils/haptics'
 
 function Watch() {
   const { id } = useParams()
@@ -165,7 +166,10 @@ function Watch() {
       {/* Top bar */}
       <nav className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 sticky top-0 z-50 transition-all duration-300">
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => {
+            haptics.selection()
+            navigate(-1)
+          }}
           className="group relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 backdrop-blur-md transition-all duration-300 active:scale-90 shrink-0 shadow-lg hover:shadow-white/5"
         >
           <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -194,7 +198,10 @@ function Watch() {
       >
         {isForceLandscape && (
           <button 
-            onClick={() => setIsForceLandscape(false)}
+            onClick={() => {
+              haptics.selection()
+              setIsForceLandscape(false)
+            }}
             className="absolute top-6 right-6 z-[10000] w-12 h-12 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-xl border border-white/20 text-white/80 hover:text-white hover:bg-white/10 transition-all duration-300 active:scale-90 shadow-[0_8px_32px_rgba(0,0,0,0.5)] group"
           >
             <svg className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -224,8 +231,11 @@ function Watch() {
         <div className="flex items-start justify-between gap-4 mb-2">
           <h1 className="text-lg md:text-2xl font-bold">{episode.title}</h1>
           <button 
-            onClick={() => setIsForceLandscape(true)}
-            className="shrink-0 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors border border-white/10"
+            onClick={() => {
+              haptics.selection()
+              setIsForceLandscape(true)
+            }}
+            className="shrink-0 bg-white/10 hover:bg-white/20 text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors border border-white/10 active:scale-95"
           >
             <span className="text-lg leading-none mb-0.5">⤢</span> Rotate
           </button>
@@ -245,7 +255,12 @@ function Watch() {
             {seriesEpisodes.map(ep => (
               <div
                 key={ep.id}
-                onClick={() => ep.id !== episode.id && navigate(`/watch/${ep.id}`, { replace: true })}
+                onClick={() => {
+                  if (ep.id !== episode.id) {
+                    haptics.selection()
+                    navigate(`/watch/${ep.id}`, { replace: true })
+                  }
+                }}
                 className={`flex gap-3 rounded-xl overflow-hidden cursor-pointer transition
                   ${ep.id === episode.id
                     ? 'bg-white/10 border border-[#FF9933]/50'
