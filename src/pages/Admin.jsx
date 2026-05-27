@@ -391,7 +391,7 @@ function Admin() {
       description: item.description || '',
       youtubeId: item.youtube_id || ''
     })
-    setEditingId(item.id)
+    setEditingShortId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -736,7 +736,7 @@ function Admin() {
         {activeTab === 'music' && (
           <div className="animate-fade-in space-y-8">
             <form onSubmit={handleMusicSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Devotional Track (Supabase)' : 'Add New Devotional Track (Supabase)'}</h2>
+              <h2 className="text-xl font-black text-[#FF9933]">{editingMusicId ? 'Edit Devotional Track (Supabase)' : 'Add New Devotional Track (Supabase)'}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input required type="text" placeholder="Track Title" value={musicForm.trackTitle} onChange={e => setMusicForm({ ...musicForm, trackTitle: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e => setMusicForm({ ...musicForm, artist: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
@@ -754,8 +754,8 @@ function Admin() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Track'}</button>
-                {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
+                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingMusicId ? 'Save Changes' : 'Upload Track'}</button>
+                {editingMusicId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
               </div>
             </form>
 
@@ -788,15 +788,15 @@ function Admin() {
         {activeTab === 'shorts' && (
           <div className="animate-fade-in space-y-8">
             <form onSubmit={handleShortSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-              <h2 className="text-xl font-black text-[#FF9933]">{editingId ? 'Edit Divine Short (Supabase)' : 'Add New Divine Short (Supabase)'}</h2>
+              <h2 className="text-xl font-black text-[#FF9933]">{editingShortId ? 'Edit Divine Short (Supabase)' : 'Add New Divine Short (Supabase)'}</h2>
               <div className="grid grid-cols-1 gap-4">
                 <input required type="text" placeholder="Shorts Title" value={shortForm.title} onChange={e => setShortForm({ ...shortForm, title: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube Short ID (e.g. e9GgY2gH_nQ)" value={shortForm.youtubeId} onChange={e => setShortForm({ ...shortForm, youtubeId: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <textarea required rows="2" placeholder="Short Description / Hashtags" value={shortForm.description} onChange={e => setShortForm({ ...shortForm, description: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />
               </div>
               <div className="flex gap-3">
-                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingId ? 'Save Changes' : 'Upload Short'}</button>
-                {editingId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
+                <button type="submit" disabled={loading} className="flex-1 bg-[#FF9933] text-black font-extrabold py-3 rounded-xl hover:bg-[#FF6600] transition disabled:opacity-50">{editingShortId ? 'Save Changes' : 'Upload Short'}</button>
+                {editingShortId && <button type="button" onClick={cancelEdit} className="px-6 bg-white/10 text-white font-bold py-3 rounded-xl">Cancel</button>}
               </div>
             </form>
 
