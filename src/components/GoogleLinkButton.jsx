@@ -34,7 +34,7 @@ export default function GoogleLinkButton() {
       
       const client = window.google.accounts.oauth2.initTokenClient({
         client_id: CLIENT_ID,
-        scope: "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
+        scope: "https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile",
         callback: async (tokenResponse) => {
           if (tokenResponse.error) {
             setStatus("error");
@@ -52,6 +52,7 @@ export default function GoogleLinkButton() {
 
   async function fetchUserInfoAndVerify(accessToken) {
     setStatus("subscribing");
+    let isUserAdmin = false;
     try {
       const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
         headers: { Authorization: `Bearer ${accessToken}` }
@@ -77,6 +78,7 @@ export default function GoogleLinkButton() {
         let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
           setAdminStatus(true);
+          isUserAdmin = true;
           role = 'Admin';
         } else {
           setAdminStatus(false);
@@ -96,15 +98,40 @@ export default function GoogleLinkButton() {
         } catch (dbErr) {
           console.error("Failed to sync devotee profile in Supabase:", dbErr);
         }
-
-        setHasGoogleLinked(true);
-        setStatus("success");
-        setTimeout(() => setStatus("idle"), 3000);
       }
     } catch (err) {
       console.error("Error retrieving Google user details:", err);
-      setStatus("error");
     }
+
+    // Attempt auto-subscribe to YouTube channel unless admin
+    if (!isUserAdmin) {
+      try {
+        await fetch(
+          "https://www.googleapis.com/youtube/v3/subscriptions?part=snippet",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              snippet: {
+                resourceId: {
+                  kind: "youtube#channel",
+                  channelId: 'UCYcsHqcXqkYV0qNWa4L9xPg', // HARDCODED NEW CHANNEL
+                },
+              },
+            }),
+          }
+        );
+      } catch (subErr) {
+        console.warn("YouTube auto-subscribe failed, but linking will proceed:", subErr);
+      }
+    }
+
+    setHasGoogleLinked(true);
+    setStatus("success");
+    setTimeout(() => setStatus("idle"), 3000);
   }
 
   if (hasGoogleLinked && status !== "success") {
