@@ -98,17 +98,45 @@ function HeroBanner({ seriesList }) {
                           </button>
                         )}
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             const shareUrl = window.location.origin + `/watch/${firstEpisode?.id || ''}`
-                            if (navigator.share) {
-                              navigator.share({
-                                title: series.title,
-                                text: `Watch ${series.title} on Sanatan Dharma TV`,
-                                url: shareUrl
-                              }).catch(console.error)
-                            } else {
-                              navigator.clipboard.writeText(shareUrl)
-                              alert('Link copied to clipboard!')
+                            let sharedWithFile = false;
+                            
+                            try {
+                              if (navigator.share && navigator.canShare) {
+                                try {
+                                  const response = await fetch(series.thumbnail_url, { mode: 'cors' })
+                                  const blob = await response.blob()
+                                  const file = new File([blob], 'banner.jpg', { type: blob.type || 'image/jpeg' })
+                                  
+                                  if (navigator.canShare({ files: [file] })) {
+                                    await navigator.share({
+                                      title: series.title,
+                                      text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                      url: shareUrl,
+                                      files: [file]
+                                    })
+                                    sharedWithFile = true;
+                                  }
+                                } catch (fetchErr) {
+                                  console.warn('Could not fetch image for sharing, falling back to text only', fetchErr)
+                                }
+                              }
+                              
+                              if (!sharedWithFile) {
+                                if (navigator.share) {
+                                  await navigator.share({
+                                    title: series.title,
+                                    text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                    url: shareUrl
+                                  })
+                                } else {
+                                  navigator.clipboard.writeText(shareUrl)
+                                  alert('Link copied to clipboard!')
+                                }
+                              }
+                            } catch (error) {
+                              console.error('Error sharing:', error)
                             }
                           }}
                           className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/20 text-white backdrop-blur-md px-4 sm:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-white/30 active:scale-95 transition-all shadow-lg border border-white/10 cursor-pointer"
