@@ -115,7 +115,7 @@ function Landing() {
               <div className="w-full flex flex-col items-center animate-bounce-slow">
                 {/* Visual indicator / pointing text */}
                 <p className="text-[#FF9933] font-black text-sm sm:text-base uppercase tracking-widest mb-4 flex items-center gap-2 animate-pulse">
-                  <span>👇</span> Click Below to Install Instantly <span>👇</span>
+                  Click Below to Install Instantly 
                 </p>
                 
                 {/* Giant, highly attractive pulsing install button */}
