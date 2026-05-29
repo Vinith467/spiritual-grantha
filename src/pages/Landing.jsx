@@ -127,21 +127,21 @@ function Landing() {
         <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-950/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
       </div>
 
-      <main className="flex-1 flex flex-col items-center justify-end sm:justify-center px-6 pt-32 pb-16 sm:py-12 text-center max-w-2xl mx-auto w-full relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-6 sm:py-12 text-center max-w-2xl mx-auto w-full relative z-10">
         
-        <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-6 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto">
+        <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-4 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto">
           <img src="/icon-192.png" alt="App Icon" className="w-full h-full object-cover rounded-2xl" />
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-3 sm:mb-4">
+        <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-2 sm:mb-4">
           Install the App
         </h1>
-        <p className="text-gray-300 text-sm sm:text-lg mb-6 sm:mb-8 max-w-md mx-auto">
+        <p className="text-gray-300 text-sm sm:text-lg mb-4 sm:mb-8 max-w-md mx-auto">
           To get the best experience, please install our premium spiritual streaming platform directly on your device.
         </p>
 
         {/* Custom Language Selector Proxying Google Translate */}
-        <div className="w-full mb-6 sm:mb-8 z-50 relative max-w-sm mx-auto">
+        <div className="w-full mb-4 sm:mb-8 z-50 relative max-w-sm mx-auto">
           <LanguageSelector 
             selectedLang={selectedLang} 
             onLanguageChange={handleLanguageChange} 
@@ -182,8 +182,8 @@ function Landing() {
           <div className="w-full flex flex-col items-center">
             {deferredPrompt ? (
               <div className="w-full flex flex-col items-center animate-bounce-slow">
-                <p className="text-[#FF9933] font-black text-xs sm:text-base uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2 animate-pulse">
-                  <span>👇</span> Click Below to Install Instantly <span>👇</span>
+                <p className="text-[#FF9933] font-black text-xs sm:text-base uppercase tracking-widest mb-3 sm:mb-4 flex items-center justify-center gap-2 animate-pulse">
+                  Click Below to Install Instantly
                 </p>
                 
                 <div className="relative group w-full sm:w-auto">
