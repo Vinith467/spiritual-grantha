@@ -2,7 +2,7 @@ import InstallButton from './InstallButton'
 import { YoutubeOutlined } from '@ant-design/icons'
 
 function Navbar() {
-  const channelId = import.meta.env.VITE_YOUTUBE_CHANNEL_ID || 'UCYcsHqcXqkYV0qNWa4L9xPg'
+  const channelId = 'UCYcsHqcXqkYV0qNWa4L9xPg'
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-[#FF9933]/10 px-4 sm:px-6 md:px-8 py-3 sm:py-4 flex justify-between items-center transition-all duration-300">
