@@ -14,7 +14,7 @@ export default defineConfig({
         short_name: 'SDTV',
         description: 'Watch Ramayan, Mahabharat, Bhagwat Geeta & more',
         theme_color: '#0a0a0a',
-        background_color: '#0a0a0a',
+        background_color: '#ffffff',
         start_url: '/home',
         display: 'standalone',
         icons: [
