@@ -82,20 +82,43 @@ function HeroBanner({ seriesList }) {
                       )}
                       <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-1 md:mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
                       <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
-                      {firstEpisode && (
+                      <div className="flex gap-3 w-full sm:w-auto">
+                        {firstEpisode && (
+                          <button
+                            onClick={() => {
+                              if (isWatched) {
+                                navigate(`/watch/${lastWatched.id}`)
+                              } else {
+                                navigate(`/watch/${firstEpisode.id}`)
+                              }
+                            }}
+                            className="flex-[1.5] sm:flex-none justify-center bg-white text-black px-4 sm:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
+                          >
+                            {isWatched ? 'Continue' : 'Watch Now'}
+                          </button>
+                        )}
                         <button
                           onClick={() => {
-                            if (isWatched) {
-                              navigate(`/watch/${lastWatched.id}`)
+                            const shareUrl = window.location.origin + `/watch/${firstEpisode?.id || ''}`
+                            if (navigator.share) {
+                              navigator.share({
+                                title: series.title,
+                                text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                url: shareUrl
+                              }).catch(console.error)
                             } else {
-                              navigate(`/watch/${firstEpisode.id}`)
+                              navigator.clipboard.writeText(shareUrl)
+                              alert('Link copied to clipboard!')
                             }
                           }}
-                          className="w-full sm:w-auto bg-white text-black px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
+                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/20 text-white backdrop-blur-md px-4 sm:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-white/30 active:scale-95 transition-all shadow-lg border border-white/10 cursor-pointer"
                         >
-                          {isWatched ? 'Continue Watching' : 'Watch Now'}
+                          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                          </svg>
+                          <span className="truncate">Share</span>
                         </button>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
