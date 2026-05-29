@@ -17,21 +17,23 @@ import NotFound from './pages/NotFound'
 import { AnimatePresence } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import OfflineScreen from './components/OfflineScreen'
+import OnboardingModal from './components/OnboardingModal'
 
 function ProtectedRoute({ children }) {
   const { isSubscribed } = useAuth()
-  return isSubscribed ? children : <Navigate to="/login" replace />
+  return isSubscribed ? children : <Navigate to="/" replace />
 }
 
 function AdminRoute({ children }) {
   const { isSubscribed, isAdmin } = useAuth()
-  if (!isSubscribed) return <Navigate to="/login" replace />
+  if (!isSubscribed) return <Navigate to="/" replace />
   if (!isAdmin) return <Navigate to="/home" replace />
   return children
 }
 
 function App() {
   const location = useLocation()
+  const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
 
   useEffect(() => {
@@ -51,12 +53,12 @@ function App() {
     <>
       <ScrollToTop />
       {isOffline && <OfflineScreen />}
+      {isSubscribed && <OnboardingModal />}
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           {/* Public routes — visible to everyone including Google bots */}
           <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
-          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
 

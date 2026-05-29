@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import LanguageSelector from '../components/LanguageSelector'
+import { useAuth } from '../lib/AuthContext'
 
 function Landing() {
   const navigate = useNavigate()
+  const { signIn } = useAuth()
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [isIOS] = useState(() => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()))
   const [hoverZone, setHoverZone] = useState("none")
@@ -31,13 +33,14 @@ function Landing() {
   useEffect(() => {
     // If already logged in/entered app, take them straight to home feed
     if (localStorage.getItem('subscribed') === 'true') {
+      signIn()
       navigate('/home', { replace: true })
       return
     }
 
     // If opened as a standalone PWA, take them directly to home feed
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-      localStorage.setItem('subscribed', 'true')
+      signIn()
       navigate('/home', { replace: true })
       return
     }
@@ -52,7 +55,7 @@ function Landing() {
     // Detect when installed and automatically redirect to home feed
     const handleAppInstalled = () => {
       setDeferredPrompt(null)
-      localStorage.setItem('subscribed', 'true')
+      signIn()
       navigate('/home', { replace: true })
     }
     window.addEventListener('appinstalled', handleAppInstalled)
@@ -61,11 +64,11 @@ function Landing() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('appinstalled', handleAppInstalled)
     }
-  }, [navigate])
+  }, [navigate, signIn])
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      localStorage.setItem('subscribed', 'true')
+      signIn()
       navigate('/home', { replace: true })
       return
     }
@@ -73,7 +76,7 @@ function Landing() {
     const { outcome } = await deferredPrompt.userChoice
     console.log(`User response to the install prompt: ${outcome}`)
     setDeferredPrompt(null)
-    localStorage.setItem('subscribed', 'true')
+    signIn()
     navigate('/home', { replace: true })
   }
 
