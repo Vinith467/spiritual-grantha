@@ -152,10 +152,22 @@ function Watch() {
   }
 
   if (!episode) return (
-    <div className="bg-[#141414] min-h-screen flex items-center justify-center text-white">
-      <div className="text-center">
-        <div className="w-12 h-12 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-        <p className="text-gray-400 text-sm">Loading...</p>
+    <div className="bg-[#141414] min-h-screen text-white pb-24 flex flex-col">
+      <nav className="flex items-center gap-3 px-4 py-3 bg-black/60 backdrop-blur-md border-b border-white/5 sticky top-0 z-50">
+        <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />
+        <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />
+        <div className="flex-1 space-y-2">
+          <div className="w-24 h-3 bg-white/5 animate-pulse rounded" />
+          <div className="w-48 h-4 bg-white/5 animate-pulse rounded" />
+        </div>
+      </nav>
+      <div className="w-full aspect-video bg-white/5 animate-pulse relative overflow-hidden">
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+      </div>
+      <div className="px-4 py-4 border-b border-white/5 space-y-3">
+        <div className="w-3/4 h-6 bg-white/5 animate-pulse rounded" />
+        <div className="w-full h-4 bg-white/5 animate-pulse rounded" />
+        <div className="w-2/3 h-4 bg-white/5 animate-pulse rounded" />
       </div>
     </div>
   )
