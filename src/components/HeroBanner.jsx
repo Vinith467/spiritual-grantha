@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import ShareModal from './ShareModal'
 
 function HeroBanner({ seriesList }) {
   const navigate = useNavigate()
   const [current, setCurrent] = useState(0)
   const touchStartX = useRef(null)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareData, setShareData] = useState(null)
 
   // Auto-play timer (changes slide every 6 seconds)
   useEffect(() => {
@@ -40,6 +43,11 @@ function HeroBanner({ seriesList }) {
 
   return (
     <div className="w-full pt-[60px] sm:pt-[72px] pb-3 overflow-hidden">
+      <ShareModal 
+        isOpen={showShareModal} 
+        onClose={() => setShowShareModal(false)} 
+        shareData={shareData} 
+      />
       {/* Main Viewport Container */}
       <div className="relative group w-full">
         
@@ -100,65 +108,48 @@ function HeroBanner({ seriesList }) {
                         <button
                           onClick={async () => {
                             const shareUrl = window.location.origin + `/watch/${firstEpisode?.id || ''}`
-                            let sharedWithFile = false;
+                            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                             
-                            try {
-                              if (navigator.share && navigator.canShare) {
-                                try {
-                                  const response = await fetch(series.thumbnail_url, { mode: 'cors' })
-                                  const blob = await response.blob()
-                                  const file = new File([blob], 'banner.jpg', { type: blob.type || 'image/jpeg' })
-                                  
-                                  if (navigator.canShare({ files: [file] })) {
-                                    await navigator.share({
-                                      title: series.title,
-                                      text: `Watch ${series.title} on Sanatan Dharma TV\n`,
-                                      url: shareUrl,
-                                      files: [file]
-                                    })
-                                    sharedWithFile = true;
-                                  }
-                                } catch (fetchErr) {
-                                  console.warn('Could not fetch image for sharing:', fetchErr)
-                                }
-                              }
-                              
-                              if (!sharedWithFile) {
-                                try {
-                                  // Fallback for Desktop: Copy image AND text to clipboard if possible
-                                  const response = await fetch(series.thumbnail_url, { mode: 'cors' })
-                                  const blob = await response.blob()
-                                  
-                                  if (navigator.clipboard && window.ClipboardItem) {
-                                    const textBlob = new Blob([`Watch ${series.title} on Sanatan Dharma TV!\n\nLink: ${shareUrl}`], { type: 'text/plain' })
-                                    const item = new ClipboardItem({
-                                      [blob.type || 'image/jpeg']: blob,
-                                      'text/plain': textBlob
-                                    })
-                                    await navigator.clipboard.write([item])
-                                    alert('Banner image and link copied to clipboard! You can now paste it to share.')
-                                  } else {
-                                    // Extreme fallback
-                                    navigator.clipboard.writeText(shareUrl)
-                                    alert('Link copied to clipboard!')
-                                  }
-                                } catch (clipboardErr) {
-                                  console.warn('Clipboard fallback failed:', clipboardErr)
-                                  // Extreme fallback 2
-                                  if (navigator.share) {
-                                    await navigator.share({
-                                      title: series.title,
-                                      text: `Watch ${series.title} on Sanatan Dharma TV`,
-                                      url: shareUrl
-                                    })
-                                  } else {
-                                    navigator.clipboard.writeText(shareUrl)
-                                    alert('Link copied to clipboard!')
+                            // For Mobile, try native OS Share menu first
+                            if (isMobile && navigator.share) {
+                              try {
+                                let sharedWithFile = false;
+                                if (navigator.canShare) {
+                                  try {
+                                    const response = await fetch(series.thumbnail_url, { mode: 'cors' })
+                                    const blob = await response.blob()
+                                    const file = new File([blob], 'banner.jpg', { type: blob.type || 'image/jpeg' })
+                                    if (navigator.canShare({ files: [file] })) {
+                                      await navigator.share({
+                                        title: series.title,
+                                        text: `Watch ${series.title} on Sanatan Dharma TV\n`,
+                                        url: shareUrl,
+                                        files: [file]
+                                      })
+                                      sharedWithFile = true;
+                                    }
+                                  } catch (e) {
+                                    console.warn('Could not fetch image for native sharing', e)
                                   }
                                 }
+                                if (!sharedWithFile) {
+                                  await navigator.share({
+                                    title: series.title,
+                                    text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                    url: shareUrl
+                                  })
+                                }
+                              } catch (error) {
+                                console.error('Error sharing natively:', error)
                               }
-                            } catch (error) {
-                              console.error('Error sharing:', error)
+                            } else {
+                              // For Desktop or if native share is not available, show our custom beautiful Share Modal
+                              setShareData({
+                                title: series.title,
+                                url: shareUrl,
+                                thumbnail: series.thumbnail_url
+                              })
+                              setShowShareModal(true)
                             }
                           }}
                           className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/20 text-white backdrop-blur-md px-4 sm:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-white/30 active:scale-95 transition-all shadow-lg border border-white/10 cursor-pointer"
