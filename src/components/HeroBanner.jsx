@@ -112,27 +112,49 @@ function HeroBanner({ seriesList }) {
                                   if (navigator.canShare({ files: [file] })) {
                                     await navigator.share({
                                       title: series.title,
-                                      text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                      text: `Watch ${series.title} on Sanatan Dharma TV\n`,
                                       url: shareUrl,
                                       files: [file]
                                     })
                                     sharedWithFile = true;
                                   }
                                 } catch (fetchErr) {
-                                  console.warn('Could not fetch image for sharing, falling back to text only', fetchErr)
+                                  console.warn('Could not fetch image for sharing:', fetchErr)
                                 }
                               }
                               
                               if (!sharedWithFile) {
-                                if (navigator.share) {
-                                  await navigator.share({
-                                    title: series.title,
-                                    text: `Watch ${series.title} on Sanatan Dharma TV`,
-                                    url: shareUrl
-                                  })
-                                } else {
-                                  navigator.clipboard.writeText(shareUrl)
-                                  alert('Link copied to clipboard!')
+                                try {
+                                  // Fallback for Desktop: Copy image AND text to clipboard if possible
+                                  const response = await fetch(series.thumbnail_url, { mode: 'cors' })
+                                  const blob = await response.blob()
+                                  
+                                  if (navigator.clipboard && window.ClipboardItem) {
+                                    const textBlob = new Blob([`Watch ${series.title} on Sanatan Dharma TV!\n\nLink: ${shareUrl}`], { type: 'text/plain' })
+                                    const item = new ClipboardItem({
+                                      [blob.type || 'image/jpeg']: blob,
+                                      'text/plain': textBlob
+                                    })
+                                    await navigator.clipboard.write([item])
+                                    alert('Banner image and link copied to clipboard! You can now paste it to share.')
+                                  } else {
+                                    // Extreme fallback
+                                    navigator.clipboard.writeText(shareUrl)
+                                    alert('Link copied to clipboard!')
+                                  }
+                                } catch (clipboardErr) {
+                                  console.warn('Clipboard fallback failed:', clipboardErr)
+                                  // Extreme fallback 2
+                                  if (navigator.share) {
+                                    await navigator.share({
+                                      title: series.title,
+                                      text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                      url: shareUrl
+                                    })
+                                  } else {
+                                    navigator.clipboard.writeText(shareUrl)
+                                    alert('Link copied to clipboard!')
+                                  }
                                 }
                               }
                             } catch (error) {
