@@ -30,3 +30,31 @@ html, body {
 .goog-te-banner-frame.skiptranslate {
   display: none !important;
 }
+
+@keyframes bounceSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes pulseSlow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.03);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounceSlow 3s infinite ease-in-out;
+}
+
+.animate-pulse-slow {
+  animation: pulseSlow 2s infinite ease-in-out;
+}
