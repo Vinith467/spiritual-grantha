@@ -1,38 +1,59 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useGoogleTranslate } from '../lib/useGoogleTranslate'
+import LanguageSelector from '../components/LanguageSelector'
 
 function Landing() {
   const navigate = useNavigate()
   const [deferredPrompt, setDeferredPrompt] = useState(null)
-  // Initialize values directly to avoid synchronous setState inside useEffect which causes an extra render
   const [isIOS] = useState(() => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase()))
+  const [hoverZone, setHoverZone] = useState("none")
+  const { selectedLang, handleLanguageChange } = useGoogleTranslate()
+
+  const handleMouseMove = (e) => {
+    const { clientX } = e
+    const width = window.innerWidth
+    if (clientX < width / 4) {
+      setHoverZone("zone1")
+    } else if (clientX < (width * 2) / 4) {
+      setHoverZone("zone2")
+    } else if (clientX < (width * 3) / 4) {
+      setHoverZone("zone3")
+    } else {
+      setHoverZone("zone4")
+    }
+  }
+
+  const handleMouseLeave = () => {
+    setHoverZone("none")
+  }
 
   useEffect(() => {
-    // If already logged in, take them straight to the app feed
+    // If already logged in/entered app, take them straight to home feed
     if (localStorage.getItem('subscribed') === 'true') {
       navigate('/home', { replace: true })
       return
     }
 
-    // If opened as a standalone PWA, take them directly to login
+    // If opened as a standalone PWA, take them directly to home feed
     if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-      navigate('/login', { replace: true })
+      localStorage.setItem('subscribed', 'true')
+      navigate('/home', { replace: true })
       return
     }
 
     const handleBeforeInstallPrompt = (e) => {
-      // Prevent the mini-infobar from appearing on mobile
       e.preventDefault()
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e)
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     
-    // Detect when installed and automatically redirect to login
+    // Detect when installed and automatically redirect to home feed
     const handleAppInstalled = () => {
       setDeferredPrompt(null)
-      navigate('/login', { replace: true })
+      localStorage.setItem('subscribed', 'true')
+      navigate('/home', { replace: true })
     }
     window.addEventListener('appinstalled', handleAppInstalled)
 
@@ -43,21 +64,68 @@ function Landing() {
   }, [navigate])
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return
-    // Show the install prompt
+    if (!deferredPrompt) {
+      localStorage.setItem('subscribed', 'true')
+      navigate('/home', { replace: true })
+      return
+    }
     deferredPrompt.prompt()
-    // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice
     console.log(`User response to the install prompt: ${outcome}`)
-    // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null)
+    localStorage.setItem('subscribed', 'true')
+    navigate('/home', { replace: true })
   }
 
   return (
-    <div className="bg-[#0a0a0a] min-h-screen text-white selection:bg-[#FF9933]/30 flex flex-col relative overflow-hidden">
+    <div 
+      className="bg-[#0a0a0a] min-h-screen text-white selection:bg-[#FF9933]/30 flex flex-col relative overflow-hidden h-[100dvh] md:h-auto md:min-h-[100dvh] md:overflow-x-hidden md:overflow-y-auto"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
 
-      {/* Background glow */}
-      <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-950/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+      {/* Background Gods Images (Fades in based on mouse position) */}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
+        {/* Vishnu Lakshmi */}
+        <img 
+          src="/assets/vishnu_lakshmi.webp" 
+          alt="Vishnu Lakshmi" 
+          fetchpriority="high"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone1' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center left' }}
+        />
+        {/* Ram Sita */}
+        <img 
+          src="/assets/ram_sita.webp" 
+          alt="Ram Sita" 
+          loading="lazy"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone2' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center left' }}
+        />
+        {/* Krishna Arjuna */}
+        <img 
+          src="/assets/krishna_arjuna.webp" 
+          alt="Krishna Arjuna" 
+          loading="lazy"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone3' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center right' }}
+        />
+        {/* Krishna Radha */}
+        <img 
+          src="/assets/krishna_radha.webp" 
+          alt="Krishna Radha" 
+          loading="lazy"
+          className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-out mix-blend-screen ${hoverZone === 'zone4' ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+          style={{ transformOrigin: 'center right' }}
+        />
+      </div>
+
+      {/* Dynamic Background Glow */}
+      <div className={`fixed inset-0 z-0 pointer-events-none transition-opacity duration-1000 ${hoverZone !== 'none' ? 'opacity-30' : 'opacity-100'}`}>
+        <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-orange-950/10 to-transparent"></div>
+        <div className="absolute bottom-0 right-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-900/10 rounded-full blur-[120px] translate-x-1/3 translate-y-1/3"></div>
+        <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-950/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
+      </div>
 
       <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 px-5 sm:px-10 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 mx-auto sm:mx-0">
@@ -78,9 +146,17 @@ function Landing() {
         <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-4">
           Install the App
         </h1>
-        <p className="text-gray-300 text-base sm:text-lg mb-10 max-w-md mx-auto">
+        <p className="text-gray-300 text-base sm:text-lg mb-8 max-w-md mx-auto">
           To get the best experience, please install our premium spiritual streaming platform directly on your device.
         </p>
+
+        {/* Custom Language Selector Proxying Google Translate */}
+        <div className="w-full mb-8 z-50 relative max-w-sm mx-auto">
+          <LanguageSelector 
+            selectedLang={selectedLang} 
+            onLanguageChange={handleLanguageChange} 
+          />
+        </div>
 
         {isIOS ? (
           <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 mb-8 text-left relative overflow-hidden shadow-2xl">
@@ -102,10 +178,13 @@ function Landing() {
              
              <div className="mt-8 pt-5 border-t border-white/10">
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={() => {
+                    localStorage.setItem('subscribed', 'true')
+                    navigate('/home', { replace: true })
+                  }}
                   className="w-full text-center text-xs font-bold text-[#FF9933] hover:text-[#FF6600] transition"
                 >
-                  I've already installed the app / Continue to Sign In →
+                  I've already installed the app / Continue to Home Screen →
                 </button>
              </div>
           </div>
@@ -113,21 +192,17 @@ function Landing() {
           <div className="w-full flex flex-col items-center">
             {deferredPrompt ? (
               <div className="w-full flex flex-col items-center animate-bounce-slow">
-                {/* Visual indicator / pointing text */}
                 <p className="text-[#FF9933] font-black text-sm sm:text-base uppercase tracking-widest mb-4 flex items-center gap-2 animate-pulse">
-                  Click Below to Install Instantly 
+                  <span>👇</span> Click Below to Install Instantly <span>👇</span>
                 </p>
                 
-                {/* Giant, highly attractive pulsing install button */}
                 <div className="relative group w-full sm:w-auto">
-                  {/* Outer pulsing glow background layer */}
                   <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-[#FF9933] to-[#FF6600] opacity-75 blur-xl group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
                   
                   <button
                     onClick={handleInstallClick}
                     className="relative w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-black text-xl px-16 py-6 rounded-2xl shadow-[0_0_50px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 mb-2 select-none border-2 border-white/20"
                   >
-                    {/* SVG Mobile App Install Icon */}
                     <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
@@ -143,10 +218,13 @@ function Landing() {
                  
                  <div className="mt-6 pt-4 border-t border-white/10">
                     <button
-                      onClick={() => navigate('/login')}
+                      onClick={() => {
+                        localStorage.setItem('subscribed', 'true')
+                        navigate('/home', { replace: true })
+                      }}
                       className="text-xs font-bold text-[#FF9933] hover:text-[#FF6600] transition"
                     >
-                      Skip installation and Sign In →
+                      Skip installation and Continue to App →
                     </button>
                  </div>
                </div>
