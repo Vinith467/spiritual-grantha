@@ -127,16 +127,6 @@ function Landing() {
         <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-950/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
       </div>
 
-      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 px-5 sm:px-10 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3 mx-auto sm:mx-0">
-          <img src="/icon-192.png" alt="Sanatan Dharma TV Logo" className="w-9 h-9 rounded-full border border-[#FF9933]/50 shadow-[0_0_12px_rgba(255,153,51,0.2)]" />
-          <div>
-            <span className="text-[#FF9933] font-black text-sm sm:text-base tracking-tight">Sanatan Dharma</span>
-            <span className="text-white font-black text-sm sm:text-base tracking-tight"> Television</span>
-          </div>
-        </div>
-      </header>
-
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center max-w-2xl mx-auto w-full relative z-10">
         
         <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto">
