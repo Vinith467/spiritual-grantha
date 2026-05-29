@@ -127,21 +127,21 @@ function Landing() {
         <div className="absolute top-0 left-0 w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-orange-950/10 rounded-full blur-[120px] -translate-x-1/3 -translate-y-1/3"></div>
       </div>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center max-w-2xl mx-auto w-full relative z-10">
+      <main className="flex-1 flex flex-col items-center justify-end sm:justify-center px-6 pt-32 pb-16 sm:py-12 text-center max-w-2xl mx-auto w-full relative z-10">
         
-        <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto">
+        <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-6 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto">
           <img src="/icon-192.png" alt="App Icon" className="w-full h-full object-cover rounded-2xl" />
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-4">
+        <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-3 sm:mb-4">
           Install the App
         </h1>
-        <p className="text-gray-300 text-base sm:text-lg mb-8 max-w-md mx-auto">
+        <p className="text-gray-300 text-sm sm:text-lg mb-6 sm:mb-8 max-w-md mx-auto">
           To get the best experience, please install our premium spiritual streaming platform directly on your device.
         </p>
 
         {/* Custom Language Selector Proxying Google Translate */}
-        <div className="w-full mb-8 z-50 relative max-w-sm mx-auto">
+        <div className="w-full mb-6 sm:mb-8 z-50 relative max-w-sm mx-auto">
           <LanguageSelector 
             selectedLang={selectedLang} 
             onLanguageChange={handleLanguageChange} 
@@ -149,7 +149,7 @@ function Landing() {
         </div>
 
         {isIOS ? (
-          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 mb-8 text-left relative overflow-hidden shadow-2xl">
+          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-left relative overflow-hidden shadow-2xl">
              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[50px]"></div>
              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
                 <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M11 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
@@ -182,18 +182,18 @@ function Landing() {
           <div className="w-full flex flex-col items-center">
             {deferredPrompt ? (
               <div className="w-full flex flex-col items-center animate-bounce-slow">
-                <p className="text-[#FF9933] font-black text-sm sm:text-base uppercase tracking-widest mb-4 flex items-center gap-2 animate-pulse">
+                <p className="text-[#FF9933] font-black text-xs sm:text-base uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2 animate-pulse">
                   <span>👇</span> Click Below to Install Instantly <span>👇</span>
                 </p>
                 
                 <div className="relative group w-full sm:w-auto">
-                  <div className="absolute -inset-1.5 rounded-2xl bg-gradient-to-r from-[#FF9933] to-[#FF6600] opacity-75 blur-xl group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
+                  <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#FF9933] to-[#FF6600] opacity-75 blur-xl group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
                   
                   <button
                     onClick={handleInstallClick}
-                    className="relative w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-black text-xl px-16 py-6 rounded-2xl shadow-[0_0_50px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 mb-2 select-none border-2 border-white/20"
+                    className="relative w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-black text-base sm:text-xl px-8 py-3.5 sm:px-16 sm:py-6 rounded-xl sm:rounded-2xl shadow-[0_0_50px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 mb-2 select-none border-2 border-white/20"
                   >
-                    <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
                     <span>INSTALL APP NOW</span>
