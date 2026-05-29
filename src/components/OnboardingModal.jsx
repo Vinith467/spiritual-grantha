@@ -56,8 +56,8 @@ export default function OnboardingModal() {
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#FF9933]/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF9933] to-[#FF6600] p-1 mb-4 shadow-[0_0_20px_rgba(255,153,51,0.3)]">
-          <div className="w-full h-full bg-[#141414] rounded-full flex items-center justify-center">
-            <span className="text-2xl">🙏</span>
+          <div className="w-full h-full bg-[#141414] rounded-full flex items-center justify-center overflow-hidden">
+            <img src="/icon-192.png" alt="SDTV Logo" className="w-full h-full object-cover scale-110" />
           </div>
         </div>
 
