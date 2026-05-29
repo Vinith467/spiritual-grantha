@@ -23,7 +23,6 @@ function Account() {
   const { selectedLang, handleLanguageChange } = useGoogleTranslate()
 
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
-  const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
 
   // Load profile data from Supabase
   useEffect(() => {
@@ -135,16 +134,7 @@ function Account() {
     }
   }
 
-  // Sign out / Reset subscription
-  const handleSignOut = () => {
-    localStorage.removeItem('subscribed')
-    localStorage.removeItem('isAdmin')
-    localStorage.removeItem('profileEmail')
-    localStorage.removeItem('profileName')
-    localStorage.removeItem('profileContact')
-    localStorage.removeItem('profileAvatar')
-    window.location.href = '/login'
-  }
+
 
   return (
     <div className="bg-[#141414] min-h-screen text-white pb-28">
@@ -336,19 +326,7 @@ function Account() {
             <GoogleLinkButton />
           </div>
 
-          {/* Sign Out Section */}
-          <div className="mt-8 pt-6 border-t border-white/10 flex justify-between items-center">
-            <div>
-              <p className="text-xs text-gray-400 font-bold uppercase">Membership Status</p>
-              <p className="text-sm font-extrabold text-[#FF9933]">Premium Devotee</p>
-            </div>
-            <button
-              onClick={() => setShowSignOutConfirm(true)}
-              className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 font-bold text-xs px-4 py-2.5 rounded-xl transition"
-            >
-              Sign out from device
-            </button>
-          </div>
+
 
           {/* Admin Dashboard Entry (Visible only to authenticated Admin Google Accounts) */}
           {isAdmin && (
@@ -374,36 +352,7 @@ function Account() {
       {/* Floating Bottom Navbar */}
       <BottomNavbar />
 
-      {/* Sign Out Custom Modal */}
-      {showSignOutConfirm && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-3xl w-full max-w-xs overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] animate-[scaleIn_0.2s_ease-out]">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5 border border-red-500/20">
-                <svg className="w-8 h-8 text-red-500 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-black text-white mb-2 uppercase tracking-wide">Sign Out?</h3>
-              <p className="text-xs text-gray-400 font-medium">You will need to log in with Google again to access your sacred journey.</p>
-            </div>
-            <div className="grid grid-cols-2 gap-px bg-white/10 border-t border-white/10">
-              <button 
-                onClick={() => setShowSignOutConfirm(false)}
-                className="bg-[#1a1a1a] p-4 text-sm font-bold text-gray-300 hover:bg-white/5 hover:text-white transition active:bg-white/10"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleSignOut}
-                className="bg-[#1a1a1a] p-4 text-sm font-bold text-red-500 hover:bg-red-500/10 transition active:bg-red-500/20"
-              >
-                Yes, Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }
