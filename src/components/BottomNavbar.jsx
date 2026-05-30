@@ -1,12 +1,16 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { PlaySquareOutlined, CustomerServiceOutlined, HomeFilled, InfoCircleOutlined, UserOutlined } from '@ant-design/icons'
+import { PlaySquareOutlined, CustomerServiceOutlined, HomeFilled, GlobalOutlined, UserOutlined } from '@ant-design/icons'
 import { haptics } from '../utils/haptics'
+import { useGoogleTranslate } from '../lib/useGoogleTranslate'
+import LanguageModal from './LanguageModal'
 
 function BottomNavbar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [avatar, setAvatar] = useState(null)
+  const [showLangModal, setShowLangModal] = useState(false)
+  const { selectedLang, handleLanguageChange } = useGoogleTranslate()
 
   // Listen for profile updates via custom events (no more polling)
   useEffect(() => {
@@ -33,9 +37,16 @@ function BottomNavbar() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-t border-[#FF9933]/15 px-4 py-2 flex justify-around items-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
-      
-      {/* Shorts Option */}
+    <>
+      <LanguageModal 
+        isOpen={showLangModal}
+        onClose={() => setShowLangModal(false)}
+        selectedLang={selectedLang}
+        onLanguageChange={handleLanguageChange}
+      />
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-t border-[#FF9933]/15 px-4 py-2 flex justify-around items-center shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+        
+        {/* Shorts Option */}
       <button
         onClick={() => handleNav('/shorts')}
         className={`flex flex-col items-center gap-1 transition-all duration-300 ${
@@ -65,15 +76,18 @@ function BottomNavbar() {
         <HomeFilled className="text-[24px]" />
       </button>
 
-      {/* About Us Option */}
+      {/* Language Option */}
       <button
-        onClick={() => handleNav('/about')}
+        onClick={() => {
+          haptics.selection()
+          setShowLangModal(true)
+        }}
         className={`flex flex-col items-center gap-1 transition-all duration-300 ${
-          isActive('/about') ? 'text-[#FF9933] scale-110' : 'text-gray-400 hover:text-gray-200'
+          showLangModal ? 'text-[#FF9933] scale-110' : 'text-gray-400 hover:text-gray-200'
         }`}
       >
-        <InfoCircleOutlined className="text-[24px]" />
-        <span className="text-[10px] font-bold tracking-wider">About</span>
+        <GlobalOutlined className="text-[24px]" />
+        <span className="text-[10px] font-bold tracking-wider">Language</span>
       </button>
 
       {/* Account Option */}
@@ -97,7 +111,8 @@ function BottomNavbar() {
         <span className="text-[10px] font-bold tracking-wider">Account</span>
       </button>
 
-    </div>
+      </div>
+    </>
   )
 }
 

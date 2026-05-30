@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
-import LanguageSelector from '../components/LanguageSelector'
 import BottomNavbar from '../components/BottomNavbar'
+import { InfoCircleOutlined } from '@ant-design/icons'
 import Navbar from '../components/Navbar'
 import GoogleLinkButton from '../components/GoogleLinkButton'
 
@@ -257,13 +257,20 @@ function Account() {
                 </select>
               </div>
 
-              {/* Language Selection */}
+              {/* About Us Link */}
               <div className="space-y-1 relative z-50">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">🇮🇳 Comfort Language</label>
-              <LanguageSelector 
-                  selectedLang={selectedLang} 
-                  onLanguageChange={handleLanguageChange} 
-                />
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">ℹ️ About the Platform</label>
+                <button
+                  type="button"
+                  onClick={() => navigate('/about')}
+                  className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none hover:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300 flex justify-between items-center shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                >
+                  <div className="flex justify-between w-full pr-4 items-center">
+                    <span className="text-gray-300">About Sanatan Dharma TV</span>
+                    <InfoCircleOutlined className="text-[#FF9933] text-base" />
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
               </div>
 
               {/* Stories Calling to Soul (Pill-badge checkboxes) */}
