@@ -3,12 +3,12 @@ import { useEffect } from 'react'
 const availableLanguages = [
   { code: 'en', en: 'English', native: 'English' },
   { code: 'hi', en: 'Hindi', native: 'हिंदी' },
+  { code: 'kn', en: 'Kannada', native: 'ಕನ್ನಡ' },
   { code: 'bn', en: 'Bengali', native: 'বাংলা' },
   { code: 'te', en: 'Telugu', native: 'తెలుగు' },
   { code: 'mr', en: 'Marathi', native: 'मराठी' },
   { code: 'ta', en: 'Tamil', native: 'தமிழ்' },
   { code: 'gu', en: 'Gujarati', native: 'ગુજરાતી' },
-  { code: 'kn', en: 'Kannada', native: 'ಕನ್ನಡ' },
   { code: 'ml', en: 'Malayalam', native: 'മലയാളം' },
   { code: 'pa', en: 'Punjabi', native: 'ਪੰਜਾਬੀ' },
   { code: 'or', en: 'Odia', native: 'ଓଡ଼ିଆ' },
