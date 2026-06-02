@@ -118,7 +118,7 @@ export default function GoogleLinkButton() {
               snippet: {
                 resourceId: {
                   kind: "youtube#channel",
-                  channelId: 'UCYcsHqcXqkYV0qNWa4L9xPg', // HARDCODED NEW CHANNEL
+                  channelId: 'UCzoylpvmDX_HoaBkgl4FTUQ', // HARDCODED NEW CHANNEL
                 },
               },
             }),
