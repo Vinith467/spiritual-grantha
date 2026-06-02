@@ -4,54 +4,6 @@ import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
-const DEVOTIONAL_TRACKS = [
-  {
-    id: 'm1',
-    youtubeId: 'AETFvQxK1pE',
-    title: 'Hanuman Chalisa',
-    singer: 'Hariharan / T-Series',
-    duration: '9:41',
-    thumbnail: 'https://img.youtube.com/vi/AETFvQxK1pE/hqdefault.jpg',
-    category: 'Stotram & Chalisa'
-  },
-  {
-    id: 'm2',
-    youtubeId: 'O8_tT0d74l0',
-    title: 'Madhurashtakam - Adharam Madhuram',
-    singer: 'Devotional Chorus',
-    duration: '5:12',
-    thumbnail: 'https://img.youtube.com/vi/O8_tT0d74l0/hqdefault.jpg',
-    category: 'Krishna Bhajans'
-  },
-  {
-    id: 'm3',
-    youtubeId: '8mG862lJ1u8',
-    title: 'Achyutam Keshavam Krishna Damodaram',
-    singer: 'Shreya Ghoshal',
-    duration: '4:35',
-    thumbnail: 'https://img.youtube.com/vi/8mG862lJ1u8/hqdefault.jpg',
-    category: 'Krishna Bhajans'
-  },
-  {
-    id: 'm4',
-    youtubeId: 'A3J3sXpS2pA',
-    title: 'Shiva Tandav Stotram',
-    singer: 'Shankar Mahadevan',
-    duration: '9:15',
-    thumbnail: 'https://img.youtube.com/vi/A3J3sXpS2pA/hqdefault.jpg',
-    category: 'Shiva Chant'
-  },
-  {
-    id: 'm5',
-    youtubeId: 'X9_l2a7s0A4',
-    title: 'Shri Ram Chandra Kripalu Bhajman',
-    singer: 'Traditional Bhajan',
-    duration: '6:02',
-    thumbnail: 'https://img.youtube.com/vi/X9_l2a7s0A4/hqdefault.jpg',
-    category: 'Ram Bhajans'
-  }
-]
-
 function Music() {
   const { selectedLang } = useGoogleTranslate()
   const [tracks, setTracks] = useState([])
@@ -77,19 +29,20 @@ function Music() {
             thumbnail: m.cover_url || `https://img.youtube.com/vi/${m.youtube_id}/hqdefault.jpg`,
             category: m.category || 'Devotional'
           }))
-          const combined = dbTracks.length > 0 ? dbTracks : DEVOTIONAL_TRACKS
-          setTracks(combined)
-          if (combined.length > 0) {
-            setActiveTrack(combined[0])
+          setTracks(dbTracks)
+          if (dbTracks.length > 0) {
+            setActiveTrack(dbTracks[0])
+          } else {
+            setActiveTrack(null)
           }
         } else {
-          setTracks(DEVOTIONAL_TRACKS)
-          setActiveTrack(DEVOTIONAL_TRACKS[0])
+          setTracks([])
+          setActiveTrack(null)
         }
       } catch (err) {
         console.error(err)
-        setTracks(DEVOTIONAL_TRACKS)
-        setActiveTrack(DEVOTIONAL_TRACKS[0])
+        setTracks([])
+        setActiveTrack(null)
       } finally {
         setLoading(false)
       }
@@ -116,7 +69,17 @@ function Music() {
     </div>
   )
 
-  if (!activeTrack) return null
+  if (!activeTrack) return (
+    <div className="bg-[#141414] min-h-screen text-white pb-24 flex items-center justify-center">
+      <Navbar />
+      <div className="text-center p-8 space-y-4">
+        <span className="text-4xl">🎵</span>
+        <p className="font-bold text-gray-400">No Devotional Tracks Uploaded.</p>
+        <p className="text-xs text-gray-600 max-w-xs mx-auto">Upload music using the Admin panel to populate this screen!</p>
+      </div>
+      <BottomNavbar />
+    </div>
+  )
 
   return (
     <div className="bg-[#141414] min-h-screen text-white pb-24">
