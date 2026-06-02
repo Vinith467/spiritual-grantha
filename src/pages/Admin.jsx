@@ -59,11 +59,11 @@ function Admin() {
   const [videoSubTab, setVideoSubTab] = useState('episodes')
 
   // Form States
-  const [bannerForm, setBannerForm] = useState({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
-  const [seriesForm, setSeriesForm] = useState({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
-  const [episodeForm, setEpisodeForm] = useState({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })
-  const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
-  const [shortForm, setShortForm] = useState({ title: 'Divine Short', description: '', youtubeId: '' })
+  const [bannerForm, setBannerForm] = useState({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '', content_language: 'en' })
+  const [seriesForm, setSeriesForm] = useState({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'en' })
+  const [episodeForm, setEpisodeForm] = useState({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '', content_language: 'en' })
+  const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'en' })
+  const [shortForm, setShortForm] = useState({ title: 'Divine Short', description: '', youtubeId: '', content_language: 'en' })
 
   // Data Loaders
   const loadBanners = useCallback(async () => {
@@ -128,7 +128,8 @@ function Admin() {
       description: bannerForm.description,
       target_id: bannerForm.targetId,
       mobile_url: bannerForm.mobileUrl,
-      desktop_url: bannerForm.desktopUrl
+      desktop_url: bannerForm.desktopUrl,
+      content_language: bannerForm.content_language
     }
 
     try {
@@ -139,7 +140,7 @@ function Admin() {
         const { error } = await supabase.from('banners').insert([payload])
         if (error) throw error
       }
-      setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
+      setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '', content_language: 'en' })
       setEditingBannerId(null)
       await loadBanners()
     } catch (err) {
@@ -156,7 +157,8 @@ function Admin() {
       description: item.description || '',
       targetId: item.target_id || '',
       mobileUrl: item.mobile_url || '',
-      desktopUrl: item.desktop_url || ''
+      desktopUrl: item.desktop_url || '',
+      content_language: item.content_language || 'en'
     })
     setEditingBannerId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -188,7 +190,8 @@ function Admin() {
       title: seriesForm.title,
       description: seriesForm.description,
       thumbnail_url: seriesForm.thumbnail_url,
-      desktop_thumbnail_url: seriesForm.desktop_thumbnail_url
+      desktop_thumbnail_url: seriesForm.desktop_thumbnail_url,
+      content_language: seriesForm.content_language
     }
 
     try {
@@ -199,7 +202,7 @@ function Admin() {
         const { error } = await supabase.from('series').insert([payload])
         if (error) throw error
       }
-      setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
+      setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'en' })
       setEditingSeriesId(null)
       await loadSeriesAndEpisodes()
     } catch (err) {
@@ -214,7 +217,8 @@ function Admin() {
       title: item.title || '',
       description: item.description || '',
       thumbnail_url: item.thumbnail_url || '',
-      desktop_thumbnail_url: item.desktop_thumbnail_url || ''
+      desktop_thumbnail_url: item.desktop_thumbnail_url || '',
+      content_language: item.content_language || 'en'
     })
     setEditingSeriesId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -247,7 +251,8 @@ function Admin() {
       youtube_id: episodeForm.youtube_id,
       thumbnail_url: episodeForm.thumbnail_url || `https://img.youtube.com/vi/${episodeForm.youtube_id}/hqdefault.jpg`,
       episode_number: parseInt(episodeForm.episode_number) || 1,
-      description: episodeForm.description
+      description: episodeForm.description,
+      content_language: episodeForm.content_language
     }
 
     try {
@@ -258,7 +263,7 @@ function Admin() {
         const { error } = await supabase.from('episodes').insert([payload])
         if (error) throw error
       }
-      setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })
+      setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '', content_language: 'en' })
       setEditingEpisodeId(null)
       await loadSeriesAndEpisodes()
     } catch (err) {
@@ -275,7 +280,8 @@ function Admin() {
       youtube_id: item.youtube_id || '',
       thumbnail_url: item.thumbnail_url || '',
       episode_number: item.episode_number || '',
-      description: item.description || ''
+      description: item.description || '',
+      content_language: item.content_language || 'en'
     })
     setEditingEpisodeId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -307,7 +313,8 @@ function Admin() {
       artist: musicForm.artist,
       youtube_id: musicForm.youtubeId,
       cover_url: musicForm.coverUrl || `https://img.youtube.com/vi/${musicForm.youtubeId}/hqdefault.jpg`,
-      category: musicForm.category
+      category: musicForm.category,
+      content_language: musicForm.content_language
     }
 
     try {
@@ -318,7 +325,7 @@ function Admin() {
         const { error } = await supabase.from('music_tracks').insert([payload])
         if (error) throw error
       }
-      setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
+      setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'en' })
       setEditingMusicId(null)
       await loadMusic()
     } catch (err) {
@@ -334,7 +341,8 @@ function Admin() {
       artist: item.artist || '',
       youtubeId: item.youtube_id || '',
       coverUrl: item.cover_url || '',
-      category: item.category || 'Devotional'
+      category: item.category || 'Devotional',
+      content_language: item.content_language || 'en'
     })
     setEditingMusicId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -364,7 +372,8 @@ function Admin() {
     const payload = {
       title: shortForm.title,
       description: shortForm.description,
-      youtube_id: shortForm.youtubeId
+      youtube_id: shortForm.youtubeId,
+      content_language: shortForm.content_language
     }
 
     try {
@@ -375,7 +384,7 @@ function Admin() {
         const { error } = await supabase.from('shorts').insert([payload])
         if (error) throw error
       }
-      setShortForm({ title: 'Divine Short', description: '', youtubeId: '' })
+      setShortForm({ title: 'Divine Short', description: '', youtubeId: '', content_language: 'en' })
       setEditingShortId(null)
       await loadShorts()
     } catch (err) {
@@ -389,7 +398,8 @@ function Admin() {
     setShortForm({
       title: item.title || 'Divine Short',
       description: item.description || '',
-      youtubeId: item.youtube_id || ''
+      youtubeId: item.youtube_id || '',
+      content_language: item.content_language || 'en'
     })
     setEditingShortId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -416,11 +426,11 @@ function Admin() {
     setEditingEpisodeId(null)
     setEditingMusicId(null)
     setEditingShortId(null)
-    setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '' })
-    setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '' })
-    setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '' })
-    setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional' })
-    setShortForm({ title: 'Divine Short', description: '', youtubeId: '' })
+    setBannerForm({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '', content_language: 'en' })
+    setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'en' })
+    setEpisodeForm({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '', content_language: 'en' })
+    setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'en' })
+    setShortForm({ title: 'Divine Short', description: '', youtubeId: '', content_language: 'en' })
   }
 
   const handleFileUpload = async (e, field) => {
@@ -617,6 +627,14 @@ function Admin() {
                         ))}
                       </select>
                     </div>
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Content Language</label>
+                      <select value={episodeForm.content_language} onChange={e => setEpisodeForm({ ...episodeForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="kn">Kannada</option>
+                      </select>
+                    </div>
                     <input required type="text" placeholder="Episode Title" value={episodeForm.title} onChange={e => setEpisodeForm({ ...episodeForm, title: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <input required type="number" placeholder="Episode Number" value={episodeForm.episode_number} onChange={e => setEpisodeForm({ ...episodeForm, episode_number: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <input required type="text" placeholder="YouTube Video ID" value={episodeForm.youtube_id} onChange={e => setEpisodeForm({ ...episodeForm, youtube_id: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
@@ -672,6 +690,14 @@ function Admin() {
                 <form onSubmit={handleSeriesSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
                   <h2 className="text-xl font-black text-[#FF9933]">{editingSeriesId ? 'Edit Series Category (Supabase)' : 'Create New Series Category (Supabase)'}</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Content Language</label>
+                      <select value={seriesForm.content_language} onChange={e => setSeriesForm({ ...seriesForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="kn">Kannada</option>
+                      </select>
+                    </div>
                     <input required type="text" placeholder="Series/Show Title" value={seriesForm.title} onChange={e => setSeriesForm({ ...seriesForm, title: e.target.value })} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Mobile Thumbnail (Vertical)</label>
@@ -738,6 +764,14 @@ function Admin() {
             <form onSubmit={handleMusicSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
               <h2 className="text-xl font-black text-[#FF9933]">{editingMusicId ? 'Edit Devotional Track (Supabase)' : 'Add New Devotional Track (Supabase)'}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Content Language</label>
+                      <select value={musicForm.content_language} onChange={e => setMusicForm({ ...musicForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="kn">Kannada</option>
+                      </select>
+                    </div>
                 <input required type="text" placeholder="Track Title" value={musicForm.trackTitle} onChange={e => setMusicForm({ ...musicForm, trackTitle: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e => setMusicForm({ ...musicForm, artist: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube Video ID (for audio stream)" value={musicForm.youtubeId} onChange={e => setMusicForm({ ...musicForm, youtubeId: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
@@ -790,6 +824,14 @@ function Admin() {
             <form onSubmit={handleShortSubmit} className="bg-black/40 border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
               <h2 className="text-xl font-black text-[#FF9933]">{editingShortId ? 'Edit Divine Short (Supabase)' : 'Add New Divine Short (Supabase)'}</h2>
               <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Content Language</label>
+                      <select value={shortForm.content_language} onChange={e => setShortForm({ ...shortForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="kn">Kannada</option>
+                      </select>
+                    </div>
                 <input required type="text" placeholder="Shorts Title" value={shortForm.title} onChange={e => setShortForm({ ...shortForm, title: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube Short ID (e.g. e9GgY2gH_nQ)" value={shortForm.youtubeId} onChange={e => setShortForm({ ...shortForm, youtubeId: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <textarea required rows="2" placeholder="Short Description / Hashtags" value={shortForm.description} onChange={e => setShortForm({ ...shortForm, description: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none resize-none" />

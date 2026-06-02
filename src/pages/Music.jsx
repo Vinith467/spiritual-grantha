@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
@@ -52,6 +53,7 @@ const DEVOTIONAL_TRACKS = [
 ]
 
 function Music() {
+  const { selectedLang } = useGoogleTranslate()
   const [tracks, setTracks] = useState([])
   const [activeTrack, setActiveTrack] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -93,7 +95,7 @@ function Music() {
       }
     }
     fetchMusic()
-  }, [])
+  }, [selectedLang])
 
   if (loading) return (
     <div className="bg-[#141414] min-h-screen text-white pb-24">
