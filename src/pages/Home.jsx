@@ -11,7 +11,7 @@ import SkeletonRow from '../components/SkeletonRow'
 import VideoCard from '../components/VideoCard'
 
 function Home() {
-  const { selectedLang } = useGoogleTranslate()
+  const { selectedLang, contentLang } = useGoogleTranslate()
   const [seriesList, setSeriesList] = useState([])
   const [bannerList, setBannerList] = useState([])
   const [loading, setLoading] = useState(true)
@@ -31,7 +31,7 @@ function Home() {
       const { data } = await supabase
         .from('series')
         .select('*, episodes(*)')
-        .eq('content_language', selectedLang)
+        .eq('content_language', contentLang)
         .order('created_at', { ascending: false })
       
       // Sort episodes inside each series by episode_number ascending
@@ -52,7 +52,7 @@ function Home() {
       const { data } = await supabase
         .from('banners')
         .select('*')
-        .eq('content_language', selectedLang)
+        .eq('content_language', contentLang)
         .order('created_at', { ascending: false })
       supabaseBanners = data || []
     } catch (e) {
@@ -76,7 +76,7 @@ function Home() {
       setBannerList(supabaseSeries)
     }
     setLoading(false)
-  }, [selectedLang])
+  }, [contentLang])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

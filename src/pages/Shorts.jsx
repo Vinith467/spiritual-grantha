@@ -4,7 +4,7 @@ import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 
 function Shorts() {
-  const { selectedLang } = useGoogleTranslate()
+  const { selectedLang, contentLang } = useGoogleTranslate()
   const [shortsData, setShortsData] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -16,7 +16,7 @@ function Shorts() {
         const { data, error } = await supabase
           .from('shorts')
           .select('*')
-          .eq('content_language', selectedLang)
+          .eq('content_language', contentLang)
           .order('created_at', { ascending: false })
         
         if (!error && data) {
@@ -33,7 +33,7 @@ function Shorts() {
       }
     }
     fetchShorts()
-  }, [selectedLang])
+  }, [contentLang])
 
   if (loading) return (
     <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white relative overflow-hidden flex items-center justify-center p-4 sm:p-6">

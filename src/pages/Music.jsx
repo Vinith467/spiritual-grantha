@@ -5,7 +5,7 @@ import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 
 function Music() {
-  const { selectedLang } = useGoogleTranslate()
+  const { selectedLang, contentLang } = useGoogleTranslate()
   const [tracks, setTracks] = useState([])
   const [activeTrack, setActiveTrack] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -48,7 +48,7 @@ function Music() {
       }
     }
     fetchMusic()
-  }, [selectedLang])
+  }, [contentLang])
 
   if (loading) return (
     <div className="bg-[#141414] min-h-screen text-white pb-24">

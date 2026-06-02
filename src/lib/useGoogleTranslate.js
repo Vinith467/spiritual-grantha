@@ -37,5 +37,7 @@ export function useGoogleTranslate() {
     }
   }, [])
 
-  return { selectedLang, handleLanguageChange }
+  const contentLang = ['en', 'hi', 'kn'].includes(selectedLang) ? selectedLang : 'hi'
+
+  return { selectedLang, contentLang, handleLanguageChange }
 }
