@@ -17,7 +17,6 @@ import NotFound from './pages/NotFound'
 import { AnimatePresence } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import OfflineScreen from './components/OfflineScreen'
-import OnboardingModal from './components/OnboardingModal'
 
 function ProtectedRoute({ children }) {
   const { isSubscribed } = useAuth()
@@ -60,7 +59,6 @@ function App() {
     <>
       <ScrollToTop />
       {isOffline && <OfflineScreen />}
-      {isSubscribed && <OnboardingModal />}
 
       {/* App Installed Success Overlay */}
       {showInstallSuccess && (
