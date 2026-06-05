@@ -17,6 +17,9 @@ function Watch() {
   const [isForceLandscape, setIsForceLandscape] = useState(false)
   const [player, setPlayer] = useState(null)
   
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
+  
   const [watchedEpisodes, setWatchedEpisodes] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('watched_episodes') || '[]')
@@ -134,9 +137,43 @@ function Watch() {
       if (savedTime > 0) {
         event.target.seekTo(savedTime, true)
       }
+      // Apply current playback speed when video loads
+      event.target.setPlaybackRate(playbackSpeed)
     } catch (err) {
       console.error("Error loading progress", err)
     }
+  }
+
+  const handleShare = async () => {
+    haptics.selection()
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: episode.title,
+          text: episode.description || 'Watch this amazing spiritual content on Sanatan Dharma TV!',
+          url: window.location.href,
+        })
+      } catch (err) {
+        console.error('Error sharing', err)
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href)
+      alert('Link copied to clipboard!')
+    }
+  }
+
+  const handleOpenYouTube = () => {
+    haptics.selection()
+    window.open(`https://www.youtube.com/watch?v=${episode.youtube_id}`, '_blank')
+  }
+
+  const handleSpeedChange = (speed) => {
+    haptics.selection()
+    setPlaybackSpeed(speed)
+    if (player) {
+      player.setPlaybackRate(speed)
+    }
+    setShowSpeedMenu(false)
   }
 
   const handleVideoEnd = () => {
@@ -257,7 +294,7 @@ function Watch() {
 
       {/* Episode info */}
       <div className="px-4 py-4 border-b border-white/10">
-        <div className="flex items-start justify-between gap-4 mb-2">
+        <div className="flex items-start justify-between gap-4 mb-3">
           <h1 className="text-lg md:text-2xl font-bold">{episode.title}</h1>
           <button 
             onClick={() => {
@@ -269,6 +306,74 @@ function Watch() {
             <span className="text-lg leading-none mb-0.5">⤢</span> Rotate
           </button>
         </div>
+
+        {/* YouTube-style Action Bar */}
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto no-scrollbar pb-1">
+          {/* Like Button */}
+          <button 
+            onClick={handleOpenYouTube}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm font-semibold transition-colors shrink-0"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+            </svg>
+            Like
+          </button>
+
+          {/* Comment Button */}
+          <button 
+            onClick={handleOpenYouTube}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm font-semibold transition-colors shrink-0"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Comment
+          </button>
+
+          {/* Share Button */}
+          <button 
+            onClick={handleShare}
+            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full text-sm font-semibold transition-colors shrink-0"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            Share
+          </button>
+
+          {/* Speed Button */}
+          <div className="relative shrink-0">
+            <button 
+              onClick={() => {
+                haptics.selection();
+                setShowSpeedMenu(!showSpeedMenu);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${showSpeedMenu ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20 text-white'}`}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {playbackSpeed === 1 ? 'Normal' : `${playbackSpeed}x`}
+            </button>
+            
+            {/* Speed Menu Popup */}
+            {showSpeedMenu && (
+              <div className="absolute top-full left-0 mt-2 bg-[#282828] border border-white/10 rounded-xl shadow-2xl py-2 w-32 z-50 overflow-hidden">
+                {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
+                  <button
+                    key={speed}
+                    onClick={() => handleSpeedChange(speed)}
+                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${playbackSpeed === speed ? 'bg-white/10 text-white font-bold' : 'text-gray-300 hover:bg-white/5'}`}
+                  >
+                    {speed === 1 ? 'Normal' : `${speed}x`}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {episode.description && (
           <p className="text-gray-400 text-sm leading-relaxed">{episode.description}</p>
         )}
