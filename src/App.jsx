@@ -76,13 +76,6 @@ function App() {
           <div className="w-full max-w-[280px] bg-white/10 rounded-2xl p-2 mb-8 border border-white/20 shadow-2xl overflow-hidden">
             <img src="/assets/install-guide.jpg" alt="Install Guide" className="w-full h-auto rounded-xl object-cover" />
           </div>
-
-          <button 
-            onClick={() => setShowInstallSuccess(false)}
-            className="text-gray-500 text-sm border-b border-gray-600 pb-1 uppercase tracking-widest font-bold"
-          >
-            Dismiss
-          </button>
         </div>
       )}
 
