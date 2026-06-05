@@ -31,8 +31,8 @@ export function useGoogleTranslate() {
       }
       googleSelect.dispatchEvent(event)
     } else {
-      document.cookie = `googtrans=/en/${newLang}; path=/`
-      document.cookie = `googtrans=/en/${newLang}; path=/; domain=${window.location.hostname}`
+      document.cookie = `googtrans=/auto/${newLang}; path=/`
+      document.cookie = `googtrans=/auto/${newLang}; path=/; domain=${window.location.hostname}`
       window.location.reload()
     }
   }, [])
