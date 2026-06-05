@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function ComingSoon({ language = 'Kannada' }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[50vh] px-6 text-center animate-in fade-in duration-700 notranslate">
+    <div className="flex flex-col items-center justify-center min-h-[50vh] px-6 text-center animate-in fade-in duration-700">
       <div className="w-20 h-20 bg-gradient-to-br from-[#FF9933]/20 to-[#FF6600]/5 rounded-full flex items-center justify-center mb-6 border border-[#FF9933]/30 shadow-[0_0_30px_rgba(255,153,51,0.15)]">
         <svg className="w-10 h-10 text-[#FF9933]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
