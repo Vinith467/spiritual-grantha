@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
+import ComingSoon from '../components/ComingSoon'
 
 function Music() {
   const { selectedLang, contentLang } = useGoogleTranslate()
@@ -64,6 +65,16 @@ function Music() {
              </div>
           ))}
         </div>
+      </div>
+      <BottomNavbar />
+    </div>
+  )
+
+  if (selectedLang === 'kn') return (
+    <div className="bg-[#141414] min-h-screen text-white pb-24">
+      <Navbar />
+      <div className="pt-20">
+        <ComingSoon language="Kannada" />
       </div>
       <BottomNavbar />
     </div>

@@ -7,6 +7,7 @@ import HeroBanner from '../components/HeroBanner'
 import VideoRow from '../components/VideoRow'
 import BottomNavbar from '../components/BottomNavbar'
 import SkeletonRow from '../components/SkeletonRow'
+import ComingSoon from '../components/ComingSoon'
 
 import VideoCard from '../components/VideoCard'
 
@@ -87,7 +88,11 @@ function Home() {
     <div className="bg-[#141414] min-h-screen text-white pb-24">
       <Navbar />
       
-      {loading ? (
+      {selectedLang === 'kn' ? (
+        <div className="pt-20">
+          <ComingSoon language="Kannada" />
+        </div>
+      ) : loading ? (
         <>
           <div className="h-[60vh] w-full bg-white/5 animate-pulse bg-gradient-to-t from-[#141414] to-transparent border-b border-white/5" />
           <div className="pb-10 -mt-4 relative z-10 pt-4">

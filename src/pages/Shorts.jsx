@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
+import ComingSoon from '../components/ComingSoon'
 
 function Shorts() {
   const { selectedLang, contentLang } = useGoogleTranslate()
@@ -40,6 +41,13 @@ function Shorts() {
       <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-white/5 animate-pulse">
         <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
       </div>
+      <BottomNavbar />
+    </div>
+  )
+
+  if (selectedLang === 'kn') return (
+    <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white relative overflow-hidden flex items-center justify-center pt-10">
+      <ComingSoon language="Kannada" />
       <BottomNavbar />
     </div>
   )

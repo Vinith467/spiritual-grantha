@@ -11,9 +11,9 @@ export function useGoogleTranslate() {
         typeof document !== 'undefined'
           ? document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/)
           : null
-      return match ? match[1] : 'en'
+      return match ? match[1] : 'hi'
     } catch {
-      return 'en'
+      return 'hi'
     }
   })
 
@@ -37,7 +37,9 @@ export function useGoogleTranslate() {
     }
   }, [])
 
-  const contentLang = ['en', 'hi', 'kn'].includes(selectedLang) ? selectedLang : 'hi'
+  // The database content is exclusively in Hindi. 
+  // Google Translate will translate this Hindi content to the user's selected language.
+  const contentLang = 'hi'
 
   return { selectedLang, contentLang, handleLanguageChange }
 }

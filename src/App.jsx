@@ -63,20 +63,23 @@ function App() {
       {/* App Installed Success Overlay */}
       {showInstallSuccess && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-6 animate-in fade-in duration-500">
-          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-bounce">
-            <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
+            <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-3xl font-black text-white mb-4 text-center tracking-wide">App Installed! 🎉</h2>
-          <p className="text-gray-300 text-center text-lg mb-8 max-w-sm leading-relaxed">
-            Sanatan Dharma TV has been successfully added to your device. 
-            <br/><br/>
-            <strong className="text-[#FF9933]">Please close this browser window</strong> and open the new app from your phone's home screen or app drawer for the best full-screen experience!
+          <h2 className="text-2xl font-black text-white mb-2 text-center tracking-wide">App Installed!</h2>
+          <p className="text-gray-300 text-center text-sm mb-6 max-w-xs leading-relaxed">
+            <strong className="text-[#FF9933]">Please close this browser window</strong> and open the SDTV app from your phone's home screen.
           </p>
+          
+          <div className="w-full max-w-[280px] bg-white/10 rounded-2xl p-2 mb-8 border border-white/20 shadow-2xl overflow-hidden">
+            <img src="/assets/install-guide.jpg" alt="Install Guide" className="w-full h-auto rounded-xl object-cover" />
+          </div>
+
           <button 
             onClick={() => setShowInstallSuccess(false)}
-            className="text-gray-500 text-sm border-b border-gray-600 pb-1"
+            className="text-gray-500 text-sm border-b border-gray-600 pb-1 uppercase tracking-widest font-bold"
           >
             Dismiss
           </button>

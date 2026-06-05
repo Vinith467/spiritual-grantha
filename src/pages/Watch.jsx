@@ -4,8 +4,11 @@ import { supabase } from '../lib/supabase'
 import BottomNavbar from '../components/BottomNavbar'
 import YouTube from 'react-youtube'
 import { haptics } from '../utils/haptics'
+import { useGoogleTranslate } from '../lib/useGoogleTranslate'
+import ComingSoon from '../components/ComingSoon'
 
 function Watch() {
+  const { selectedLang } = useGoogleTranslate()
   const { id } = useParams()
   const navigate = useNavigate()
   const [episode, setEpisode] = useState(null)
@@ -169,6 +172,20 @@ function Watch() {
         <div className="w-full h-4 bg-white/5 animate-pulse rounded" />
         <div className="w-2/3 h-4 bg-white/5 animate-pulse rounded" />
       </div>
+    </div>
+  )
+
+  if (selectedLang === 'kn') return (
+    <div className="bg-[#141414] min-h-screen text-white pb-24">
+      <nav className="flex items-center gap-3 px-4 sm:px-6 py-3 bg-black/60 backdrop-blur-md border-b border-[#FF9933]/10 sticky top-0 z-50">
+        <button onClick={() => navigate(-1)} className="group relative flex items-center justify-center w-8 h-8 rounded-full bg-white/5 border border-white/10 shrink-0">
+          <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+        </button>
+      </nav>
+      <div className="pt-20">
+        <ComingSoon language="Kannada" />
+      </div>
+      <BottomNavbar />
     </div>
   )
 
