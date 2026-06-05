@@ -357,20 +357,7 @@ function Watch() {
               {playbackSpeed === 1 ? 'Normal' : `${playbackSpeed}x`}
             </button>
             
-            {/* Speed Menu Popup */}
-            {showSpeedMenu && (
-              <div className="absolute top-full left-0 mt-2 bg-[#282828] border border-white/10 rounded-xl shadow-2xl py-2 w-32 z-50 overflow-hidden">
-                {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
-                  <button
-                    key={speed}
-                    onClick={() => handleSpeedChange(speed)}
-                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${playbackSpeed === speed ? 'bg-white/10 text-white font-bold' : 'text-gray-300 hover:bg-white/5'}`}
-                  >
-                    {speed === 1 ? 'Normal' : `${speed}x`}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Speed Menu moved to fixed modal below */}
           </div>
         </div>
 
@@ -451,6 +438,36 @@ function Watch() {
           </div>
         </div>
       )}
+
+      {/* Speed Menu Modal */}
+      {showSpeedMenu && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowSpeedMenu(false)}>
+          <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl w-full max-w-xs overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
+              <h3 className="font-bold text-white">Playback Speed</h3>
+              <button onClick={() => {
+                haptics.selection()
+                setShowSpeedMenu(false)
+              }} className="text-gray-400 hover:text-white transition-colors">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="p-2 flex flex-col gap-1">
+              {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
+                <button
+                  key={speed}
+                  onClick={() => handleSpeedChange(speed)}
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-colors flex items-center justify-between ${playbackSpeed === speed ? 'bg-white/10 text-white font-bold' : 'text-gray-300 hover:bg-white/5'}`}
+                >
+                  <span>{speed === 1 ? 'Normal' : `${speed}x`}</span>
+                  {playbackSpeed === speed && <svg className="w-5 h-5 text-[#FF9933]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <BottomNavbar />
     </div>
   )
