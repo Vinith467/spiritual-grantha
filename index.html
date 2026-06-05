@@ -44,6 +44,11 @@
   <body>
     <div id="root"></div>
     <script type="text/javascript">
+      if (!document.cookie.includes('googtrans=')) {
+        document.cookie = 'googtrans=/en/hi; path=/';
+        document.cookie = 'googtrans=/en/hi; path=/; domain=' + window.location.hostname;
+      }
+
       function googleTranslateElementInit() {
         new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
       }
