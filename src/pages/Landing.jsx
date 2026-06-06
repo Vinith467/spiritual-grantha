@@ -169,17 +169,7 @@ function Landing() {
                </li>
              </ol>
              
-             <div className="mt-8 pt-5 border-t border-white/10">
-                <button
-                  onClick={() => {
-                    localStorage.setItem('subscribed', 'true')
-                    navigate('/home', { replace: true })
-                  }}
-                  className="w-full text-center text-xs font-bold text-gray-400 hover:text-white transition"
-                >
-                  I've already installed the app / Continue to Home Screen →
-                </button>
-             </div>
+
           </div>
         ) : (
           <div className="w-full flex flex-col items-center">
