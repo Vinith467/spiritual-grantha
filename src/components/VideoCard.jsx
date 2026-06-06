@@ -12,7 +12,7 @@ function VideoCard({ episode, progress }) {
       }}
       className="min-w-[120px] max-w-[120px] md:min-w-[160px] md:max-w-[160px] cursor-pointer group flex-shrink-0"
     >
-      <div className="relative overflow-hidden rounded-md aspect-[2/3]">
+      <div className="relative overflow-hidden rounded-md aspect-[9/16]">
         <img
           src={episode.thumbnail_url || `https://img.youtube.com/vi/${episode.youtube_id}/hqdefault.jpg`}
           alt={episode.title}

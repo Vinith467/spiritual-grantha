@@ -389,7 +389,7 @@ function Watch() {
                   }`}
               >
                 {/* Thumbnail */}
-                <div className="relative flex-shrink-0 w-36 md:w-48 aspect-video">
+                <div className="relative flex-shrink-0 w-20 md:w-28 aspect-[9/16]">
                   <img
                     src={ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/hqdefault.jpg`}
                     alt={ep.title}
