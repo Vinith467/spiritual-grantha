@@ -160,10 +160,10 @@ function Landing() {
              </h3>
 
              {/* Video Tutorial */}
-             <div className="w-full aspect-[9/16] bg-black border border-white/10 rounded-xl overflow-hidden relative shadow-2xl mb-6">
+             <div className="w-full bg-black border border-white/10 rounded-xl overflow-hidden relative shadow-2xl mb-6">
                 <video 
                   src="/assets/ios-tutorial.mp4" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-auto"
                   controls
                   playsInline
                   preload="metadata"
