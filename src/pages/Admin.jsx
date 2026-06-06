@@ -629,7 +629,7 @@ function Admin() {
                     </div>
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Content Language</label>
-                      <select value={episodeForm.content_language} onChange={e => setEpisodeForm({ ...episodeForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                      <select value={episodeForm.content_language} onChange={e => setEpisodeForm({ ...episodeForm, content_language: e.target.value })} className="notranslate w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
                         <option value="en">English</option>
                         <option value="hi">Hindi</option>
                         <option value="kn">Kannada</option>
@@ -692,7 +692,7 @@ function Admin() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Content Language</label>
-                      <select value={seriesForm.content_language} onChange={e => setSeriesForm({ ...seriesForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                      <select value={seriesForm.content_language} onChange={e => setSeriesForm({ ...seriesForm, content_language: e.target.value })} className="notranslate w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
                         <option value="en">English</option>
                         <option value="hi">Hindi</option>
                         <option value="kn">Kannada</option>
@@ -766,7 +766,7 @@ function Admin() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Content Language</label>
-                      <select value={musicForm.content_language} onChange={e => setMusicForm({ ...musicForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                      <select value={musicForm.content_language} onChange={e => setMusicForm({ ...musicForm, content_language: e.target.value })} className="notranslate w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
                         <option value="en">English</option>
                         <option value="hi">Hindi</option>
                         <option value="kn">Kannada</option>
@@ -826,7 +826,7 @@ function Admin() {
               <div className="grid grid-cols-1 gap-4">
                 <div className="space-y-1">
                       <label className="block text-xs font-bold text-gray-400">Content Language</label>
-                      <select value={shortForm.content_language} onChange={e => setShortForm({ ...shortForm, content_language: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                      <select value={shortForm.content_language} onChange={e => setShortForm({ ...shortForm, content_language: e.target.value })} className="notranslate w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
                         <option value="en">English</option>
                         <option value="hi">Hindi</option>
                         <option value="kn">Kannada</option>
