@@ -175,7 +175,7 @@ function Landing() {
                     localStorage.setItem('subscribed', 'true')
                     navigate('/home', { replace: true })
                   }}
-                  className="w-full text-center text-xs font-bold text-[#FF9933] hover:text-[#FF6600] transition"
+                  className="w-full text-center text-xs font-bold text-gray-400 hover:text-white transition"
                 >
                   I've already installed the app / Continue to Home Screen →
                 </button>
