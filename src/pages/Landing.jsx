@@ -158,16 +158,42 @@ function Landing() {
                 <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M11 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                 Install on iOS (Safari)
              </h3>
-             <ol className="space-y-5 text-sm sm:text-base text-gray-300">
-               <li className="flex items-start gap-4">
-                 <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">1</div>
-                 <p className="pt-0.5">Tap the <strong className="text-white">Share</strong> icon at the bottom of Safari <span className="inline-block align-middle ml-1 p-1 bg-white/10 rounded"><svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></span></p>
+             <ol className="space-y-4 text-sm sm:text-base text-gray-300">
+               <li className="flex items-start gap-3">
+                 <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">1</div>
+                 <p className="pt-0.5">Open <strong className="text-white">sdtv.in</strong> in Safari and tap the <strong className="text-white">three dots</strong> at the bottom right.</p>
                </li>
-               <li className="flex items-start gap-4">
-                 <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">2</div>
-                 <p className="pt-0.5">Scroll down and tap <strong className="text-white">Add to Home Screen</strong> <span className="inline-block align-middle ml-1 p-1 bg-white/10 rounded"><svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg></span></p>
+               <li className="flex items-start gap-3">
+                 <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">2</div>
+                 <p className="pt-0.5">Select <strong className="text-white">Share</strong>, then tap <strong className="text-white">View More</strong>.</p>
+               </li>
+               <li className="flex items-start gap-3">
+                 <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">3</div>
+                 <p className="pt-0.5">Choose <strong className="text-white">Add to Home Screen</strong>. Finally, tap <strong className="text-white">Add</strong>.</p>
                </li>
              </ol>
+             <p className="mt-4 text-center text-sm font-bold text-[#FF9933] mb-6">
+               That's it! SDTV is now installed on your iPhone.
+             </p>
+             
+             {/* Video Tutorial Placeholder */}
+             <div className="w-full aspect-[9/16] bg-black/50 border border-white/10 rounded-xl overflow-hidden relative shadow-inner">
+                {/* Replace src with your actual video file path, e.g., src="/assets/ios-tutorial.mp4" */}
+                <video 
+                  src="/assets/ios-tutorial.mp4" 
+                  className="w-full h-full object-cover opacity-50"
+                  controls
+                  playsInline
+                  poster="/assets/install-guide.jpg"
+                />
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                   <svg className="w-12 h-12 text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                   </svg>
+                   <span className="text-white/50 text-xs font-bold uppercase tracking-widest bg-black/40 px-2 py-1 rounded">Video Tutorial</span>
+                </div>
+             </div>
              
 
           </div>
