@@ -35,6 +35,21 @@ html, body {
   display: none !important;
 }
 
+/* Hide the Google Translate hover tooltip and original text highlight */
+#goog-gt-tt, 
+.goog-tooltip, 
+.goog-tooltip:hover, 
+.VIpgJd-Zvi9od-aZ2wEe-wOHMyf,
+.VIpgJd-Zvi9od-aZ2wEe-wOHMyf-ti6hGc {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important; 
+  box-shadow: none !important;
+}
+
 @keyframes bounceSlow {
   0%, 100% {
     transform: translateY(0);
