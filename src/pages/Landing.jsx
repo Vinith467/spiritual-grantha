@@ -176,23 +176,16 @@ function Landing() {
                That's it! SDTV is now installed on your iPhone.
              </p>
              
-             {/* Video Tutorial Placeholder */}
-             <div className="w-full aspect-[9/16] bg-black/50 border border-white/10 rounded-xl overflow-hidden relative shadow-inner">
-                {/* Replace src with your actual video file path, e.g., src="/assets/ios-tutorial.mp4" */}
+             {/* Video Tutorial */}
+             <div className="w-full aspect-[9/16] bg-black/50 border border-white/10 rounded-xl overflow-hidden relative shadow-2xl">
                 <video 
                   src="/assets/ios-tutorial.mp4" 
-                  className="w-full h-full object-cover opacity-50"
+                  className="w-full h-full object-cover"
                   controls
                   playsInline
+                  preload="metadata"
                   poster="/assets/install-guide.jpg"
                 />
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                   <svg className="w-12 h-12 text-white/30 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                   </svg>
-                   <span className="text-white/50 text-xs font-bold uppercase tracking-widest bg-black/40 px-2 py-1 rounded">Video Tutorial</span>
-                </div>
              </div>
              
 
