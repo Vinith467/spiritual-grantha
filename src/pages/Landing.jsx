@@ -161,15 +161,15 @@ function Landing() {
              <ol className="space-y-4 text-sm sm:text-base text-gray-300">
                <li className="flex items-start gap-3">
                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">1</div>
-                 <p className="pt-0.5">Open <strong className="text-white">sdtv.in</strong> in Safari and tap the <strong className="text-white">three dots</strong> at the bottom right.</p>
+                 <p className="pt-0.5 leading-relaxed">Tap the <strong className="text-white">three dots</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-0.5 px-1.5 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span> at the bottom right.</p>
                </li>
                <li className="flex items-start gap-3">
                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">2</div>
-                 <p className="pt-0.5">Select <strong className="text-white">Share</strong>, then tap <strong className="text-white">View More</strong>.</p>
+                 <p className="pt-0.5 leading-relaxed">Select <strong className="text-white">Share</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></span>, then tap <strong className="text-white">View More</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-full border border-white/10"><svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></span>.</p>
                </li>
                <li className="flex items-start gap-3">
                  <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">3</div>
-                 <p className="pt-0.5">Choose <strong className="text-white">Add to Home Screen</strong>. Finally, tap <strong className="text-white">Add</strong>.</p>
+                 <p className="pt-0.5 leading-relaxed">Choose <strong className="text-white">Add to Home Screen</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg></span>. Finally, tap <strong className="text-white text-blue-400">Add</strong>.</p>
                </li>
              </ol>
              <p className="mt-4 text-center text-sm font-bold text-[#FF9933] mb-6">
