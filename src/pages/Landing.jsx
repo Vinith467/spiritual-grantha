@@ -162,12 +162,11 @@ function Landing() {
              {/* Video Tutorial */}
              <div className="w-full bg-black border border-white/10 rounded-xl overflow-hidden relative shadow-2xl mb-6">
                 <video 
-                  src="/assets/ios-tutorial.mp4" 
+                  src="/assets/ios-tutorial.mp4#t=0.001" 
                   className="w-full h-auto"
                   controls
                   playsInline
                   preload="metadata"
-                  poster="/assets/install-guide.jpg"
                 />
              </div>
 
