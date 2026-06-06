@@ -16,16 +16,9 @@ function Home() {
   const [seriesList, setSeriesList] = useState([])
   const [bannerList, setBannerList] = useState([])
   const [loading, setLoading] = useState(true)
-  const [continueWatching, setContinueWatching] = useState([])
 
   const fetchSeries = useCallback(async () => {
-    try {
-      const progressData = JSON.parse(localStorage.getItem('sdtv_progress') || '{}')
-      const progressList = Object.values(progressData).sort((a, b) => b.updatedAt - a.updatedAt)
-      setContinueWatching(progressList)
-    } catch (e) {
-      console.error('Error loading progress:', e)
-    }
+
 
     let supabaseSeries = []
     try {
@@ -105,25 +98,6 @@ function Home() {
         <>
           <HeroBanner seriesList={bannerList} />
           <div className="pb-10 -mt-4 relative z-10">
-            {continueWatching.length > 0 && (
-              <div className="mb-6 px-4 md:px-8 animate-[fadeIn_0.5s_ease-out]">
-                <h3 className="text-sm md:text-lg font-bold mb-3 text-white flex items-center gap-2">
-                  <span className="text-[#FF9933] text-lg leading-none">▶</span> Continue Watching
-                </h3>
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {continueWatching.map(item => {
-                    const progressPercent = item.duration > 0 ? (item.time / item.duration) * 100 : 0
-                    return (
-                      <VideoCard 
-                        key={item.id} 
-                        episode={item} 
-                        progress={progressPercent}
-                      />
-                    )
-                  })}
-                </div>
-              </div>
-            )}
             {seriesList.map(series => (
               <VideoRow key={series.id} series={series} />
             ))}
