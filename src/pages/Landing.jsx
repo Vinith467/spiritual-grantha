@@ -152,32 +152,15 @@ function Landing() {
         </div>
 
         {isIOS ? (
-          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 mb-6 sm:mb-8 text-left relative overflow-hidden shadow-2xl">
+          <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 sm:p-8 mb-6 sm:mb-8 text-left relative overflow-hidden shadow-2xl">
              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-[50px]"></div>
-             <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
-                <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M11 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M11 19.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.22.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
                 Install on iOS (Safari)
              </h3>
-             <ol className="space-y-4 text-sm sm:text-base text-gray-300">
-               <li className="flex items-start gap-3">
-                 <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">1</div>
-                 <p className="pt-0.5 leading-relaxed">Tap the <strong className="text-white">three dots</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-0.5 px-1.5 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span> at the bottom right.</p>
-               </li>
-               <li className="flex items-start gap-3">
-                 <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">2</div>
-                 <p className="pt-0.5 leading-relaxed">Select <strong className="text-white">Share</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></span>, then tap <strong className="text-white">View More</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-full border border-white/10"><svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></span>.</p>
-               </li>
-               <li className="flex items-start gap-3">
-                 <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">3</div>
-                 <p className="pt-0.5 leading-relaxed">Choose <strong className="text-white">Add to Home Screen</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg></span>. Finally, tap <strong className="text-white text-blue-400">Add</strong>.</p>
-               </li>
-             </ol>
-             <p className="mt-4 text-center text-sm font-bold text-[#FF9933] mb-6">
-               That's it! SDTV is now installed on your iPhone.
-             </p>
-             
+
              {/* Video Tutorial */}
-             <div className="w-full aspect-[9/16] bg-black/50 border border-white/10 rounded-xl overflow-hidden relative shadow-2xl">
+             <div className="w-full aspect-[9/16] bg-black border border-white/10 rounded-xl overflow-hidden relative shadow-2xl mb-6">
                 <video 
                   src="/assets/ios-tutorial.mp4" 
                   className="w-full h-full object-cover"
@@ -187,8 +170,24 @@ function Landing() {
                   poster="/assets/install-guide.jpg"
                 />
              </div>
-             
 
+             <div className="pt-2 border-t border-white/10">
+               <p className="text-[10px] font-bold text-gray-400 mb-4 uppercase tracking-widest">Step-by-step instructions</p>
+               <ol className="space-y-4 text-sm sm:text-base text-gray-300">
+                 <li className="flex items-start gap-3">
+                   <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">1</div>
+                   <p className="pt-0.5 leading-relaxed">Tap the <strong className="text-white">three dots</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-0.5 px-1.5 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-gray-200" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></span> at the bottom right.</p>
+                 </li>
+                 <li className="flex items-start gap-3">
+                   <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">2</div>
+                   <p className="pt-0.5 leading-relaxed">Select <strong className="text-white">Share</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg></span>, then tap <strong className="text-white">View More</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-full border border-white/10"><svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></span>.</p>
+                 </li>
+                 <li className="flex items-start gap-3">
+                   <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 font-bold text-xs text-white border border-white/20">3</div>
+                   <p className="pt-0.5 leading-relaxed">Choose <strong className="text-white">Add to Home Screen</strong> <span className="inline-flex items-center justify-center align-middle mx-1 p-1 bg-white/10 rounded-md border border-white/10"><svg className="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg></span>. Finally, tap <strong className="text-white text-blue-400">Add</strong>.</p>
+                 </li>
+               </ol>
+             </div>
           </div>
         ) : (
           <div className="w-full flex flex-col items-center">
