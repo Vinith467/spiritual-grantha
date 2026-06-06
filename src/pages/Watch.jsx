@@ -382,27 +382,27 @@ function Watch() {
                     navigate(`/watch/${ep.id}`, { replace: true })
                   }
                 }}
-                className={`flex gap-3 rounded-xl overflow-hidden cursor-pointer transition
+                className={`flex gap-3 rounded-xl overflow-hidden cursor-pointer transition relative group
                   ${ep.id === episode.id
-                    ? 'bg-white/10 border border-[#FF9933]/50'
-                    : 'bg-white/5 hover:bg-white/10'
+                    ? 'bg-gradient-to-r from-[#FF9933]/15 to-transparent border border-[#FF9933]/30 shadow-[inset_0_0_30px_rgba(255,153,51,0.1)]'
+                    : 'bg-white/5 hover:bg-white/10 border border-transparent'
                   }`}
               >
                 {/* Thumbnail */}
-                <div className="relative flex-shrink-0 w-20 md:w-28 aspect-[9/16]">
+                <div className="relative flex-shrink-0 w-20 md:w-28 aspect-[9/16] rounded-l-xl overflow-hidden shadow-2xl">
                   <img
                     src={ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/hqdefault.jpg`}
                     alt={ep.title}
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover transition-transform duration-700 ${ep.id !== episode.id ? 'group-hover:scale-105' : 'scale-105'}`}
                   />
                   {ep.id === episode.id && (
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center transition-all duration-300">
-                      <div className="bg-black/60 border border-[#FF9933]/50 px-3 py-1.5 rounded-full flex items-center gap-2 backdrop-blur-md shadow-[0_0_15px_rgba(255,153,51,0.3)]">
-                        <span className="relative flex h-2 w-2">
+                    <div className="absolute inset-0 flex flex-col justify-end items-center pb-2 bg-gradient-to-t from-[#141414] via-black/20 to-transparent">
+                      <div className="bg-black/60 border border-[#FF9933]/50 px-2 py-1 rounded-md flex items-center gap-1.5 backdrop-blur-md shadow-[0_0_15px_rgba(255,153,51,0.4)]">
+                        <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FF9933] opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FF9933]"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#FF9933]"></span>
                         </span>
-                        <span className="text-[#FF9933] text-[10px] font-black uppercase tracking-widest">Playing</span>
+                        <span className="text-[#FF9933] text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">Playing</span>
                       </div>
                     </div>
                   )}
