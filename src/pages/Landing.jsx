@@ -192,16 +192,16 @@ function Landing() {
           <div className="w-full flex flex-col items-center">
             {deferredPrompt ? (
               <div className="w-full flex flex-col items-center animate-bounce-slow">
-                <p className="text-[#FF9933] font-black text-xs sm:text-base uppercase tracking-widest mb-3 sm:mb-4 flex items-center justify-center gap-2 animate-pulse">
+                <p className="text-gray-300 font-black text-xs sm:text-base uppercase tracking-widest mb-3 sm:mb-4 flex items-center justify-center gap-2 animate-pulse">
                   Click Below to Install Instantly
                 </p>
                 
                 <div className="relative group w-full sm:w-auto">
-                  <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#FF9933] to-[#FF6600] opacity-75 blur-xl group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
+                  <div className="absolute -inset-1 sm:-inset-1.5 rounded-xl sm:rounded-2xl bg-white/30 opacity-75 blur-xl group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse-slow"></div>
                   
                   <button
                     onClick={handleInstallClick}
-                    className="relative w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-r from-[#FF9933] to-[#FF6600] text-black font-black text-base sm:text-xl px-8 py-3.5 sm:px-16 sm:py-6 rounded-xl sm:rounded-2xl shadow-[0_0_50px_rgba(255,153,51,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 mb-2 select-none border-2 border-white/20"
+                    className="relative w-full sm:w-auto flex items-center justify-center gap-3 bg-gradient-to-b from-white to-gray-200 text-black font-black text-base sm:text-xl px-8 py-3.5 sm:px-16 sm:py-6 rounded-xl sm:rounded-2xl shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 transition-all duration-300 mb-2 select-none border border-white/50"
                   >
                     <svg className="w-5 h-5 sm:w-6 sm:h-6 animate-bounce" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
