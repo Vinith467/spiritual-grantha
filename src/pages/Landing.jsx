@@ -132,7 +132,14 @@ function Landing() {
 
       <main className="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-6 sm:py-12 text-center max-w-2xl mx-auto w-full relative z-10">
         
-        <div className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-4 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto">
+        <div 
+          onClick={() => {
+            localStorage.setItem('subscribed', 'true')
+            signIn()
+            navigate('/home', { replace: true })
+          }}
+          className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-4 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto cursor-pointer"
+        >
           <img src="/icon-192.png" alt="App Icon" className="w-full h-full object-cover rounded-2xl" />
         </div>
 
