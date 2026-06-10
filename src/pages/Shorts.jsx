@@ -22,13 +22,16 @@ function Shorts() {
           .order('created_at', { ascending: false })
         
         if (!error && data) {
-          // Robustly extract the 11-character YouTube ID just in case full URLs were pasted
+          // Bulletproof extraction for YouTube IDs
           const extractYoutubeId = (urlOrId) => {
             if (!urlOrId) return ''
             const clean = urlOrId.trim()
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/
-            const match = clean.match(regExp)
-            return (match && match[2].length === 11) ? match[2] : clean
+            // 1. Try standard URL formats
+            const urlMatch = clean.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*)/)
+            if (urlMatch && urlMatch[1].length === 11) return urlMatch[1]
+            // 2. Try finding a standalone 11-character YouTube ID (ignores ?si= etc)
+            const idMatch = clean.match(/(?:^|[^A-Za-z0-9_-])([A-Za-z0-9_-]{11})(?:[^A-Za-z0-9_-]|$)/)
+            return idMatch ? idMatch[1] : clean
           }
 
           const mapped = data.map(s => ({
