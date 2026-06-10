@@ -25,9 +25,10 @@ function Shorts() {
           // Robustly extract the 11-character YouTube ID just in case full URLs were pasted
           const extractYoutubeId = (urlOrId) => {
             if (!urlOrId) return ''
+            const clean = urlOrId.trim()
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/
-            const match = urlOrId.match(regExp)
-            return (match && match[2].length === 11) ? match[2] : urlOrId
+            const match = clean.match(regExp)
+            return (match && match[2].length === 11) ? match[2] : clean
           }
 
           const mapped = data.map(s => ({
