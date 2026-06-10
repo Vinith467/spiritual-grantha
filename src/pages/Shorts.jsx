@@ -37,6 +37,31 @@ function Shorts() {
     fetchShorts()
   }, [contentLang])
 
+  // Use IntersectionObserver to reliably detect which short is snapped into view
+  useEffect(() => {
+    if (shortsData.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = Number(entry.target.getAttribute('data-index'))
+            setActiveIndex(index)
+          }
+        })
+      },
+      {
+        root: null,
+        threshold: 0.6, // Trigger when 60% of the short is visible
+      }
+    )
+
+    const elements = document.querySelectorAll('.short-container')
+    elements.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [shortsData])
+
   if (loading) return (
     <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white relative overflow-hidden flex items-center justify-center p-4 sm:p-6">
       <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-white/5 animate-pulse">
@@ -57,15 +82,7 @@ function Shorts() {
     <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white relative overflow-hidden">
       
       {/* Scrollable Snap Container */}
-      <div 
-        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-20 select-none"
-        onScroll={(e) => {
-          const index = Math.round(e.target.scrollTop / e.target.clientHeight)
-          if (index !== activeIndex) {
-            setActiveIndex(index)
-          }
-        }}
-      >
+      <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-20 select-none">
         {shortsData.length === 0 ? (
           <div className="h-[100dvh] flex flex-col items-center justify-center text-gray-500 text-sm p-8 text-center space-y-4">
             <span className="text-3xl">🕉️</span>
@@ -76,7 +93,8 @@ function Shorts() {
           shortsData.map((short, index) => (
             <div
               key={short.id}
-              className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black p-4 sm:p-6"
+              data-index={index}
+              className="short-container h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black p-4 sm:p-6"
             >
               
               {/* Premium Phone Mockup aspect ratio container for perfect alignment */}
