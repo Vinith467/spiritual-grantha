@@ -126,7 +126,7 @@ function Shorts() {
                 {/* Embedded YouTube Shorts Player with native YouTube interactions */}
                 {index === activeIndex ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=0&loop=1&playlist=${short.youtubeId}&controls=1&modestbranding=0&rel=0&iv_load_policy=3`}
+                    src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=${window.location.origin}`}
                     title={short.title}
                     className="w-full h-full object-cover pointer-events-auto"
                     allow="autoplay; encrypted-media; picture-in-picture"
