@@ -22,9 +22,17 @@ function Shorts() {
           .order('created_at', { ascending: false })
         
         if (!error && data) {
+          // Robustly extract the 11-character YouTube ID just in case full URLs were pasted
+          const extractYoutubeId = (urlOrId) => {
+            if (!urlOrId) return ''
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|\/shorts\/)([^#&?]*).*/
+            const match = urlOrId.match(regExp)
+            return (match && match[2].length === 11) ? match[2] : urlOrId
+          }
+
           const mapped = data.map(s => ({
             ...s,
-            youtubeId: s.youtube_id
+            youtubeId: extractYoutubeId(s.youtube_id)
           }))
           setShortsData(mapped)
         }
