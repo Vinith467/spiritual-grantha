@@ -8,6 +8,7 @@ function Shorts() {
   const { selectedLang, contentLang } = useGoogleTranslate()
   const [shortsData, setShortsData] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeIndex, setActiveIndex] = useState(0)
 
   // Fetch all shorts from Supabase
   useEffect(() => {
@@ -56,7 +57,15 @@ function Shorts() {
     <div className="h-[100dvh] w-full bg-[#0a0a0a] text-white relative overflow-hidden">
       
       {/* Scrollable Snap Container */}
-      <div className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-20 select-none">
+      <div 
+        className="h-full w-full overflow-y-scroll snap-y snap-mandatory scroll-smooth pb-20 select-none"
+        onScroll={(e) => {
+          const index = Math.round(e.target.scrollTop / e.target.clientHeight)
+          if (index !== activeIndex) {
+            setActiveIndex(index)
+          }
+        }}
+      >
         {shortsData.length === 0 ? (
           <div className="h-[100dvh] flex flex-col items-center justify-center text-gray-500 text-sm p-8 text-center space-y-4">
             <span className="text-3xl">🕉️</span>
@@ -64,7 +73,7 @@ function Shorts() {
             <p className="text-xs text-gray-600 max-w-xs">Upload shorts using the Admin panel to populate this screen!</p>
           </div>
         ) : (
-          shortsData.map((short) => (
+          shortsData.map((short, index) => (
             <div
               key={short.id}
               className="h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black p-4 sm:p-6"
@@ -85,13 +94,26 @@ function Shorts() {
                 </a>
 
                 {/* Embedded YouTube Shorts Player with native YouTube interactions */}
-                <iframe
-                  src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=0&loop=1&playlist=${short.youtubeId}&controls=1&modestbranding=0&rel=0&iv_load_policy=3`}
-                  title={short.title}
-                  className="w-full h-full object-cover pointer-events-auto"
-                  allow="autoplay; encrypted-media; picture-in-picture"
-                  allowFullScreen
-                />
+                {index === activeIndex ? (
+                  <iframe
+                    src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=0&loop=1&playlist=${short.youtubeId}&controls=1&modestbranding=0&rel=0&iv_load_policy=3`}
+                    title={short.title}
+                    className="w-full h-full object-cover pointer-events-auto"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <div className="w-full h-full relative pointer-events-none">
+                    <img 
+                      src={`https://img.youtube.com/vi/${short.youtubeId}/hqdefault.jpg`} 
+                      alt={short.title || "Short Thumbnail"} 
+                      className="w-full h-full object-cover opacity-30"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                       <svg className="w-16 h-16 text-white/20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </div>
+                  </div>
+                )}
                 
               </div>
 
