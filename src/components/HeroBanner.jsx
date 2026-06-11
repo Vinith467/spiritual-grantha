@@ -10,17 +10,7 @@ function HeroBanner({ seriesList }) {
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareData, setShareData] = useState(null)
 
-  // Auto-play timer (changes slide every 6 seconds)
-  useEffect(() => {
-    if (!seriesList || seriesList.length <= 1) return
-
-    const timer = setInterval(() => {
-      setCurrent(prev => (prev + 1) % seriesList.length)
-    }, 6000)
-
-    return () => clearInterval(timer)
-  }, [current, seriesList])
-
+  // Auto-play timer removed to make banner static
   if (!seriesList || seriesList.length === 0) return <div className="h-64 bg-[#141414]" />
 
   const lastWatched = JSON.parse(localStorage.getItem('lastWatched') || 'null')
@@ -187,10 +177,10 @@ function HeroBanner({ seriesList }) {
               e.stopPropagation()
               setCurrent(prev => (prev === 0 ? seriesList.length - 1 : prev - 1))
             }}
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-[#FF9933] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 hidden md:flex border border-white/10 hover:border-transparent hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
+            className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-11 md:h-11 rounded-full bg-black/40 hover:bg-[#FF9933] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-300 border border-white/10 hover:border-transparent hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
             aria-label="Previous slide"
           >
-            <LeftOutlined style={{ fontSize: '18px', fontWeight: 'bold' }} />
+            <LeftOutlined className="text-sm md:text-[18px] font-bold" />
           </button>
         )}
 
@@ -201,10 +191,10 @@ function HeroBanner({ seriesList }) {
               e.stopPropagation()
               setCurrent(prev => (prev === seriesList.length - 1 ? 0 : prev + 1))
             }}
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-[#FF9933] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 hidden md:flex border border-white/10 hover:border-transparent hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
+            className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-11 md:h-11 rounded-full bg-black/40 hover:bg-[#FF9933] text-white flex items-center justify-center backdrop-blur-sm transition-all duration-300 border border-white/10 hover:border-transparent hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
             aria-label="Next slide"
           >
-            <RightOutlined style={{ fontSize: '18px', fontWeight: 'bold' }} />
+            <RightOutlined className="text-sm md:text-[18px] font-bold" />
           </button>
         )}
 
