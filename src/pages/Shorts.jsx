@@ -3,6 +3,69 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import ComingSoon from '../components/ComingSoon'
+import ReactPlayer from 'react-player/youtube'
+
+const ShortVideo = ({ short, index, activeIndex }) => {
+  // Mount the heavy player if it's within 2 slots of the active one (Preloading)
+  const isNear = Math.abs(index - activeIndex) <= 2
+  const isActive = index === activeIndex
+
+  return (
+    <div
+      data-index={index}
+      className="short-container h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black p-4 sm:p-6"
+    >
+      <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+        
+        {/* Like Button */}
+        <a 
+          href={`https://www.google.com/url?q=https://www.youtube.com/shorts/${short.youtubeId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/75 hover:bg-black backdrop-blur-md border border-white/10 hover:border-[#FF9933]/50 text-white hover:text-[#FF9933] px-4 py-2.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shadow-xl pointer-events-auto select-none transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <span>Like on YouTube</span>
+          <span className="text-red-500 text-sm animate-pulse">❤️</span>
+        </a>
+
+        {/* Thumbnail Layer - smoothly fades out when active */}
+        <div className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 z-10 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
+          <img 
+            src={`https://img.youtube.com/vi/${short.youtubeId}/hqdefault.jpg`} 
+            alt={short.title || "Short Thumbnail"} 
+            className="w-full h-full object-cover opacity-50"
+          />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg className="w-16 h-16 text-white/40" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+
+        {/* The Player Layer */}
+        {isNear && (
+          <div className={`absolute inset-0 w-full h-full z-20 ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+            <ReactPlayer
+              url={`https://www.youtube.com/watch?v=${short.youtubeId}`}
+              playing={isActive}
+              controls={true}
+              width="100%"
+              height="100%"
+              style={{ position: 'absolute', top: 0, left: 0 }}
+              config={{
+                youtube: {
+                  playerVars: {
+                    modestbranding: 1,
+                    rel: 0,
+                    iv_load_policy: 3
+                  }
+                }
+              }}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function Shorts() {
   const { selectedLang, contentLang } = useGoogleTranslate()
@@ -103,51 +166,12 @@ function Shorts() {
           </div>
         ) : (
           shortsData.map((short, index) => (
-            <div
-              key={short.id}
-              data-index={index}
-              className="short-container h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black p-4 sm:p-6"
-            >
-              
-              {/* Premium Phone Mockup aspect ratio container for perfect alignment */}
-              <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
-                
-                {/* Subtle Floating Like & Interact on YouTube Button */}
-                <a 
-                  href={`https://www.google.com/url?q=https://www.youtube.com/shorts/${short.youtubeId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/75 hover:bg-black backdrop-blur-md border border-white/10 hover:border-[#FF9933]/50 text-white hover:text-[#FF9933] px-4 py-2.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shadow-xl pointer-events-auto select-none"
-                >
-                  <span>Like on YouTube</span>
-                  <span className="text-red-500 text-sm animate-pulse">❤️</span>
-                </a>
-
-                {/* Embedded YouTube Shorts Player with native YouTube interactions */}
-                {index === activeIndex ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${short.youtubeId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=${window.location.origin}`}
-                    title={short.title}
-                    className="w-full h-full object-cover pointer-events-auto"
-                    allow="autoplay; encrypted-media; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <div className="w-full h-full relative pointer-events-none">
-                    <img 
-                      src={`https://img.youtube.com/vi/${short.youtubeId}/hqdefault.jpg`} 
-                      alt={short.title || "Short Thumbnail"} 
-                      className="w-full h-full object-cover opacity-30"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                       <svg className="w-16 h-16 text-white/20" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                    </div>
-                  </div>
-                )}
-                
-              </div>
-
-            </div>
+            <ShortVideo 
+              key={short.id} 
+              short={short} 
+              index={index} 
+              activeIndex={activeIndex} 
+            />
           ))
         )}
       </div>
