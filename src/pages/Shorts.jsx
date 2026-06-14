@@ -13,20 +13,43 @@ const ShortVideo = ({ short, index, activeIndex }) => {
   return (
     <div
       data-index={index}
-      className="short-container h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black p-4 sm:p-6"
+      className="short-container h-[100dvh] w-full snap-start relative flex items-center justify-center bg-black sm:p-6"
     >
-      <div className="relative w-full max-w-md aspect-[9/16] h-[calc(100vh-140px)] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black">
+      <div className="relative w-full h-full sm:max-w-md sm:aspect-[9/16] sm:h-[calc(100vh-140px)] sm:rounded-2xl overflow-hidden sm:border sm:border-white/10 sm:shadow-2xl bg-black">
         
-        {/* Like Button */}
-        <a 
-          href={`https://www.google.com/url?q=https://www.youtube.com/shorts/${short.youtubeId}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`absolute top-4 right-4 z-30 flex items-center gap-2 bg-black/75 hover:bg-black backdrop-blur-md border border-white/10 hover:border-[#FF9933]/50 text-white hover:text-[#FF9933] px-4 py-2.5 rounded-full text-xs font-extrabold transition-all active:scale-95 shadow-xl pointer-events-auto select-none transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}
-        >
-          <span>Like on YouTube</span>
-          <span className="text-red-500 text-sm animate-pulse">❤️</span>
-        </a>
+        {/* Instagram-style Action Column */}
+        <div className={`absolute bottom-24 sm:bottom-12 right-4 z-30 flex flex-col items-center gap-6 pointer-events-auto transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0'}`}>
+          <a 
+            href={`https://www.youtube.com/shorts/${short.youtubeId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+          >
+            <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:bg-[#FF9933]/20 group-hover:border-[#FF9933]/50">
+              <span className="text-xl drop-shadow-md group-hover:scale-110 transition-transform">❤️</span>
+            </div>
+            <span className="text-white text-[10px] font-bold drop-shadow-md">Like</span>
+          </a>
+
+          <button 
+            onClick={() => {
+              if (navigator.share) {
+                navigator.share({
+                  title: short.title,
+                  url: `https://www.youtube.com/shorts/${short.youtubeId}`
+                })
+              }
+            }}
+            className="group flex flex-col items-center gap-1.5 active:scale-90 transition-transform"
+          >
+            <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10 group-hover:bg-white/20">
+              <svg className="w-5 h-5 text-white drop-shadow-md group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+            </div>
+            <span className="text-white text-[10px] font-bold drop-shadow-md">Share</span>
+          </button>
+        </div>
 
         {/* Thumbnail Layer - smoothly fades out when active */}
         <div className={`absolute inset-0 w-full h-full pointer-events-none transition-opacity duration-500 z-10 ${isActive ? 'opacity-0' : 'opacity-100'}`}>
