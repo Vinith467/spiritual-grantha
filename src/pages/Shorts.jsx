@@ -3,12 +3,30 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import ComingSoon from '../components/ComingSoon'
-import ReactPlayer from 'react-player'
+import { useRef, useEffect } from 'react'
 
 const ShortVideo = ({ short, index, activeIndex }) => {
   // Mount the heavy player if it's within 2 slots of the active one (Preloading)
   const isNear = Math.abs(index - activeIndex) <= 2
   const isActive = index === activeIndex
+  const iframeRef = useRef(null)
+
+  // Lock the initial src so the iframe doesn't reload when isActive changes
+  const initialSrc = useRef(`https://www.youtube.com/embed/${short.youtubeId}?enablejsapi=1&autoplay=${isActive ? 1 : 0}&mute=0&controls=1&modestbranding=1&rel=0&iv_load_policy=3&origin=${window.location.origin}`)
+
+  // Use raw YouTube postMessage API to play/pause instantly
+  useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentWindow) {
+      try {
+        iframeRef.current.contentWindow.postMessage(JSON.stringify({
+          event: 'command',
+          func: isActive ? 'playVideo' : 'pauseVideo'
+        }), '*')
+      } catch (e) {
+        console.error('Failed to send postMessage to YouTube iframe', e)
+      }
+    }
+  }, [isActive])
 
   return (
     <div
@@ -66,22 +84,13 @@ const ShortVideo = ({ short, index, activeIndex }) => {
         {/* The Player Layer */}
         {isNear && (
           <div className={`absolute inset-0 w-full h-full z-20 ${isActive ? 'pointer-events-auto' : 'pointer-events-none'}`}>
-            <ReactPlayer
-              url={`https://www.youtube.com/watch?v=${short.youtubeId}`}
-              playing={isActive}
-              controls={true}
-              width="100%"
-              height="100%"
-              style={{ position: 'absolute', top: 0, left: 0 }}
-              config={{
-                youtube: {
-                  playerVars: {
-                    modestbranding: 1,
-                    rel: 0,
-                    iv_load_policy: 3
-                  }
-                }
-              }}
+            <iframe
+              ref={iframeRef}
+              src={initialSrc.current}
+              title={short.title}
+              className="w-full h-full object-cover"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
             />
           </div>
         )}
