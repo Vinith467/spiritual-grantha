@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import ComingSoon from '../components/ComingSoon'
-import ReactPlayer from 'react-player/youtube'
+import ReactPlayer from 'react-player'
 
 const ShortVideo = ({ short, index, activeIndex }) => {
   // Mount the heavy player if it's within 2 slots of the active one (Preloading)
