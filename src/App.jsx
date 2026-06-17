@@ -37,7 +37,7 @@ function ProtectedRoute({ children }) {
 
   if (!isSubscribed) return <Navigate to="/" replace />
   
-  if (!isStandalone && !isAdmin) {
+  if (!isStandalone) {
     return (
       <div className="bg-[#141414] min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 z-[99999] relative">
         <img src="/icon-192.png" alt="SDTV" className="w-24 h-24 rounded-full mb-6 border-2 border-[#FF9933] shadow-[0_0_20px_rgba(255,153,51,0.3)]" />

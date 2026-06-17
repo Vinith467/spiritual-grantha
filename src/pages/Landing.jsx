@@ -32,10 +32,9 @@ function Landing() {
 
   useEffect(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
-    const isAdminUser = localStorage.getItem('isAdmin') === 'true'
 
-    // Only auto-redirect to home if they are in the standalone app or are an admin
-    if (isStandalone || isAdminUser) {
+    // Only auto-redirect to home if they are in the standalone app
+    if (isStandalone) {
       if (localStorage.getItem('subscribed') === 'true') {
         signIn()
         navigate('/home', { replace: true })
