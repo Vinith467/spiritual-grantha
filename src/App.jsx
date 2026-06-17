@@ -19,8 +19,38 @@ import PageTransition from './components/PageTransition'
 import OfflineScreen from './components/OfflineScreen'
 
 function ProtectedRoute({ children }) {
-  const { isSubscribed } = useAuth()
-  return isSubscribed ? children : <Navigate to="/" replace />
+  const { isSubscribed, isAdmin } = useAuth()
+  
+  const [isStandalone, setIsStandalone] = useState(
+    window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+  )
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(display-mode: standalone)')
+    const handleChange = (e) => setIsStandalone(e.matches || window.navigator.standalone)
+    
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+  }, [])
+
+  if (!isSubscribed) return <Navigate to="/" replace />
+  
+  if (!isStandalone && !isAdmin) {
+    return (
+      <div className="bg-[#141414] min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 z-[99999] relative">
+        <img src="/icon-192.png" alt="SDTV" className="w-24 h-24 rounded-full mb-6 border-2 border-[#FF9933] shadow-[0_0_20px_rgba(255,153,51,0.3)]" />
+        <h1 className="text-2xl font-black text-white mb-2">App Only Access</h1>
+        <p className="text-gray-400 max-w-sm mb-8 leading-relaxed">
+          Sanatan Dharma TV is designed exclusively as a native app experience. <br/><br/>
+          <strong className="text-[#FF9933]">Please close this browser tab and launch the app directly from your device's Home Screen to continue.</strong>
+        </p>
+      </div>
+    )
+  }
+
+  return children
 }
 
 function AdminRoute({ children }) {
