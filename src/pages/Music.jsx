@@ -97,11 +97,11 @@ function Music() {
       {/* Top Navbar */}
       <Navbar />
 
-      <div className="px-4 sm:px-6 md:px-8 pt-20 max-w-5xl mx-auto flex flex-col md:flex-row gap-6">
+      <div className="px-4 sm:px-6 md:px-8 pt-24 pb-10 max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
         
         {/* Left Side: Active Player */}
-        <div className="flex-1 bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-2xl p-4 sm:p-6 flex flex-col items-center shadow-lg">
-          <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] mb-4 uppercase tracking-widest">
+        <div className="w-full md:w-80 lg:w-[400px] shrink-0 bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-3xl p-5 sm:p-6 flex flex-col items-center shadow-2xl md:sticky md:top-28 h-fit">
+          <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] mb-5 uppercase tracking-widest">
             Now Playing
           </span>
 
@@ -132,15 +132,15 @@ function Music() {
         </div>
 
         {/* Right Side: Devotional Playlist */}
-        <div className="flex-1 flex flex-col min-w-0">
-          <h3 className="text-sm font-bold text-[#FF9933] mb-4 uppercase tracking-widest flex items-center gap-2">
+        <div className="flex-1 flex flex-col min-w-0 bg-black/20 rounded-3xl p-4 sm:p-6 border border-white/5">
+          <h3 className="text-sm font-bold text-[#FF9933] mb-6 uppercase tracking-widest flex items-center gap-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
             </svg>
-            Devotional Playlist
+            Devotional Playlist ({tracks.length})
           </h3>
 
-          <div className="flex flex-col gap-3 max-h-[480px] overflow-y-auto pr-1">
+          <div className="flex flex-col gap-3">
             {tracks.map(track => {
               const isSelected = track.id === activeTrack.id
               return (
