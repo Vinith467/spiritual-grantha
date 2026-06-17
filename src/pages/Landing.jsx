@@ -31,18 +31,16 @@ function Landing() {
   }
 
   useEffect(() => {
-    // If already logged in/entered app, take them straight to home feed
-    if (localStorage.getItem('subscribed') === 'true') {
-      signIn()
-      navigate('/home', { replace: true })
-      return
-    }
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+    const isAdminUser = localStorage.getItem('isAdmin') === 'true'
 
-    // If opened as a standalone PWA, take them directly to home feed
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
-      signIn()
-      navigate('/home', { replace: true })
-      return
+    // Only auto-redirect to home if they are in the standalone app or are an admin
+    if (isStandalone || isAdminUser) {
+      if (localStorage.getItem('subscribed') === 'true') {
+        signIn()
+        navigate('/home', { replace: true })
+        return
+      }
     }
 
     const handleBeforeInstallPrompt = (e) => {
@@ -133,12 +131,7 @@ function Landing() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 pt-24 pb-6 sm:py-12 text-center max-w-2xl mx-auto w-full relative z-10">
         
         <div 
-          onClick={() => {
-            localStorage.setItem('subscribed', 'true')
-            signIn()
-            navigate('/home', { replace: true })
-          }}
-          className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-4 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto cursor-pointer"
+          className="w-20 h-20 sm:w-36 sm:h-36 rounded-3xl border border-[#FF9933]/30 overflow-hidden mb-4 sm:mb-8 shadow-[0_0_50px_rgba(255,153,51,0.2)] p-1 bg-black mx-auto cursor-default"
         >
           <img src="/icon-192.png" alt="App Icon" className="w-full h-full object-cover rounded-2xl" />
         </div>
@@ -221,19 +214,7 @@ function Landing() {
                <div className="w-full p-6 bg-white/5 border border-white/10 rounded-2xl mb-8 shadow-xl">
                  <div className="animate-spin w-6 h-6 border-2 border-[#FF9933] border-t-transparent rounded-full mx-auto mb-4"></div>
                  <p className="text-sm font-bold text-white mb-2">Preparing installation...</p>
-                 <p className="text-xs text-gray-400 max-w-[250px] mx-auto">If you are using a private window or an unsupported browser, you may need to switch to Chrome.</p>
-                 
-                 <div className="mt-6 pt-4 border-t border-white/10">
-                    <button
-                      onClick={() => {
-                        localStorage.setItem('subscribed', 'true')
-                        navigate('/home', { replace: true })
-                      }}
-                      className="text-xs font-bold text-[#FF9933] hover:text-[#FF6600] transition"
-                    >
-                      Skip installation and Continue to App →
-                    </button>
-                 </div>
+                 <p className="text-xs text-gray-400 max-w-[250px] mx-auto">If you are using a private window or an unsupported browser, you may need to switch to regular Chrome.</p>
                </div>
             )}
             
