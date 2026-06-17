@@ -34,13 +34,16 @@ function App() {
   const location = useLocation()
   const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
-  const [showInstallSuccess, setShowInstallSuccess] = useState(false)
+  const [showInstallSuccess, setShowInstallSuccess] = useState(() => {
+    return sessionStorage.getItem('sdtv_just_installed') === 'true'
+  })
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
     const handleAppInstalled = () => {
       setShowInstallSuccess(true)
+      sessionStorage.setItem('sdtv_just_installed', 'true')
       window.deferredPrompt = null
     }
 
