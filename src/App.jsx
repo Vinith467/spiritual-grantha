@@ -70,14 +70,18 @@ function App() {
   })
 
   useEffect(() => {
+    let isInstalling = false
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
     const handleAppInstalled = () => {
+      if (isInstalling) return
+      isInstalling = true
+      
       setInstallState('installing')
       window.deferredPrompt = null
 
       let progress = 0
-      const duration = 60000 // 1 minute
+      const duration = 40000 // 40 seconds
       const interval = 1000 // update every 1s
       const steps = duration / interval
       
@@ -85,8 +89,13 @@ function App() {
         progress += (100 / steps)
         if (progress >= 100) {
           clearInterval(timer)
-          setInstallState('none')
+          setInstallState('success')
           sessionStorage.setItem('sdtv_just_installed', 'true')
+          
+          // Show success for 5 seconds, then show App Only Access page
+          setTimeout(() => {
+            setInstallState('none')
+          }, 5000)
         } else {
           setInstallProgress(progress)
         }
@@ -155,6 +164,24 @@ function App() {
               />
             </div>
             <span className="text-[#FF9933] font-bold text-sm tracking-wider">{Math.floor(installProgress)}%</span>
+          </div>
+        </div>
+      )}
+
+      {installState === 'success' && (
+        <div className="fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-6 animate-in fade-in duration-500">
+          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
+            <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2 text-center tracking-wide">App Installed!</h2>
+          <p className="text-gray-300 text-center text-sm mb-6 max-w-xs leading-relaxed">
+            <strong className="text-[#FF9933]">Please close this browser window</strong> and open the SDTV app from your phone's home screen.
+          </p>
+          
+          <div className="w-full max-w-[280px] bg-white/10 rounded-2xl p-2 mb-8 border border-white/20 shadow-2xl overflow-hidden">
+            <img src="/assets/install-guide.jpg" alt="Install Guide" className="w-full h-auto rounded-xl object-cover" />
           </div>
         </div>
       )}
