@@ -81,14 +81,14 @@ function App() {
       if (timerRef.current) clearInterval(timerRef.current)
 
       const duration = 25000 // 25 seconds
-      const interval = 1000 // update every 1s
-      const steps = duration / interval
+      const steps = 100 // 100 steps for 1% to 100%
+      const interval = duration / steps // 250ms
       
       setInstallProgress(0)
 
       timerRef.current = setInterval(() => {
         setInstallProgress((prev) => {
-          const next = prev + (100 / steps)
+          const next = prev + 1 // exactly 1% per interval
           if (next >= 100) {
             clearInterval(timerRef.current)
             setInstallState('success')
@@ -163,7 +163,7 @@ function App() {
             {/* Progress Bar */}
             <div className="w-full max-w-xs bg-white/10 rounded-full h-3 mb-3 overflow-hidden border border-white/10 shadow-inner">
               <div 
-                className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-1000 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
+                className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-300 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
                 style={{ width: `${installProgress}%` }}
               />
             </div>
