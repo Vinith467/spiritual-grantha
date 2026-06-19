@@ -64,17 +64,33 @@ function App() {
   const location = useLocation()
   const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
-  const [showInstallSuccess, setShowInstallSuccess] = useState(() => {
-    return sessionStorage.getItem('sdtv_just_installed') === 'true'
+  const [installProgress, setInstallProgress] = useState(0)
+  const [installState, setInstallState] = useState(() => {
+    return sessionStorage.getItem('sdtv_just_installed') === 'true' ? 'success' : 'none'
   })
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
     const handleAppInstalled = () => {
-      setShowInstallSuccess(true)
-      sessionStorage.setItem('sdtv_just_installed', 'true')
+      setInstallState('installing')
       window.deferredPrompt = null
+
+      let progress = 0
+      const duration = 60000 // 1 minute
+      const interval = 100 // update every 100ms
+      const steps = duration / interval
+      
+      const timer = setInterval(() => {
+        progress += (100 / steps)
+        if (progress >= 100) {
+          clearInterval(timer)
+          setInstallState('success')
+          sessionStorage.setItem('sdtv_just_installed', 'true')
+        } else {
+          setInstallProgress(progress)
+        }
+      }, interval)
     }
 
     window.addEventListener('online', handleOnline)
@@ -93,8 +109,29 @@ function App() {
       <ScrollToTop />
       {isOffline && <OfflineScreen />}
 
-      {/* App Installed Success Overlay */}
-      {showInstallSuccess && (
+      {/* App Installation States */}
+      {installState === 'installing' && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#141414] p-6 animate-in fade-in duration-500">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-[#FF9933] rounded-3xl blur-2xl opacity-20 animate-pulse" />
+            <img src="/icon-192.png" alt="SDTV" className="relative w-28 h-28 rounded-3xl shadow-2xl border border-white/10" />
+          </div>
+          
+          <h2 className="text-2xl font-black text-white mb-2 tracking-wide">Installing SDTV</h2>
+          <p className="text-gray-400 text-sm mb-10 font-medium">Setting up your spiritual journey...</p>
+          
+          {/* Progress Bar */}
+          <div className="w-full max-w-xs bg-white/5 rounded-full h-3 mb-3 overflow-hidden border border-white/10 shadow-inner">
+            <div 
+              className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-100 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
+              style={{ width: `${installProgress}%` }}
+            />
+          </div>
+          <span className="text-[#FF9933] font-bold text-sm tracking-wider">{Math.floor(installProgress)}%</span>
+        </div>
+      )}
+
+      {installState === 'success' && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/95 backdrop-blur-xl p-6 animate-in fade-in duration-500">
           <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
             <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
