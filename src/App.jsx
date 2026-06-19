@@ -65,11 +65,7 @@ function App() {
   const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [installProgress, setInstallProgress] = useState(0)
-  const [installState, setInstallState] = useState(() => {
-    if (sessionStorage.getItem('sdtv_just_installed') === 'true') return 'success'
-    if (sessionStorage.getItem('sdtv_installing_in_progress') === 'true') return 'installing'
-    return 'none'
-  })
+  const [installState, setInstallState] = useState('none')
 
   const timerRef = useRef(null)
 
@@ -79,8 +75,8 @@ function App() {
     
     let isActuallyInstalled = false
 
-    // If the user accepted the prompt in Landing, start a visual progress bar
-    if (sessionStorage.getItem('sdtv_installing_in_progress') === 'true') {
+    const handleStartInstall = () => {
+      setInstallState('installing')
       setInstallProgress(0)
       if (timerRef.current) clearInterval(timerRef.current)
       
@@ -96,8 +92,6 @@ function App() {
             if (isActuallyInstalled) {
               clearInterval(timerRef.current)
               setInstallState('success')
-              sessionStorage.removeItem('sdtv_installing_in_progress')
-              sessionStorage.setItem('sdtv_just_installed', 'true')
               
               setTimeout(() => {
                 setInstallState('none')
@@ -118,22 +112,26 @@ function App() {
       
       // If we weren't doing the visual fake loader (e.g. they installed via browser menu directly), 
       // we just show success immediately.
-      if (installState !== 'installing') {
-        setInstallState('success')
-        sessionStorage.setItem('sdtv_just_installed', 'true')
-        setTimeout(() => {
-          setInstallState('none')
-        }, 5000)
-      }
+      setInstallState((prev) => {
+        if (prev !== 'installing') {
+          setTimeout(() => {
+            setInstallState('none')
+          }, 5000)
+          return 'success'
+        }
+        return prev
+      })
     }
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
+    window.addEventListener('start-install-animation', handleStartInstall)
     window.addEventListener('appinstalled', handleAppInstalled)
 
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('start-install-animation', handleStartInstall)
       window.removeEventListener('appinstalled', handleAppInstalled)
       if (timerRef.current) clearInterval(timerRef.current)
     }

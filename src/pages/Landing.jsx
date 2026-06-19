@@ -75,7 +75,7 @@ function Landing() {
     setDeferredPrompt(null)
     
     if (outcome === 'accepted') {
-      sessionStorage.setItem('sdtv_installing_in_progress', 'true')
+      window.dispatchEvent(new Event('start-install-animation'))
     }
     
     signIn()
