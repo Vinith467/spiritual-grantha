@@ -93,15 +93,15 @@ function Music() {
   )
 
   return (
-    <div className="relative min-h-screen text-white pb-24 bg-[#141414]">
+    <div className="relative min-h-screen text-white pb-24 bg-black">
       {/* Dynamic Background Image */}
       {activeTrack && (
         <div className="fixed inset-0 z-0 pointer-events-none">
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-110 opacity-30 blur-[60px]"
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-110 opacity-60 blur-2xl"
             style={{ backgroundImage: `url(${activeTrack.thumbnail})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#141414]/80 to-[#141414]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-[#141414]/70 to-[#141414]/90" />
         </div>
       )}
 
