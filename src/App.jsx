@@ -81,15 +81,40 @@ function App() {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
 
-    const handleStartInstall = () => {
-      setInstallState('installing')
-    }
+    let isActuallyInstalled = false
+    let minWaitFinished = false
+    let isInstallingFlow = false
 
-    const handleAppInstalled = () => {
+    const showSuccess = () => {
       setInstallState('success')
       setTimeout(() => {
         setInstallState('none')
       }, 5000)
+    }
+
+    const handleStartInstall = () => {
+      isInstallingFlow = true
+      isActuallyInstalled = false
+      minWaitFinished = false
+      setInstallState('installing')
+
+      // Enforce a minimum 8-second visual wait so they can see the spinner and images
+      setTimeout(() => {
+        minWaitFinished = true
+        if (isActuallyInstalled) {
+          showSuccess()
+        }
+      }, 8000)
+    }
+
+    const handleAppInstalled = () => {
+      isActuallyInstalled = true
+      
+      // If we didn't start the installing flow (e.g. they installed from browser menu directly),
+      // OR if the 8-second minimum wait has already finished, show success immediately.
+      if (!isInstallingFlow || minWaitFinished) {
+        showSuccess()
+      }
     }
 
     window.addEventListener('online', handleOnline)
