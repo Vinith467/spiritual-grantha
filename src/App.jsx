@@ -77,32 +77,54 @@ function App() {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
     
-    // If the user accepted the prompt in Landing, start a fast visual progress bar
+    let isActuallyInstalled = false
+
+    // If the user accepted the prompt in Landing, start a visual progress bar
     if (sessionStorage.getItem('sdtv_installing_in_progress') === 'true') {
       setInstallProgress(0)
       if (timerRef.current) clearInterval(timerRef.current)
       
+      const duration = 12000 // 12 seconds minimum for the cinematic effect (3s per image)
+      const interval = 50
+      const increment = 100 / (duration / interval) // exactly how much to add per 50ms
+
       timerRef.current = setInterval(() => {
         setInstallProgress((prev) => {
-          if (prev >= 98) return 98 // Cap at 98% until actually installed
-          if (prev >= 80) return prev + 0.2 // Slow down near the end
-          return prev + 1 // Fast up to 80%
+          const next = prev + increment
+
+          if (next >= 100) {
+            if (isActuallyInstalled) {
+              clearInterval(timerRef.current)
+              setInstallState('success')
+              sessionStorage.removeItem('sdtv_installing_in_progress')
+              sessionStorage.setItem('sdtv_just_installed', 'true')
+              
+              setTimeout(() => {
+                setInstallState('none')
+              }, 5000)
+              return 100
+            } else {
+              return 99 // Wait at 99% if the browser is taking unusually long
+            }
+          }
+          return next
         })
-      }, 50)
+      }, interval)
     }
 
     const handleAppInstalled = () => {
       // The browser ACTUALLY finished the installation!
-      if (timerRef.current) clearInterval(timerRef.current)
-      setInstallProgress(100)
-      setInstallState('success')
-      sessionStorage.removeItem('sdtv_installing_in_progress')
-      sessionStorage.setItem('sdtv_just_installed', 'true')
+      isActuallyInstalled = true
       
-      // Show success for 5 seconds, then show App Only Access page
-      setTimeout(() => {
-        setInstallState('none')
-      }, 5000)
+      // If we weren't doing the visual fake loader (e.g. they installed via browser menu directly), 
+      // we just show success immediately.
+      if (installState !== 'installing') {
+        setInstallState('success')
+        sessionStorage.setItem('sdtv_just_installed', 'true')
+        setTimeout(() => {
+          setInstallState('none')
+        }, 5000)
+      }
     }
 
     window.addEventListener('online', handleOnline)
