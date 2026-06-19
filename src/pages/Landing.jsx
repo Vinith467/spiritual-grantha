@@ -73,6 +73,11 @@ function Landing() {
     const { outcome } = await deferredPrompt.userChoice
     console.log(`User response to the install prompt: ${outcome}`)
     setDeferredPrompt(null)
+    
+    if (outcome === 'accepted') {
+      sessionStorage.setItem('sdtv_installing_in_progress', 'true')
+    }
+    
     signIn()
     navigate('/home', { replace: true })
   }

@@ -66,7 +66,9 @@ function App() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [installProgress, setInstallProgress] = useState(0)
   const [installState, setInstallState] = useState(() => {
-    return sessionStorage.getItem('sdtv_just_installed') === 'true' ? 'success' : 'none'
+    if (sessionStorage.getItem('sdtv_just_installed') === 'true') return 'success'
+    if (sessionStorage.getItem('sdtv_installing_in_progress') === 'true') return 'installing'
+    return 'none'
   })
 
   const timerRef = useRef(null)
@@ -74,35 +76,33 @@ function App() {
   useEffect(() => {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
-    const handleAppInstalled = () => {
-      setInstallState('installing')
-      window.deferredPrompt = null
-
-      if (timerRef.current) clearInterval(timerRef.current)
-
-      const duration = 25000 // 25 seconds
-      const steps = 100 // 100 steps for 1% to 100%
-      const interval = duration / steps // 250ms
-      
+    
+    // If the user accepted the prompt in Landing, start a fast visual progress bar
+    if (sessionStorage.getItem('sdtv_installing_in_progress') === 'true') {
       setInstallProgress(0)
-
+      if (timerRef.current) clearInterval(timerRef.current)
+      
       timerRef.current = setInterval(() => {
         setInstallProgress((prev) => {
-          const next = prev + 1 // exactly 1% per interval
-          if (next >= 100) {
-            clearInterval(timerRef.current)
-            setInstallState('success')
-            sessionStorage.setItem('sdtv_just_installed', 'true')
-            
-            // Show success for 5 seconds, then show App Only Access page
-            setTimeout(() => {
-              setInstallState('none')
-            }, 5000)
-            return 100
-          }
-          return next
+          if (prev >= 98) return 98 // Cap at 98% until actually installed
+          if (prev >= 80) return prev + 0.2 // Slow down near the end
+          return prev + 1 // Fast up to 80%
         })
-      }, interval)
+      }, 50)
+    }
+
+    const handleAppInstalled = () => {
+      // The browser ACTUALLY finished the installation!
+      if (timerRef.current) clearInterval(timerRef.current)
+      setInstallProgress(100)
+      setInstallState('success')
+      sessionStorage.removeItem('sdtv_installing_in_progress')
+      sessionStorage.setItem('sdtv_just_installed', 'true')
+      
+      // Show success for 5 seconds, then show App Only Access page
+      setTimeout(() => {
+        setInstallState('none')
+      }, 5000)
     }
 
     window.addEventListener('online', handleOnline)
