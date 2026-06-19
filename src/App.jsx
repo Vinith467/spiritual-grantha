@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from './lib/AuthContext'
 import ScrollToTop from './components/ScrollToTop'
 import Landing from './pages/Landing'
@@ -69,36 +69,39 @@ function App() {
     return sessionStorage.getItem('sdtv_just_installed') === 'true' ? 'success' : 'none'
   })
 
+  const timerRef = useRef(null)
+
   useEffect(() => {
-    let isInstalling = false
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
     const handleAppInstalled = () => {
-      if (isInstalling) return
-      isInstalling = true
-      
       setInstallState('installing')
       window.deferredPrompt = null
 
-      let progress = 0
-      const duration = 40000 // 40 seconds
+      if (timerRef.current) clearInterval(timerRef.current)
+
+      const duration = 25000 // 25 seconds
       const interval = 1000 // update every 1s
       const steps = duration / interval
       
-      const timer = setInterval(() => {
-        progress += (100 / steps)
-        if (progress >= 100) {
-          clearInterval(timer)
-          setInstallState('success')
-          sessionStorage.setItem('sdtv_just_installed', 'true')
-          
-          // Show success for 5 seconds, then show App Only Access page
-          setTimeout(() => {
-            setInstallState('none')
-          }, 5000)
-        } else {
-          setInstallProgress(progress)
-        }
+      setInstallProgress(0)
+
+      timerRef.current = setInterval(() => {
+        setInstallProgress((prev) => {
+          const next = prev + (100 / steps)
+          if (next >= 100) {
+            clearInterval(timerRef.current)
+            setInstallState('success')
+            sessionStorage.setItem('sdtv_just_installed', 'true')
+            
+            // Show success for 5 seconds, then show App Only Access page
+            setTimeout(() => {
+              setInstallState('none')
+            }, 5000)
+            return 100
+          }
+          return next
+        })
       }, interval)
     }
 
@@ -110,6 +113,7 @@ function App() {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
       window.removeEventListener('appinstalled', handleAppInstalled)
+      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
 
