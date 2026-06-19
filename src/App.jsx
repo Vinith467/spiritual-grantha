@@ -69,6 +69,7 @@ function App() {
   const [installProgress, setInstallProgress] = useState(0)
   
   const timerRef = useRef(null)
+  const isInstallingFlowRef = useRef(false)
 
   // Loop background images every 2.5s while installing
   useEffect(() => {
@@ -84,9 +85,6 @@ function App() {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
 
-    let isActuallyInstalled = false
-    let isInstallingFlow = false
-
     const showSuccess = () => {
       if (timerRef.current) clearInterval(timerRef.current)
       setInstallProgress(100)
@@ -97,45 +95,34 @@ function App() {
     }
 
     const handleStartInstall = () => {
-      isInstallingFlow = true
-      isActuallyInstalled = false
+      isInstallingFlowRef.current = true
       setInstallState('installing')
       setInstallProgress(0)
 
       if (timerRef.current) clearInterval(timerRef.current)
 
+      // Fixed 20-second visual wait: 400 steps * 50ms = 20000ms
+      // This guarantees the OS has enough time to finish the background install
+      // before we show the "Success" screen.
       timerRef.current = setInterval(() => {
         setInstallProgress((prev) => {
-          if (isActuallyInstalled) {
-            // When browser actually finishes, speed smoothly to 100%
-            const next = prev + 4 // Fast zip to the end
-            if (next >= 100) {
-              showSuccess()
-              return 100
-            }
-            return next
-          } else {
-            // Smart illusion that slows down and never reaches full
-            let increment = 0.8
-            if (prev > 85) increment = 0.02
-            else if (prev > 60) increment = 0.1
-            else if (prev > 30) increment = 0.3
-            
-            return Math.min(prev + increment, 90) // Cap at 90% until actually done
+          const next = prev + 0.25 // 0.25% per 50ms
+          if (next >= 100) {
+            showSuccess()
+            return 100
           }
+          return next
         })
       }, 50)
     }
 
     const handleAppInstalled = () => {
-      isActuallyInstalled = true
-      
-      // If we didn't start the installing flow via our button, show success immediately
-      if (!isInstallingFlow) {
+      // The appinstalled event fires the moment the user *accepts* the prompt,
+      // NOT when the OS actually finishes writing the app to the home screen!
+      // So if we started our visual loader, we ignore this event and force the 20s wait.
+      if (!isInstallingFlowRef.current) {
         showSuccess()
       }
-      // Otherwise, the setInterval loop will catch isActuallyInstalled, 
-      // zip the bar to 100%, and call showSuccess() seamlessly.
     }
 
     window.addEventListener('online', handleOnline)
