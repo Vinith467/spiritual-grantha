@@ -66,6 +66,9 @@ function App() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [installState, setInstallState] = useState('none')
   const [bgIndex, setBgIndex] = useState(0)
+  const [installProgress, setInstallProgress] = useState(0)
+  
+  const timerRef = useRef(null)
 
   // Loop background images every 2.5s while installing
   useEffect(() => {
@@ -86,6 +89,8 @@ function App() {
     let isInstallingFlow = false
 
     const showSuccess = () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      setInstallProgress(100)
       setInstallState('success')
       setTimeout(() => {
         setInstallState('none')
@@ -97,14 +102,25 @@ function App() {
       isActuallyInstalled = false
       minWaitFinished = false
       setInstallState('installing')
+      setInstallProgress(0)
 
-      // Enforce a minimum 8-second visual wait so they can see the spinner and images
-      setTimeout(() => {
-        minWaitFinished = true
-        if (isActuallyInstalled) {
-          showSuccess()
-        }
-      }, 8000)
+      if (timerRef.current) clearInterval(timerRef.current)
+
+      // 8-second minimum visual wait: 100 steps * 80ms = 8000ms
+      timerRef.current = setInterval(() => {
+        setInstallProgress((prev) => {
+          const next = prev + 1
+          if (next >= 100) {
+            minWaitFinished = true
+            if (isActuallyInstalled) {
+              showSuccess()
+              return 100
+            }
+            return 99 // Wait at 99% if the browser is taking unusually long
+          }
+          return next
+        })
+      }, 80)
     }
 
     const handleAppInstalled = () => {
@@ -127,6 +143,7 @@ function App() {
       window.removeEventListener('offline', handleOffline)
       window.removeEventListener('start-install-animation', handleStartInstall)
       window.removeEventListener('appinstalled', handleAppInstalled)
+      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
 
@@ -171,13 +188,16 @@ function App() {
             </div>
             
             <h2 className="text-2xl font-black text-white mb-2 tracking-wide">Installing SDTV</h2>
-            <p className="text-gray-400 text-sm mb-10 font-medium">Please wait while we set up...</p>
+            <p className="text-gray-400 text-sm mb-10 font-medium">Setting up your spiritual journey...</p>
             
-            {/* Indeterminate Progress Spinner */}
-            <div className="flex items-center gap-3">
-              <div className="w-5 h-5 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
-              <span className="text-[#FF9933] font-bold text-sm tracking-wider uppercase">Installing...</span>
+            {/* Progress Bar */}
+            <div className="w-full max-w-xs bg-white/10 rounded-full h-3 mb-3 overflow-hidden border border-white/10 shadow-inner">
+              <div 
+                className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-300 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
+                style={{ width: `${installProgress}%` }}
+              />
             </div>
+            <span className="text-[#FF9933] font-bold text-sm tracking-wider">{installProgress}%</span>
           </div>
         </div>
       )}
