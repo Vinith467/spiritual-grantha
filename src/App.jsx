@@ -64,63 +64,32 @@ function App() {
   const location = useLocation()
   const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
-  const [installProgress, setInstallProgress] = useState(0)
   const [installState, setInstallState] = useState('none')
+  const [bgIndex, setBgIndex] = useState(0)
 
-  const timerRef = useRef(null)
+  // Loop background images every 2.5s while installing
+  useEffect(() => {
+    if (installState === 'installing') {
+      const timer = setInterval(() => {
+        setBgIndex(prev => (prev + 1) % 4)
+      }, 2500)
+      return () => clearInterval(timer)
+    }
+  }, [installState])
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
-    
-    let isActuallyInstalled = false
 
     const handleStartInstall = () => {
       setInstallState('installing')
-      setInstallProgress(0)
-      if (timerRef.current) clearInterval(timerRef.current)
-      
-      const duration = 12000 // 12 seconds minimum for the cinematic effect (3s per image)
-      const interval = 50
-      const increment = 100 / (duration / interval) // exactly how much to add per 50ms
-
-      timerRef.current = setInterval(() => {
-        setInstallProgress((prev) => {
-          const next = prev + increment
-
-          if (next >= 100) {
-            if (isActuallyInstalled) {
-              clearInterval(timerRef.current)
-              setInstallState('success')
-              
-              setTimeout(() => {
-                setInstallState('none')
-              }, 5000)
-              return 100
-            } else {
-              return 99 // Wait at 99% if the browser is taking unusually long
-            }
-          }
-          return next
-        })
-      }, interval)
     }
 
     const handleAppInstalled = () => {
-      // The browser ACTUALLY finished the installation!
-      isActuallyInstalled = true
-      
-      // If we weren't doing the visual fake loader (e.g. they installed via browser menu directly), 
-      // we just show success immediately.
-      setInstallState((prev) => {
-        if (prev !== 'installing') {
-          setTimeout(() => {
-            setInstallState('none')
-          }, 5000)
-          return 'success'
-        }
-        return prev
-      })
+      setInstallState('success')
+      setTimeout(() => {
+        setInstallState('none')
+      }, 5000)
     }
 
     window.addEventListener('online', handleOnline)
@@ -133,7 +102,6 @@ function App() {
       window.removeEventListener('offline', handleOffline)
       window.removeEventListener('start-install-animation', handleStartInstall)
       window.removeEventListener('appinstalled', handleAppInstalled)
-      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [])
 
@@ -146,27 +114,27 @@ function App() {
       {installState === 'installing' && (
         <div className="fixed inset-0 z-[999999] flex flex-col items-center justify-center bg-[#0a0a0a] p-6 animate-in fade-in duration-500 overflow-hidden">
           
-          {/* Background Images (Changes every 25%) */}
+          {/* Background Images (Changes every 2.5s) */}
           <div className="absolute inset-0 z-0 pointer-events-none bg-[#0a0a0a]">
             <img 
               src="/assets/vishnu_lakshmi.webp" 
               alt="Vishnu"
-              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${installProgress < 25 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${bgIndex === 0 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
             />
             <img 
               src="/assets/ram_sita.webp" 
               alt="Ram"
-              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${installProgress >= 25 && installProgress < 50 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${bgIndex === 1 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
             />
             <img 
               src="/assets/krishna_arjuna.webp" 
               alt="Krishna Arjuna"
-              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${installProgress >= 50 && installProgress < 75 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${bgIndex === 2 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
             />
             <img 
               src="/assets/krishna_radha.webp" 
               alt="Krishna Radha"
-              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${installProgress >= 75 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
+              className={`absolute inset-0 w-full h-full object-cover object-top transition-all duration-1000 ease-in-out mix-blend-screen ${bgIndex === 3 ? 'opacity-40 scale-100' : 'opacity-0 scale-105'}`} 
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent"></div>
           </div>
@@ -174,20 +142,17 @@ function App() {
           <div className="relative z-10 flex flex-col items-center w-full">
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-[#FF9933] rounded-3xl blur-2xl opacity-20 animate-pulse" />
-              <img src="/icon-192.png" alt="SDTV" className="relative w-28 h-28 rounded-3xl shadow-2xl border border-white/10" />
+              <img src="/icon-192.png" alt="SDTV" className="relative w-28 h-28 rounded-3xl shadow-2xl border border-white/10 animate-bounce" />
             </div>
             
             <h2 className="text-2xl font-black text-white mb-2 tracking-wide">Installing SDTV</h2>
-            <p className="text-gray-400 text-sm mb-10 font-medium">Setting up your spiritual journey...</p>
+            <p className="text-gray-400 text-sm mb-10 font-medium">Please wait while we set up...</p>
             
-            {/* Progress Bar */}
-            <div className="w-full max-w-xs bg-white/10 rounded-full h-3 mb-3 overflow-hidden border border-white/10 shadow-inner">
-              <div 
-                className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-300 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
-                style={{ width: `${installProgress}%` }}
-              />
+            {/* Indeterminate Progress Spinner */}
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin" />
+              <span className="text-[#FF9933] font-bold text-sm tracking-wider uppercase">Installing...</span>
             </div>
-            <span className="text-[#FF9933] font-bold text-sm tracking-wider">{Math.floor(installProgress)}%</span>
           </div>
         </div>
       )}
