@@ -85,7 +85,6 @@ function App() {
     const handleOffline = () => setIsOffline(true)
 
     let isActuallyInstalled = false
-    let minWaitFinished = false
     let isInstallingFlow = false
 
     const showSuccess = () => {
@@ -100,37 +99,43 @@ function App() {
     const handleStartInstall = () => {
       isInstallingFlow = true
       isActuallyInstalled = false
-      minWaitFinished = false
       setInstallState('installing')
       setInstallProgress(0)
 
       if (timerRef.current) clearInterval(timerRef.current)
 
-      // 8-second minimum visual wait: 100 steps * 80ms = 8000ms
       timerRef.current = setInterval(() => {
         setInstallProgress((prev) => {
-          const next = prev + 1
-          if (next >= 100) {
-            minWaitFinished = true
-            if (isActuallyInstalled) {
+          if (isActuallyInstalled) {
+            // When browser actually finishes, speed smoothly to 100%
+            const next = prev + 4 // Fast zip to the end
+            if (next >= 100) {
               showSuccess()
               return 100
             }
-            return 99 // Wait at 99% if the browser is taking unusually long
+            return next
+          } else {
+            // Smart illusion that slows down and never reaches full
+            let increment = 0.8
+            if (prev > 85) increment = 0.02
+            else if (prev > 60) increment = 0.1
+            else if (prev > 30) increment = 0.3
+            
+            return Math.min(prev + increment, 90) // Cap at 90% until actually done
           }
-          return next
         })
-      }, 80)
+      }, 50)
     }
 
     const handleAppInstalled = () => {
       isActuallyInstalled = true
       
-      // If we didn't start the installing flow (e.g. they installed from browser menu directly),
-      // OR if the 8-second minimum wait has already finished, show success immediately.
-      if (!isInstallingFlow || minWaitFinished) {
+      // If we didn't start the installing flow via our button, show success immediately
+      if (!isInstallingFlow) {
         showSuccess()
       }
+      // Otherwise, the setInterval loop will catch isActuallyInstalled, 
+      // zip the bar to 100%, and call showSuccess() seamlessly.
     }
 
     window.addEventListener('online', handleOnline)
@@ -190,14 +195,13 @@ function App() {
             <h2 className="text-2xl font-black text-white mb-2 tracking-wide">Installing SDTV</h2>
             <p className="text-gray-400 text-sm mb-10 font-medium">Setting up your spiritual journey...</p>
             
-            {/* Progress Bar */}
+            {/* Progress Bar (Percentage text removed per user request) */}
             <div className="w-full max-w-xs bg-white/10 rounded-full h-3 mb-3 overflow-hidden border border-white/10 shadow-inner">
               <div 
-                className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-300 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
+                className="bg-gradient-to-r from-[#FF9933]/80 to-[#FF9933] h-full rounded-full transition-all duration-200 ease-linear shadow-[0_0_15px_rgba(255,153,51,0.6)]"
                 style={{ width: `${installProgress}%` }}
               />
             </div>
-            <span className="text-[#FF9933] font-bold text-sm tracking-wider">{installProgress}%</span>
           </div>
         </div>
       )}
