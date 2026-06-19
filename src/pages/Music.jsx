@@ -93,13 +93,26 @@ function Music() {
   )
 
   return (
-    <div className="bg-[#141414] min-h-screen text-white pb-24">
-      {/* Top Navbar */}
-      <Navbar />
+    <div className="relative min-h-screen text-white pb-24 bg-[#141414]">
+      {/* Dynamic Background Image */}
+      {activeTrack && (
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <div 
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-110 opacity-30 blur-[60px]"
+            style={{ backgroundImage: `url(${activeTrack.thumbnail})` }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-[#141414]/80 to-[#141414]" />
+        </div>
+      )}
 
-      <div className="px-4 sm:px-6 md:px-8 pt-24 pb-10 max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
-        
-        {/* Left Side: Active Player */}
+      {/* Content Wrapper */}
+      <div className="relative z-10">
+        {/* Top Navbar */}
+        <Navbar />
+
+        <div className="px-4 sm:px-6 md:px-8 pt-24 pb-10 max-w-6xl mx-auto flex flex-col md:flex-row gap-8">
+          
+          {/* Left Side: Active Player */}
         <div className="w-full md:w-80 lg:w-[400px] shrink-0 bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-3xl p-5 sm:p-6 flex flex-col items-center shadow-2xl md:sticky md:top-28 h-fit">
           <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] mb-5 uppercase tracking-widest">
             Now Playing
@@ -188,8 +201,9 @@ function Music() {
 
       </div>
 
-      {/* Floating Bottom Navbar */}
-      <BottomNavbar />
+        {/* Floating Bottom Navbar */}
+        <BottomNavbar />
+      </div>
     </div>
   )
 }
