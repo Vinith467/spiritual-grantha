@@ -35,11 +35,9 @@ function Landing() {
 
     // Only auto-redirect to home if they are in the standalone app
     if (isStandalone) {
-      if (localStorage.getItem('subscribed') === 'true') {
-        signIn()
-        navigate('/home', { replace: true })
-        return
-      }
+      signIn()
+      navigate('/home', { replace: true })
+      return
     }
 
     const handleBeforeInstallPrompt = (e) => {
