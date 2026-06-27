@@ -9,13 +9,13 @@ function Terms() {
         <div className="flex items-center gap-3 mb-6">
           <img src="/icon-192.png" alt="Grantha Logo" className="w-10 h-10 rounded-full border border-[#FF9933]/50" />
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white">Sanatan Dharma TV</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white">Omisha and the Inner Path</h1>
             <p className="text-[#FF9933] text-xs font-bold uppercase tracking-wider">Terms of Service</p>
           </div>
         </div>
 
         <p className="text-gray-400 text-xs sm:text-sm mb-6 leading-relaxed">
-          Effective Date: May 18, 2026. Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the Sanatan Dharma TV web application located at <span className="text-[#FF9933]">https://spiritual-grantha-ouxi.vercel.app/</span> (the "Service").
+          Effective Date: May 18, 2026. Please read these Terms of Service ("Terms", "Terms of Service") carefully before using the Omisha and the Inner Path web application located at <span className="text-[#FF9933]">https://spiritual-grantha-ouxi.vercel.app/</span> (the "Service").
         </p>
 
         <div className="space-y-6 text-gray-300 text-sm leading-relaxed">
@@ -40,7 +40,7 @@ function Terms() {
           <section className="space-y-2">
             <h2 className="text-base font-extrabold text-[#FF9933] uppercase tracking-wider">3. Intellectual Property</h2>
             <p>
-              All original content, designs, animations, and metadata featured on the Service are the exclusive property of Sanatan Dharma TV. Devotional media, videos, and music embedded from YouTube remain the intellectual property of their respective creators and copyright owners.
+              All original content, designs, animations, and metadata featured on the Service are the exclusive property of Omisha and the Inner Path. Devotional media, videos, and music embedded from YouTube remain the intellectual property of their respective creators and copyright owners.
             </p>
           </section>
 
@@ -54,7 +54,7 @@ function Terms() {
           <section className="space-y-2">
             <h2 className="text-base font-extrabold text-[#FF9933] uppercase tracking-wider">5. Limitation of Liability</h2>
             <p>
-              In no event shall Sanatan Dharma TV, nor its team, be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your access to or use of the Service, including third-party API downtimes or Google OAuth service updates.
+              In no event shall Omisha and the Inner Path, nor its team, be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your access to or use of the Service, including third-party API downtimes or Google OAuth service updates.
             </p>
           </section>
 

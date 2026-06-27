@@ -150,7 +150,7 @@ function Watch() {
       try {
         await navigator.share({
           title: episode.title,
-          text: episode.description || 'Watch this amazing spiritual content on Sanatan Dharma TV!',
+          text: episode.description || 'Watch this amazing spiritual content on Omisha and the Inner Path!',
           url: window.location.href,
         })
       } catch (err) {

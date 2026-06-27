@@ -10,8 +10,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Sanatan Dharma Television',
-        short_name: 'SDTV',
+        name: 'Omisha and the Inner Path',
+        short_name: 'Omisha',
         description: 'Watch Ramayan, Mahabharat, Bhagwat Geeta & more',
         theme_color: '#0a0a0a',
         background_color: '#ffffff',

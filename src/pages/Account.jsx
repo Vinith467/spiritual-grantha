@@ -267,7 +267,7 @@ function Account() {
                   className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none hover:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300 flex justify-between items-center shadow-[0_0_15px_rgba(0,0,0,0.5)]"
                 >
                   <div className="flex justify-between w-full pr-4 items-center">
-                    <span className="text-gray-300">About Sanatan Dharma TV</span>
+                    <span className="text-gray-300">About Omisha and the Inner Path</span>
                     <InfoCircleOutlined className="text-[#FF9933] text-base" />
                   </div>
                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
@@ -332,8 +332,8 @@ function Account() {
               onClick={() => {
                 if (navigator.share) {
                   navigator.share({
-                    title: 'Sanatan Dharma TV',
-                    text: 'Discover the divine journey on Sanatan Dharma TV!',
+                    title: 'Omisha and the Inner Path',
+                    text: 'Discover the divine journey on Omisha and the Inner Path!',
                     url: 'https://sdtv.in',
                   })
                 } else {

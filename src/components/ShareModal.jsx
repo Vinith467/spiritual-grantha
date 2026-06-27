@@ -18,7 +18,7 @@ export default function ShareModal({ isOpen, onClose, shareData }) {
   if (!isOpen || !shareData) return null
 
   const { title, url, thumbnail } = shareData
-  const textMsg = `Watch ${title} on Sanatan Dharma TV! \n\n${url}`
+  const textMsg = `Watch ${title} on Omisha and the Inner Path! \n\n${url}`
   const encodedText = encodeURIComponent(textMsg)
 
   const shareLinks = [
@@ -120,7 +120,7 @@ export default function ShareModal({ isOpen, onClose, shareData }) {
           <div className="flex gap-4 mb-6 p-3 bg-black/50 rounded-xl border border-gray-800">
             <img src={thumbnail} alt="thumbnail" className="w-20 h-24 object-cover rounded-lg shadow-md" />
             <div className="flex flex-col justify-center overflow-hidden">
-              <p className="text-[#FF9933] text-xs font-bold uppercase tracking-wider mb-1">Sanatan Dharma TV</p>
+              <p className="text-[#FF9933] text-xs font-bold uppercase tracking-wider mb-1">Omisha and the Inner Path</p>
               <p className="text-white font-bold text-base line-clamp-2 leading-snug">{title}</p>
             </div>
           </div>

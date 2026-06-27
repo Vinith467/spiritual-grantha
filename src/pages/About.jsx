@@ -13,7 +13,7 @@ function About() {
         <div className="bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-2xl p-6 sm:p-8 shadow-2xl relative">
           
           <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-[10px] font-bold text-[#FF9933] uppercase tracking-widest inline-block mb-6">
-            About Sanatan Dharma TV
+            About Omisha and the Inner Path
           </span>
 
           <h1 className="text-2xl sm:text-3xl font-black text-white mb-2 leading-tight">
@@ -32,7 +32,7 @@ function About() {
                 Who We Are
               </h3>
               <p className="pl-3 border-l border-white/10">
-                We are a dedicated group of seekers, tech enthusiasts, and devotees bound by a shared love for our ancient culture. <strong>Sanatan Dharma Television</strong> is born from our collective aspiration to create a premium, ad-free digital sanctuary for sacred epics, chants, teachings, and spiritual literature.
+                We are a dedicated group of seekers, tech enthusiasts, and devotees bound by a shared love for our ancient culture. <strong>Omisha and the Inner Path</strong> is born from our collective aspiration to create a premium, ad-free digital sanctuary for sacred epics, chants, teachings, and spiritual literature.
               </p>
             </div>
 

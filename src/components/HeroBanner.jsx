@@ -112,7 +112,7 @@ function HeroBanner({ seriesList }) {
                                     if (navigator.canShare({ files: [file] })) {
                                       await navigator.share({
                                         title: series.title,
-                                        text: `Watch ${series.title} on Sanatan Dharma TV\n`,
+                                        text: `Watch ${series.title} on Omisha and the Inner Path\n`,
                                         url: shareUrl,
                                         files: [file]
                                       })
@@ -125,7 +125,7 @@ function HeroBanner({ seriesList }) {
                                 if (!sharedWithFile) {
                                   await navigator.share({
                                     title: series.title,
-                                    text: `Watch ${series.title} on Sanatan Dharma TV`,
+                                    text: `Watch ${series.title} on Omisha and the Inner Path`,
                                     url: shareUrl
                                   })
                                 }

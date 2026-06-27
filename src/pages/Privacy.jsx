@@ -9,13 +9,13 @@ function Privacy() {
         <div className="flex items-center gap-3 mb-6">
           <img src="/icon-192.png" alt="Grantha Logo" className="w-10 h-10 rounded-full border border-[#FF9933]/50" />
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-white">Sanatan Dharma TV</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-white">Omisha and the Inner Path</h1>
             <p className="text-[#FF9933] text-xs font-bold uppercase tracking-wider">Privacy Policy</p>
           </div>
         </div>
 
         <p className="text-gray-400 text-xs sm:text-sm mb-6 leading-relaxed">
-          Effective Date: May 18, 2026. This Privacy Policy describes how Sanatan Dharma TV ("we", "our", or "us") collects, uses, and shares your personal information when you use our web application located at <span className="text-[#FF9933]">https://spiritual-grantha-ouxi.vercel.app/</span> (the "Service").
+          Effective Date: May 18, 2026. This Privacy Policy describes how Omisha and the Inner Path ("we", "our", or "us") collects, uses, and shares your personal information when you use our web application located at <span className="text-[#FF9933]">https://spiritual-grantha-ouxi.vercel.app/</span> (the "Service").
         </p>
 
         <div className="space-y-6 text-gray-300 text-sm leading-relaxed">

@@ -256,11 +256,8 @@ function Login() {
           </div>
           
           <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-5xl font-black tracking-tighter text-center whitespace-nowrap mb-1 drop-shadow-lg shrink-0">
-            Sanatan Dharma
+            Omisha and the Inner Path
           </h1>
-          <h2 className="text-white text-2xl sm:text-3xl md:text-3xl font-extrabold tracking-tight text-center mb-3 sm:mb-4 shrink-0">
-            Television
-          </h2>
           
           <div className="flex items-center justify-center w-full mb-4 sm:mb-6">
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>

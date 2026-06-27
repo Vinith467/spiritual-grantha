@@ -40,10 +40,10 @@ function ProtectedRoute({ children }) {
   if (!isStandalone) {
     return (
       <div className="bg-[#141414] min-h-screen flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-500 z-[99999] relative">
-        <img src="/icon-192.png" alt="SDTV" className="w-24 h-24 rounded-full mb-6 border-2 border-[#FF9933] shadow-[0_0_20px_rgba(255,153,51,0.3)]" />
+        <img src="/icon-192.png" alt="Omisha" className="w-24 h-24 rounded-full mb-6 border-2 border-[#FF9933] shadow-[0_0_20px_rgba(255,153,51,0.3)]" />
         <h1 className="text-2xl font-black text-white mb-2">App Only Access</h1>
         <p className="text-gray-400 max-w-sm mb-8 leading-relaxed">
-          Sanatan Dharma TV is designed exclusively as a native app experience. <br/><br/>
+          Omisha and the Inner Path is designed exclusively as a native app experience. <br/><br/>
           <strong className="text-[#FF9933]">Please close this browser tab and launch the app directly from your device's Home Screen to continue.</strong>
         </p>
       </div>
@@ -176,10 +176,10 @@ function App() {
           <div className="relative z-10 flex flex-col items-center w-full">
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-[#FF9933] rounded-3xl blur-2xl opacity-20 animate-pulse" />
-              <img src="/icon-192.png" alt="SDTV" className="relative w-28 h-28 rounded-3xl shadow-2xl border border-white/10 animate-bounce" />
+              <img src="/icon-192.png" alt="Omisha" className="relative w-28 h-28 rounded-3xl shadow-2xl border border-white/10 animate-bounce" />
             </div>
             
-            <h2 className="text-2xl font-black text-white mb-2 tracking-wide">Installing SDTV</h2>
+            <h2 className="text-2xl font-black text-white mb-2 tracking-wide">Installing Omisha</h2>
             <p className="text-gray-400 text-sm mb-10 font-medium">Setting up your spiritual journey...</p>
             
             {/* Progress Bar (Percentage text removed per user request) */}
@@ -202,7 +202,7 @@ function App() {
           </div>
           <h2 className="text-2xl font-black text-white mb-2 text-center tracking-wide">App Installed!</h2>
           <p className="text-gray-300 text-center text-sm mb-6 max-w-xs leading-relaxed">
-            <strong className="text-[#FF9933]">Please close this browser window</strong> and open the SDTV app from your phone's home screen.
+            <strong className="text-[#FF9933]">Please close this browser window</strong> and open the Omisha app from your phone's home screen.
           </p>
           
           <div className="w-full max-w-[280px] bg-white/10 rounded-2xl p-2 mb-8 border border-white/20 shadow-2xl overflow-hidden">

@@ -17,7 +17,7 @@ export default function ComingSoon({ language = 'Kannada' }) {
       </p>
       
       <div className="mt-10 px-6 py-3 bg-white/5 border border-white/10 rounded-full">
-        <span className="text-[#FF9933] text-xs font-bold uppercase tracking-widest">Sanatan Dharma TV</span>
+        <span className="text-[#FF9933] text-xs font-bold uppercase tracking-widest">Omisha and the Inner Path</span>
       </div>
     </div>
   )

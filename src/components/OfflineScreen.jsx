@@ -41,7 +41,7 @@ export default function OfflineScreen() {
           </span>
         </div>
         <p className="text-xs text-gray-500 max-w-xs">
-          Please check your Wi-Fi or cellular connection. Sanatan Dharma TV will automatically resume once online.
+          Please check your Wi-Fi or cellular connection. Omisha and the Inner Path will automatically resume once online.
         </p>
       </div>
 

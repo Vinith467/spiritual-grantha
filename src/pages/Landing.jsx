@@ -227,7 +227,7 @@ function Landing() {
       </main>
 
       <footer className="py-5 px-6 flex flex-col sm:flex-row items-center justify-center gap-3 text-[10px] text-gray-600 max-w-3xl mx-auto w-full z-10">
-        <p>© 2026 Sanatan Dharma Television.</p>
+        <p>© 2026 Omisha and the Inner Path.</p>
         <div className="hidden sm:block text-gray-800">•</div>
         <div className="flex items-center gap-4 uppercase tracking-wider font-semibold">
           <a href="/privacy" className="hover:text-[#FF9933] transition">Privacy Policy</a>

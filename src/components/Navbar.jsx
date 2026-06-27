@@ -9,11 +9,11 @@ function Navbar() {
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <img
           src="/icon-192.png"
-          alt="Sanatan Dharma Television"
+          alt="Omisha and the Inner Path"
           className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full object-cover border border-[#FF9933]/50 flex-shrink-0 shadow-[0_0_15px_rgba(255,153,51,0.2)]"
         />
         <h1 className="text-[#FF9933] text-sm sm:text-base md:text-lg lg:text-xl font-black tracking-wide leading-none truncate whitespace-nowrap">
-          Sanatan Dharma <span className="text-white">TV</span>
+          Omisha <span className="text-white">and the Inner Path</span>
         </h1>
       </div>
       <div className="flex-shrink-0 ml-4 flex items-center gap-2 sm:gap-3">
