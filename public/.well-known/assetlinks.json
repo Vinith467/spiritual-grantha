@@ -3,6 +3,9 @@
       "target": {
         "namespace": "android_app",
         "package_name": "in.sdtv.twa",
-        "sha256_cert_fingerprints": ["0A:AF:62:CF:5B:FC:D9:03:48:D3:18:2E:48:F0:73:73:97:EC:74:DB:25:BA:95:34:A3:73:F0:83:F1:B6:65:9A"]
+        "sha256_cert_fingerprints": [
+          "0A:AF:62:CF:5B:FC:D9:03:48:D3:18:2E:48:F0:73:73:97:EC:74:DB:25:BA:95:34:A3:73:F0:83:F1:B6:65:9A",
+          "FF:5C:BB:87:D3:8F:7C:34:BD:B8:CF:1F:F0:BA:C1:E5:9E:60:9B:E0:9E:CB:DE:20:E6:AC:BD:01:A1:13:17:BA"
+        ]
       }
     }]
