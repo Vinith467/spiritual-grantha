@@ -33,10 +33,9 @@ function Landing() {
   useEffect(() => {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
 
-    // Only auto-redirect to home if they are in the standalone app
+    // Only auto-redirect to login if they are in the standalone app
     if (isStandalone) {
-      signIn()
-      navigate('/home', { replace: true })
+      navigate('/login', { replace: true })
       return
     }
 
@@ -47,11 +46,10 @@ function Landing() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     
-    // Detect when installed and automatically redirect to home feed
+    // Detect when installed and automatically redirect to login
     const handleAppInstalled = () => {
       setDeferredPrompt(null)
-      signIn()
-      navigate('/home', { replace: true })
+      navigate('/login', { replace: true })
     }
     window.addEventListener('appinstalled', handleAppInstalled)
 
@@ -63,8 +61,7 @@ function Landing() {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      signIn()
-      navigate('/home', { replace: true })
+      navigate('/login', { replace: true })
       return
     }
     deferredPrompt.prompt()
@@ -76,8 +73,7 @@ function Landing() {
       window.dispatchEvent(new Event('start-install-animation'))
     }
     
-    signIn()
-    navigate('/home', { replace: true })
+    navigate('/login', { replace: true })
   }
 
   return (

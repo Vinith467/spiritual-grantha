@@ -35,7 +35,9 @@ function ProtectedRoute({ children }) {
     }
   }, [])
 
-  if (!isSubscribed) return <Navigate to="/" replace />
+  if (!isSubscribed) {
+    return isStandalone ? <Navigate to="/login" replace /> : <Navigate to="/" replace />
+  }
   
   if (!isStandalone) {
     return (
@@ -215,6 +217,7 @@ function App() {
         <Routes location={location} key={location.pathname}>
           {/* Public routes — visible to everyone including Google bots */}
           <Route path="/" element={<PageTransition><Landing /></PageTransition>} />
+          <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
           <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
           <Route path="/terms" element={<PageTransition><Terms /></PageTransition>} />
 

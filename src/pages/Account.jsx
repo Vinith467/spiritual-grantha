@@ -5,7 +5,6 @@ import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import Navbar from '../components/Navbar'
-import GoogleLinkButton from '../components/GoogleLinkButton'
 
 function Account() {
   const navigate = useNavigate()
@@ -358,14 +357,6 @@ function Account() {
               </svg>
               App QR Code
             </button>
-          </div>
-
-          {/* Google Link Section */}
-          <div className="mt-8 pt-6 border-t border-white/10">
-            <h3 className="text-sm font-black text-white tracking-widest uppercase mb-4">
-              Link Account
-            </h3>
-            <GoogleLinkButton />
           </div>
 
 
