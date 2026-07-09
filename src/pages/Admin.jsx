@@ -19,6 +19,8 @@ function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem('isAdmin') === 'true')
   const [activeTab, setActiveTab] = useState('videos')
   const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly'
+  const [tableStartDate, setTableStartDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [tableEndDate, setTableEndDate] = useState(() => new Date().toISOString().split('T')[0])
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -1120,8 +1122,13 @@ function Admin() {
 
               {/* Data Table */}
               <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
-                <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
+                <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h3 className="font-bold text-white">Devotee Activity</h3>
+                  <div className="flex items-center gap-2">
+                    <input type="date" value={tableStartDate} onChange={(e) => setTableStartDate(e.target.value)} className="bg-black/50 border border-white/10 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                    <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">to</span>
+                    <input type="date" value={tableEndDate} onChange={(e) => setTableEndDate(e.target.value)} className="bg-black/50 border border-white/10 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                  </div>
                 </div>
                 
                 <div className="overflow-x-auto">
@@ -1130,8 +1137,8 @@ function Admin() {
                       <tr>
                         <th className="px-6 py-4">Devotee</th>
                         <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Time Today</th>
-                        <th className="px-6 py-4">Recent Watch History</th>
+                        <th className="px-6 py-4">Time (Selected Period)</th>
+                        <th className="px-6 py-4">Watch History (Selected Period)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -1141,8 +1148,14 @@ function Admin() {
                         return bOnline - aOnline;
                       }).map(user => {
                         const online = isOnline(user.last_active_at);
-                        const session = userSessions.find(s => s.user_email === user.email);
-                        const allUserViews = videoViews.filter(v => v.user_email === user.email);
+                        
+                        const filteredViews = videoViews.filter(v => {
+                          if (v.user_email !== user.email) return false;
+                          const vDate = new Date(v.viewed_at || v.created_at).toISOString().split('T')[0];
+                          return vDate >= tableStartDate && vDate <= tableEndDate;
+                        });
+                        
+                        const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
                         
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
@@ -1168,26 +1181,26 @@ function Admin() {
                               )}
                             </td>
                             <td className="px-6 py-4 font-bold text-white whitespace-nowrap">
-                              {session ? formatDuration(session.duration_seconds) : '0m'}
+                              {totalFilteredMins > 0 ? `${totalFilteredMins}m` : '0m'}
                             </td>
                             <td className="px-6 py-4 min-w-[300px]">
-                              {allUserViews.length > 0 ? (
+                              {filteredViews.length > 0 ? (
                                 <details className="group">
                                   <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition flex items-center justify-between select-none">
-                                    <span>View Full History ({allUserViews.length} Videos)</span>
+                                    <span>View Full History ({filteredViews.length} Videos)</span>
                                     <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                   </summary>
                                   <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                                    {allUserViews.map(v => (
+                                    {filteredViews.map(v => (
                                       <div key={v.id} className="text-xs flex items-center justify-between gap-4 bg-black/20 p-2 rounded-lg border border-white/5 hover:border-white/10 transition">
                                         <span className="truncate max-w-[200px] text-gray-300" title={v.video_title}>{v.video_title}</span>
-                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{formatDuration(v.duration_seconds)}</span>
+                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil(v.duration_seconds / 60)}m</span>
                                       </div>
                                     ))}
                                   </div>
                                 </details>
                               ) : (
-                                <span className="text-xs text-gray-600 italic">No videos watched yet</span>
+                                <span className="text-xs text-gray-600 italic">No videos watched in this period</span>
                               )}
                             </td>
                           </tr>
