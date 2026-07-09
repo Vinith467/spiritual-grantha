@@ -917,20 +917,21 @@ function Admin() {
               {(() => {
                 const userTotalTime = profiles.map(user => {
                   const session = userSessions.find(s => s.user_email === user.email);
+                  const name = user.name.length > 15 ? user.name.substring(0, 15) + '...' : user.name;
                   return {
-                    name: user.name,
-                    time: session ? Math.floor(session.duration_seconds / 60) : 0
+                    name: name,
+                    time: session ? Math.ceil(session.duration_seconds / 60) : 0
                   };
                 }).sort((a, b) => b.time - a.time).slice(0, 5);
 
                 const videoTimeMap = {};
                 videoViews.forEach(v => {
                   if (!videoTimeMap[v.video_title]) videoTimeMap[v.video_title] = 0;
-                  videoTimeMap[v.video_title] += Math.floor(v.duration_seconds / 60);
+                  videoTimeMap[v.video_title] += Math.ceil(v.duration_seconds / 60);
                 });
                 
                 const videoStats = Object.keys(videoTimeMap).map(title => ({
-                  title: title.length > 20 ? title.substring(0, 20) + '...' : title,
+                  title: title.length > 15 ? title.substring(0, 15) + '...' : title,
                   fullTitle: title,
                   time: videoTimeMap[title]
                 })).sort((a, b) => b.time - a.time);
@@ -950,9 +951,9 @@ function Admin() {
                         <div className="h-64 w-full">
                           {userTotalTime.length > 0 && userTotalTime.some(u => u.time > 0) ? (
                             <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={userTotalTime} layout="vertical" margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
+                              <BarChart data={userTotalTime} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                                 <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                <YAxis dataKey="name" type="category" width={90} axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} />
                                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} />
                                 <Bar dataKey="time" radius={[0, 4, 4, 0]}>
                                   {userTotalTime.map((entry, index) => (
@@ -973,8 +974,8 @@ function Admin() {
                         <div className="h-64 w-full">
                           {topVideos.length > 0 && topVideos.some(v => v.time > 0) ? (
                             <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={topVideos} margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
-                                <XAxis dataKey="title" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10 }} interval={0} angle={-45} textAnchor="end" />
+                              <BarChart data={topVideos} margin={{ top: 20, right: 0, left: 0, bottom: 40 }}>
+                                <XAxis dataKey="title" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} interval={0} angle={-35} textAnchor="end" />
                                 <YAxis hide />
                                 <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} />
                                 <Bar dataKey="time" radius={[4, 4, 0, 0]}>
