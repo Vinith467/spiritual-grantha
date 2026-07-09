@@ -11,9 +11,9 @@ export function useGoogleTranslate() {
         typeof document !== 'undefined'
           ? document.cookie.match(/googtrans=\/[^/]+\/([^;]+)/)
           : null
-      return match ? match[1] : 'hi'
+      return match ? match[1] : 'en'
     } catch {
-      return 'hi'
+      return 'en'
     }
   })
 
