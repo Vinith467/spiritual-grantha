@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import { InfoCircleOutlined } from '@ant-design/icons'
@@ -8,6 +9,7 @@ import Navbar from '../components/Navbar'
 
 function Account() {
   const navigate = useNavigate()
+  const { signOut } = useAuth()
   const [name, setName] = useState(localStorage.getItem('profileName') || 'Devotee')
   const [contact, setContact] = useState(localStorage.getItem('profileContact') || '')
   const [avatar, setAvatar] = useState(localStorage.getItem('profileAvatar') || null)
@@ -378,6 +380,22 @@ function Account() {
               </div>
             </div>
           )}
+
+          {/* Logout Button */}
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <button
+              onClick={() => {
+                signOut()
+                navigate('/login')
+              }}
+              className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 font-extrabold text-sm py-4 rounded-xl border border-red-500/20 transition duration-300 active:scale-95 shadow-[0_0_15px_rgba(239,68,68,0.1)] flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              Logout
+            </button>
+          </div>
 
         </div>
       </div>
