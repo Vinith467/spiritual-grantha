@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
-import ReactPlayer from 'react-player/youtube'
+import ReactPlayer from 'react-player'
 import ComingSoon from '../components/ComingSoon'
 
 function Music() {
