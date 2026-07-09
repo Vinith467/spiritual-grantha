@@ -59,6 +59,37 @@ export function useActivityTracker() {
     // Set interval to run every 30 seconds
     const interval = setInterval(pingActivity, PING_INTERVAL);
 
-    return () => clearInterval(interval);
+    // Immediately mark as offline when app closes or goes to background
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Set last_active_at to 2 minutes ago to instantly appear offline
+        const twoMinsAgo = new Date(Date.now() - 120000).toISOString();
+        // Use sendBeacon for more reliable delivery during unload/hide if supported,
+        // but since we are using Supabase client, we just do a fire-and-forget fetch/update
+        supabase
+          .from('profiles')
+          .update({ last_active_at: twoMinsAgo })
+          .eq('email', email)
+          .then(() => console.log('Marked offline'))
+          .catch(console.error);
+      } else {
+        // Ping immediately when coming back
+        pingActivity();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      const twoMinsAgo = new Date(Date.now() - 120000).toISOString();
+      supabase.from('profiles').update({ last_active_at: twoMinsAgo }).eq('email', email);
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, [isSubscribed, profile?.email]);
 }

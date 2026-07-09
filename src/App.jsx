@@ -66,6 +66,14 @@ function AdminRoute({ children }) {
 function App() {
   useActivityTracker()
   const location = useLocation()
+  
+  // Save last visited path so we can restore it when the app reopens
+  useEffect(() => {
+    if (location.pathname !== '/' && location.pathname !== '/login') {
+      localStorage.setItem('last_path', location.pathname + location.search)
+    }
+  }, [location.pathname, location.search])
+
   const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)
   const [installState, setInstallState] = useState('none')

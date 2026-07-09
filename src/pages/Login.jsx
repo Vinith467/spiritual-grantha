@@ -37,7 +37,8 @@ function Login() {
 
   useEffect(() => {
     if (localStorage.getItem("subscribed") === "true") {
-      navigate("/home", { replace: true });
+      const lastPath = localStorage.getItem('last_path') || "/home";
+      navigate(lastPath, { replace: true });
     }
 
     const script = document.createElement("script");
@@ -186,7 +187,9 @@ function Login() {
   }
 
   function handleLoginSuccess() {
-    navigate("/home", { replace: true });
+    signIn();
+    const lastPath = localStorage.getItem('last_path') || "/home";
+    navigate(lastPath, { replace: true });
   }
 
   // -------------------------------------------------------------
