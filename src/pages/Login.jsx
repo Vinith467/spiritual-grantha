@@ -246,8 +246,11 @@ function Login() {
       <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-12 pt-16 sm:pb-12 sm:pt-16 md:pt-12 flex flex-col items-center justify-end md:justify-center h-full md:min-h-screen">
         
         {/* Glass Card Container */}
-        <div className="flex flex-col items-center w-full bg-black/40 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] mb-4 sm:mb-8 mt-auto md:mt-0">
-          <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_30px_rgba(255,153,51,0.2)] mb-4 sm:mb-6 ring-2 ring-black/50 shrink-0">
+        <div className="flex flex-col items-center w-full bg-black/10 backdrop-blur-md border border-white/20 border-b-white/5 border-r-white/5 p-6 sm:p-8 rounded-[2rem] shadow-[0_8px_32px_rgba(0,0,0,0.3)] mb-4 sm:mb-8 mt-auto md:mt-0 relative overflow-hidden">
+          {/* Subtle glossy shine effect inside the card */}
+          <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-t-[2rem]"></div>
+          
+          <div className="relative w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/40 shadow-[0_0_30px_rgba(255,153,51,0.2)] mb-4 sm:mb-6 ring-1 ring-white/20 shrink-0">
             <img
               src="/icon-192.png"
               alt="Grantha"
