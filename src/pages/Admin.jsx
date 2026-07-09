@@ -1104,7 +1104,7 @@ function Admin() {
                               <BarChart data={userTotalTime} layout="vertical" margin={{ top: 0, right: 20, left: 20, bottom: 0 }}>
                                 <XAxis type="number" hide />
                                 <YAxis dataKey="name" type="category" width={90} axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} />
-                                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} />
+                                <Tooltip formatter={(value) => [`${value} mins`, 'time']} cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} />
                                 <Bar dataKey="time" radius={[0, 4, 4, 0]}>
                                   {userTotalTime.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={index === 0 ? '#FF9933' : '#FF993380'} />

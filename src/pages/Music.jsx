@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
+import ReactPlayer from 'react-player/youtube'
 import ComingSoon from '../components/ComingSoon'
 
 function Music() {
@@ -120,12 +121,19 @@ function Music() {
 
           {/* Embedded YouTube Audio Player */}
           <div className="w-full aspect-video rounded-xl overflow-hidden mb-5 border border-white/5 shadow-2xl">
-            <iframe
-              src={`https://www.youtube.com/embed/${activeTrack.youtubeId}?autoplay=1&rel=0&modestbranding=1`}
-              title={activeTrack.title}
-              className="w-full h-full"
-              allow="autoplay; encrypted-media"
-              allowFullScreen
+            <ReactPlayer
+              url={`https://www.youtube.com/watch?v=${activeTrack.youtubeId}`}
+              width="100%"
+              height="100%"
+              playing={true}
+              controls={true}
+              config={{ youtube: { playerVars: { modestbranding: 1 } } }}
+              onEnded={() => {
+                const currentIndex = tracks.findIndex(t => t.id === activeTrack.id)
+                if (currentIndex < tracks.length - 1) {
+                  setActiveTrack(tracks[currentIndex + 1])
+                }
+              }}
             />
           </div>
 
@@ -145,58 +153,69 @@ function Music() {
         </div>
 
         {/* Right Side: Devotional Playlist */}
-        <div className="flex-1 flex flex-col min-w-0 bg-black/20 rounded-3xl p-4 sm:p-6 border border-white/5">
-          <h3 className="text-sm font-bold text-[#FF9933] mb-6 uppercase tracking-widest flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
-            </svg>
-            Devotional Playlist ({tracks.length})
-          </h3>
+        <div className="flex-1 flex flex-col min-w-0 bg-black/20 rounded-3xl p-4 sm:p-6 border border-white/5 overflow-y-auto max-h-[80vh] hide-scrollbar">
+          {Object.entries(
+            tracks.reduce((acc, track) => {
+              const cat = track.category || 'Devotional'
+              if (!acc[cat]) acc[cat] = []
+              acc[cat].push(track)
+              return acc
+            }, {})
+          ).map(([category, catTracks]) => (
+            <div key={category} className="mb-8 last:mb-0">
+              <h3 className="text-sm font-bold text-[#FF9933] mb-4 uppercase tracking-widest flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+                </svg>
+                {category} Playlist ({catTracks.length})
+              </h3>
 
-          <div className="flex flex-col gap-3">
-            {tracks.map(track => {
-              const isSelected = track.id === activeTrack.id
-              return (
-                <div
-                  key={track.id}
-                  onClick={() => setActiveTrack(track)}
-                  className={`flex gap-3 items-center rounded-xl p-2.5 cursor-pointer transition-all duration-300 border ${
-                    isSelected
-                      ? 'bg-[#FF9933]/15 border-[#FF9933]/45 shadow-[0_0_15px_rgba(255,153,51,0.1)]'
-                      : 'bg-white/5 hover:bg-white/10 border-transparent'
-                  }`}
-                >
-                  {/* Thumbnail / Play Button */}
-                  <div className="relative w-16 sm:w-20 aspect-video rounded-lg overflow-hidden shrink-0">
-                    <img
-                      src={track.thumbnail}
-                      alt={track.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {isSelected && (
-                      <div className="absolute inset-0 bg-[#FF9933]/50 flex items-center justify-center">
-                        <span className="text-black text-sm">&#9654;</span>
+              <div className="flex flex-col gap-3">
+                {catTracks.map(track => {
+                  const isSelected = track.id === activeTrack.id
+                  return (
+                    <div
+                      key={track.id}
+                      onClick={() => setActiveTrack(track)}
+                      className={`flex gap-3 items-center rounded-xl p-2.5 cursor-pointer transition-all duration-300 border ${
+                        isSelected
+                          ? 'bg-[#FF9933]/15 border-[#FF9933]/45 shadow-[0_0_15px_rgba(255,153,51,0.1)]'
+                          : 'bg-white/5 hover:bg-white/10 border-transparent'
+                      }`}
+                    >
+                      {/* Thumbnail / Play Button */}
+                      <div className="relative w-16 sm:w-20 aspect-video rounded-lg overflow-hidden shrink-0">
+                        <img
+                          src={track.thumbnail}
+                          alt={track.title}
+                          className="w-full h-full object-cover"
+                        />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-[#FF9933]/50 flex items-center justify-center">
+                            <span className="text-black text-sm">&#9654;</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-[10px] text-[#FF9933] font-bold uppercase tracking-wider block mb-0.5">
-                      {track.category}
-                    </span>
-                    <p className={`text-sm font-semibold truncate ${isSelected ? 'text-[#FF9933]' : 'text-white'}`}>
-                      {track.title}
-                    </p>
-                    <p className="text-gray-400 text-xs truncate mt-0.5">{track.singer}</p>
-                  </div>
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] text-[#FF9933] font-bold uppercase tracking-wider block mb-0.5">
+                          {track.category}
+                        </span>
+                        <p className={`text-sm font-semibold truncate ${isSelected ? 'text-[#FF9933]' : 'text-white'}`}>
+                          {track.title}
+                        </p>
+                        <p className="text-gray-400 text-xs truncate mt-0.5">{track.singer}</p>
+                      </div>
 
-                  {/* Duration */}
-                  <span className="text-gray-500 text-xs font-bold shrink-0">{track.duration}</span>
-                </div>
-              )
-            })}
-          </div>
+                      {/* Duration */}
+                      <span className="text-gray-500 text-xs font-bold shrink-0">{track.duration}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
       </div>
