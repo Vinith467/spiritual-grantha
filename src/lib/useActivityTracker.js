@@ -12,7 +12,7 @@ export function useActivityTracker() {
     const email = profile.email;
     const PING_INTERVAL = 30000; // 30 seconds
 
-    const pingActivity = async () => {
+    const pingActivity = async (isInitialMount = false) => {
       try {
         const today = new Date().toISOString().split('T')[0];
         
@@ -32,20 +32,22 @@ export function useActivityTracker() {
           .single();
 
         if (sessionData) {
-          await supabase
-            .from('user_sessions')
-            .update({ 
-              duration_seconds: sessionData.duration_seconds + 30,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', sessionData.id);
+          if (!isInitialMount) {
+            await supabase
+              .from('user_sessions')
+              .update({ 
+                duration_seconds: sessionData.duration_seconds + 30,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', sessionData.id);
+          }
         } else {
           await supabase
             .from('user_sessions')
             .insert([{ 
               user_email: email, 
               session_date: today, 
-              duration_seconds: 30 
+              duration_seconds: isInitialMount ? 0 : 30 
             }]);
         }
       } catch (err) {
@@ -53,11 +55,11 @@ export function useActivityTracker() {
       }
     };
 
-    // Run immediately on mount
-    pingActivity();
+    // Run immediately on mount (updates online status, adds 0s)
+    pingActivity(true);
 
-    // Set interval to run every 30 seconds
-    const interval = setInterval(pingActivity, PING_INTERVAL);
+    // Set interval to run every 30 seconds (adds 30s)
+    const interval = setInterval(() => pingActivity(false), PING_INTERVAL);
 
     // Immediately mark as offline when app closes or goes to background
     const handleVisibilityChange = () => {
