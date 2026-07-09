@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, Legend } from 'recharts'
 import {
   VideoCameraOutlined,
   CustomerServiceOutlined,
@@ -18,6 +18,7 @@ function Admin() {
   // eslint-disable-next-line no-unused-vars
   const [authed, setAuthed] = useState(() => localStorage.getItem('isAdmin') === 'true')
   const [activeTab, setActiveTab] = useState('videos')
+  const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly'
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -101,8 +102,8 @@ function Admin() {
     const { data: sData } = await supabase.from('user_sessions').select('*').eq('session_date', today)
     if (sData) setUserSessions(sData)
     
-    // Fetch recent video views
-    const { data: vData } = await supabase.from('video_views').select('*').order('viewed_at', { ascending: false }).limit(200)
+    // Fetch recent video views (all time for analytics)
+    const { data: vData } = await supabase.from('video_views').select('*').order('viewed_at', { ascending: false })
     if (vData) setVideoViews(vData)
   }, [])
 
@@ -895,26 +896,91 @@ function Admin() {
           
           return (
             <div className="animate-fade-in space-y-8 pb-10">
-              <h2 className="text-2xl font-black text-white flex items-center gap-2">
-                Real-Time Analytics 📊
-              </h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.05)]">
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Devotees</p>
-                  <p className="text-4xl font-black text-white">{profiles.length}</p>
-                </div>
-                <div className="bg-black/40 border border-green-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
-                  <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    Online Right Now
-                  </p>
-                  <p className="text-4xl font-black text-green-500">{onlineCount}</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 mt-2">
+                <h2 className="text-2xl font-black text-white flex items-center gap-2">
+                  Studio Analytics 📊
+                </h2>
+                <div className="flex bg-black/40 border border-white/10 rounded-lg p-1">
+                  {['daily', 'weekly', 'monthly'].map(f => (
+                    <button
+                      key={f}
+                      onClick={() => setTimeFilter(f)}
+                      className={`px-4 py-1.5 rounded-md text-xs font-bold capitalize transition ${timeFilter === f ? 'bg-[#FF9933] text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      {f}
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* Data Processing for Charts */}
               {(() => {
+                // Time Bucket Generation
+                const generateTimeBuckets = (filter) => {
+                  const buckets = [];
+                  const now = new Date();
+                  
+                  if (filter === 'daily') {
+                    for (let i = 6; i >= 0; i--) {
+                      const d = new Date(now);
+                      d.setDate(d.getDate() - i);
+                      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      const dateKey = d.toISOString().split('T')[0];
+                      buckets.push({ label, dateKey, match: (vDate) => vDate.toISOString().split('T')[0] === dateKey, views: 0, minutes: 0 });
+                    }
+                  } else if (filter === 'weekly') {
+                    for (let i = 3; i >= 0; i--) {
+                      const d = new Date(now);
+                      d.setDate(d.getDate() - (i * 7));
+                      const weekStart = new Date(d);
+                      weekStart.setDate(d.getDate() - d.getDay()); 
+                      const weekEnd = new Date(weekStart);
+                      weekEnd.setDate(weekStart.getDate() + 6);
+                      const label = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                      buckets.push({ 
+                        label, 
+                        match: (vDate) => vDate.getTime() >= weekStart.getTime() && vDate.getTime() <= weekEnd.getTime() + 86400000, 
+                        views: 0, 
+                        minutes: 0 
+                      });
+                    }
+                  } else if (filter === 'monthly') {
+                    for (let i = 11; i >= 0; i--) {
+                      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                      const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                      buckets.push({
+                        label,
+                        match: (vDate) => vDate.getMonth() === d.getMonth() && vDate.getFullYear() === d.getFullYear(),
+                        views: 0,
+                        minutes: 0
+                      });
+                    }
+                  }
+                  return buckets;
+                };
+
+                const timelineData = generateTimeBuckets(timeFilter);
+                let totalFilteredMinutes = 0;
+                let totalFilteredViews = 0;
+                
+                // Aggregate into Timeline and collect active videos for this period
+                const activeVideoTimeMap = {};
+                
+                videoViews.forEach(v => {
+                  const vDate = new Date(v.viewed_at || v.created_at || new Date());
+                  const bucket = timelineData.find(b => b.match(vDate));
+                  if (bucket) {
+                    bucket.views += 1;
+                    const mins = Math.ceil(v.duration_seconds / 60);
+                    bucket.minutes += mins;
+                    totalFilteredMinutes += mins;
+                    totalFilteredViews += 1;
+                    
+                    if (!activeVideoTimeMap[v.video_title]) activeVideoTimeMap[v.video_title] = 0;
+                    activeVideoTimeMap[v.video_title] += mins;
+                  }
+                });
+                
                 const userTotalTime = profiles.map(user => {
                   const session = userSessions.find(s => s.user_email === user.email);
                   const name = user.name.length > 15 ? user.name.substring(0, 15) + '...' : user.name;
@@ -924,16 +990,10 @@ function Admin() {
                   };
                 }).sort((a, b) => b.time - a.time).slice(0, 5);
 
-                const videoTimeMap = {};
-                videoViews.forEach(v => {
-                  if (!videoTimeMap[v.video_title]) videoTimeMap[v.video_title] = 0;
-                  videoTimeMap[v.video_title] += Math.ceil(v.duration_seconds / 60);
-                });
-                
-                const videoStats = Object.keys(videoTimeMap).map(title => ({
+                const videoStats = Object.keys(activeVideoTimeMap).map(title => ({
                   title: title.length > 15 ? title.substring(0, 15) + '...' : title,
                   fullTitle: title,
-                  time: videoTimeMap[title]
+                  time: activeVideoTimeMap[title]
                 })).sort((a, b) => b.time - a.time);
 
                 const topVideos = videoStats.slice(0, 5);
@@ -941,13 +1001,60 @@ function Admin() {
 
                 return (
                   <div className="space-y-6">
-                    <h3 className="text-xl font-bold text-white mt-8 border-b border-white/10 pb-2">Visual Insights 📈</h3>
-                    
+                    {/* Top Stat Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="bg-black/40 border border-[#FF9933]/20 rounded-2xl p-5 shadow-[0_0_15px_rgba(255,153,51,0.05)]">
+                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Devotees</p>
+                        <p className="text-4xl font-black text-white">{profiles.length}</p>
+                      </div>
+                      <div className="bg-black/40 border border-blue-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Watch Time ({timeFilter})</p>
+                        <p className="text-4xl font-black text-blue-500">{totalFilteredMinutes} <span className="text-sm font-normal text-gray-500">mins</span></p>
+                      </div>
+                      <div className="bg-black/40 border border-green-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                          Online Right Now
+                        </p>
+                        <p className="text-4xl font-black text-green-500">{onlineCount}</p>
+                      </div>
+                    </div>
+
+                    {/* Main Timeline Chart */}
+                    <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
+                      <h4 className="font-bold text-sm text-white uppercase mb-4 tracking-wide flex items-center justify-between">
+                        <span>Views & Watch Time Performance</span>
+                        <span className="text-xs text-gray-500 font-normal">{totalFilteredViews} Views Total</span>
+                      </h4>
+                      <div className="h-72 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#FF9933" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="#FF9933" stopOpacity={0}/>
+                              </linearGradient>
+                              <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8}/>
+                                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} />
+                            <Tooltip contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} />
+                            <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                            <Area type="monotone" dataKey="minutes" name="Watch Time (Mins)" stroke="#FF9933" strokeWidth={3} fillOpacity={1} fill="url(#colorMinutes)" />
+                            <Area type="monotone" dataKey="views" name="Total Views" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       
                       {/* Top Devotees Chart */}
                       <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
-                        <h4 className="font-bold text-sm text-[#FF9933] uppercase mb-4 tracking-wide">Top Devotees (Minutes)</h4>
+                        <h4 className="font-bold text-sm text-[#FF9933] uppercase mb-4 tracking-wide">Top Devotees (Today)</h4>
                         <div className="h-64 w-full">
                           {userTotalTime.length > 0 && userTotalTime.some(u => u.time > 0) ? (
                             <ResponsiveContainer width="100%" height="100%">
@@ -970,7 +1077,7 @@ function Admin() {
 
                       {/* Most Played Videos Chart */}
                       <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
-                        <h4 className="font-bold text-sm text-green-400 uppercase mb-4 tracking-wide">Most Played Videos (Minutes)</h4>
+                        <h4 className="font-bold text-sm text-green-400 uppercase mb-4 tracking-wide">Most Played Videos ({timeFilter})</h4>
                         <div className="h-64 w-full">
                           {topVideos.length > 0 && topVideos.some(v => v.time > 0) ? (
                             <ResponsiveContainer width="100%" height="100%">
