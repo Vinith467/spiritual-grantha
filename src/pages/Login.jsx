@@ -245,9 +245,9 @@ function Login() {
       {/* Main Content Area */}
       <div className="relative z-10 w-full max-w-md mx-auto px-6 pb-12 pt-16 sm:pb-12 sm:pt-16 md:pt-12 flex flex-col items-center justify-end md:justify-center h-full md:min-h-screen">
         
-        {/* Top Header & Center Content */}
-        <div className="flex flex-col items-center w-full mb-4 sm:mb-8">
-          <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_50px_rgba(255,153,51,0.15)] mb-3 sm:mb-6 ring-4 ring-black/50 shrink-0">
+        {/* Glass Card Container */}
+        <div className="flex flex-col items-center w-full bg-black/40 backdrop-blur-xl border border-white/10 p-6 sm:p-8 rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] mb-4 sm:mb-8 mt-auto md:mt-0">
+          <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-2 border-[#FF9933]/30 shadow-[0_0_30px_rgba(255,153,51,0.2)] mb-4 sm:mb-6 ring-2 ring-black/50 shrink-0">
             <img
               src="/icon-192.png"
               alt="Grantha"
@@ -255,8 +255,8 @@ function Login() {
             />
           </div>
           
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-4xl sm:text-5xl md:text-5xl font-black tracking-tighter text-center whitespace-nowrap mb-1 drop-shadow-lg shrink-0">
-            Omisha and the Inner Path
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter leading-tight text-center mb-2 drop-shadow-lg shrink-0">
+            Omisha and the<br />Inner Path
           </h1>
           
           <div className="flex items-center justify-center w-full mb-4 sm:mb-6">
@@ -267,10 +267,9 @@ function Login() {
             <div className="h-[1px] bg-gradient-to-r from-transparent via-[#FF9933]/50 to-transparent w-12 sm:w-16"></div>
           </div>
 
-          <p className="text-gray-200 text-[14px] sm:text-base md:text-lg mb-6 sm:mb-8 leading-relaxed px-1 text-center drop-shadow-md font-medium shrink-0">
+          <p className="text-gray-300 text-sm sm:text-base md:text-lg mb-6 sm:mb-8 leading-relaxed px-1 text-center font-medium shrink-0">
             Unlock a lifetime of divine wisdom and sacred stories.<br className="hidden sm:block" />
-            <span className="block mt-1 sm:mt-0 sm:inline">Click <strong className="text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">Continue with Google</strong> to sign in for free</span><br className="hidden sm:block" />
-            <span className="block mt-1 sm:mt-0 sm:inline">and begin your journey.</span>
+            <span className="block mt-2 sm:mt-1 sm:inline text-gray-400">Click <strong className="text-white">Continue with Google</strong> to sign in for free and begin your journey.</span>
           </p>
 
           {/* Custom Language Selector Proxying Google Translate */}

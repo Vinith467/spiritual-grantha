@@ -44,7 +44,7 @@ export default function LanguageSelector({ selectedLang, onLanguageChange }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300 flex justify-between items-center shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+        className="w-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-4 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold text-gray-300 flex justify-between items-center shadow-lg"
       >
         <div className="flex justify-between w-full pr-4 items-center">
           <span className="text-gray-300">{selected.en}</span>
@@ -54,7 +54,7 @@ export default function LanguageSelector({ selectedLang, onLanguageChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-[#1a1a1a] border border-[#FF9933]/20 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] max-h-64 overflow-y-auto overflow-x-hidden custom-scrollbar">
+        <div className="absolute z-50 w-full mt-2 bg-black/90 backdrop-blur-xl border border-[#FF9933]/20 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] max-h-64 overflow-y-auto overflow-x-hidden custom-scrollbar">
           {availableLanguages.map((lang) => (
             <button
               key={lang.code}
