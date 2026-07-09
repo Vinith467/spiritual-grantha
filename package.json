@@ -18,7 +18,8 @@
     "react-dom": "^19.2.5",
     "react-player": "^3.4.0",
     "react-router-dom": "^7.14.2",
-    "react-youtube": "^10.1.0"
+    "react-youtube": "^10.1.0",
+    "recharts": "^3.9.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import {
   VideoCameraOutlined,
   CustomerServiceOutlined,
@@ -912,6 +913,103 @@ function Admin() {
                 </div>
               </div>
 
+              {/* Data Processing for Charts */}
+              {(() => {
+                const userTotalTime = profiles.map(user => {
+                  const session = userSessions.find(s => s.user_email === user.email);
+                  return {
+                    name: user.name,
+                    time: session ? Math.floor(session.duration_seconds / 60) : 0
+                  };
+                }).sort((a, b) => b.time - a.time).slice(0, 5);
+
+                const videoTimeMap = {};
+                videoViews.forEach(v => {
+                  if (!videoTimeMap[v.video_title]) videoTimeMap[v.video_title] = 0;
+                  videoTimeMap[v.video_title] += Math.floor(v.duration_seconds / 60);
+                });
+                
+                const videoStats = Object.keys(videoTimeMap).map(title => ({
+                  title: title.length > 20 ? title.substring(0, 20) + '...' : title,
+                  fullTitle: title,
+                  time: videoTimeMap[title]
+                })).sort((a, b) => b.time - a.time);
+
+                const topVideos = videoStats.slice(0, 5);
+                const bottomVideos = videoStats.length > 5 ? videoStats.slice(-5).reverse() : [];
+
+                return (
+                  <div className="space-y-6">
+                    <h3 className="text-xl font-bold text-white mt-8 border-b border-white/10 pb-2">Visual Insights 📈</h3>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      
+                      {/* Top Devotees Chart */}
+                      <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
+                        <h4 className="font-bold text-sm text-[#FF9933] uppercase mb-4 tracking-wide">Top Devotees (Minutes)</h4>
+                        <div className="h-64 w-full">
+                          {userTotalTime.length > 0 && userTotalTime.some(u => u.time > 0) ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={userTotalTime} layout="vertical" margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
+                                <XAxis type="number" hide />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} />
+                                <Bar dataKey="time" radius={[0, 4, 4, 0]}>
+                                  {userTotalTime.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#FF9933' : '#FF993380'} />
+                                  ))}
+                                </Bar>
+                              </BarChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">No activity data yet</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Most Played Videos Chart */}
+                      <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
+                        <h4 className="font-bold text-sm text-green-400 uppercase mb-4 tracking-wide">Most Played Videos (Minutes)</h4>
+                        <div className="h-64 w-full">
+                          {topVideos.length > 0 && topVideos.some(v => v.time > 0) ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={topVideos} margin={{ top: 0, right: 0, left: 0, bottom: 20 }}>
+                                <XAxis dataKey="title" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 10 }} interval={0} angle={-45} textAnchor="end" />
+                                <YAxis hide />
+                                <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} />
+                                <Bar dataKey="time" radius={[4, 4, 0, 0]}>
+                                  {topVideos.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#22c55e' : '#22c55e80'} />
+                                  ))}
+                                </Bar>
+                              </BarChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">No video views yet</div>
+                          )}
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Least Played Videos List */}
+                    {bottomVideos.length > 0 && bottomVideos.some(v => v.time < 5) && (
+                      <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
+                        <h4 className="font-bold text-sm text-red-400 uppercase mb-4 tracking-wide">Needs Attention: Least Played Videos</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          {bottomVideos.map((video, idx) => (
+                            <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-3 flex justify-between items-center">
+                              <span className="text-xs text-gray-300 truncate pr-2" title={video.fullTitle}>{video.fullTitle}</span>
+                              <span className="text-xs font-bold text-red-400 bg-red-400/10 px-2 py-1 rounded-md">{video.time}m</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Data Table */}
               <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
                 <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex justify-between items-center">
@@ -929,7 +1027,11 @@ function Admin() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {profiles.map(user => {
+                      {[...profiles].sort((a, b) => {
+                        const aOnline = isOnline(a.last_active_at) ? 1 : 0;
+                        const bOnline = isOnline(b.last_active_at) ? 1 : 0;
+                        return bOnline - aOnline;
+                      }).map(user => {
                         const online = isOnline(user.last_active_at);
                         const session = userSessions.find(s => s.user_email === user.email);
                         const allUserViews = videoViews.filter(v => v.user_email === user.email);
