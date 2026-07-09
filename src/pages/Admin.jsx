@@ -12,6 +12,12 @@ import {
   FolderOpenOutlined,
   PlayCircleOutlined
 } from '@ant-design/icons'
+const getLocalYMD = (d = new Date()) => {
+  const dateObj = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dateObj.getTime())) return '';
+  const offset = dateObj.getTimezoneOffset() * 60000;
+  return new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
+}
 
 function Admin() {
   const navigate = useNavigate()
@@ -19,8 +25,8 @@ function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem('isAdmin') === 'true')
   const [activeTab, setActiveTab] = useState('videos')
   const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly'
-  const [tableStartDate, setTableStartDate] = useState(() => new Date().toISOString().split('T')[0])
-  const [tableEndDate, setTableEndDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [tableStartDate, setTableStartDate] = useState(() => getLocalYMD())
+  const [tableEndDate, setTableEndDate] = useState(() => getLocalYMD())
   const [tableDatePreset, setTableDatePreset] = useState('today')
 
   // Loading States
@@ -114,13 +120,14 @@ function Admin() {
     if (tableDatePreset === 'custom') return;
     
     const now = new Date();
-    const endDate = now.toISOString().split('T')[0];
+    let endDate = new Date(now);
     let startDate = new Date(now);
     
     if (tableDatePreset === 'today') {
-      // Keep startDate as today
+      // Keep both as today
     } else if (tableDatePreset === '1day') {
       startDate.setDate(now.getDate() - 1);
+      endDate = new Date(startDate);
     } else if (tableDatePreset === '7days') {
       startDate.setDate(now.getDate() - 7);
     } else if (tableDatePreset === '1month') {
@@ -131,8 +138,8 @@ function Admin() {
       startDate.setFullYear(now.getFullYear() - 1);
     }
     
-    setTableStartDate(startDate.toISOString().split('T')[0]);
-    setTableEndDate(endDate);
+    setTableStartDate(getLocalYMD(startDate));
+    setTableEndDate(getLocalYMD(endDate));
   }, [tableDatePreset]);
 
   useEffect(() => {
@@ -1195,7 +1202,7 @@ function Admin() {
                         
                         const filteredViews = videoViews.filter(v => {
                           if (v.user_email !== user.email) return false;
-                          const vDate = new Date(v.viewed_at || v.created_at).toISOString().split('T')[0];
+                          const vDate = getLocalYMD(v.viewed_at || v.created_at);
                           return vDate >= tableStartDate && vDate <= tableEndDate;
                         });
                         
