@@ -932,7 +932,7 @@ function Admin() {
                       {profiles.map(user => {
                         const online = isOnline(user.last_active_at);
                         const session = userSessions.find(s => s.user_email === user.email);
-                        const userViews = videoViews.filter(v => v.user_email === user.email).slice(0, 3);
+                        const allUserViews = videoViews.filter(v => v.user_email === user.email);
                         
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
@@ -960,16 +960,22 @@ function Admin() {
                             <td className="px-6 py-4 font-bold text-white whitespace-nowrap">
                               {session ? formatDuration(session.duration_seconds) : '0m'}
                             </td>
-                            <td className="px-6 py-4 min-w-[250px]">
-                              {userViews.length > 0 ? (
-                                <div className="space-y-2">
-                                  {userViews.map(v => (
-                                    <div key={v.id} className="text-xs flex items-center justify-between gap-4 bg-black/40 p-2 rounded-lg border border-white/5">
-                                      <span className="truncate max-w-[150px] text-gray-300" title={v.video_title}>{v.video_title}</span>
-                                      <span className="text-[#FF9933] font-bold whitespace-nowrap">{formatDuration(v.duration_seconds)}</span>
-                                    </div>
-                                  ))}
-                                </div>
+                            <td className="px-6 py-4 min-w-[300px]">
+                              {allUserViews.length > 0 ? (
+                                <details className="group">
+                                  <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition flex items-center justify-between select-none">
+                                    <span>View Full History ({allUserViews.length} Videos)</span>
+                                    <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                  </summary>
+                                  <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                                    {allUserViews.map(v => (
+                                      <div key={v.id} className="text-xs flex items-center justify-between gap-4 bg-black/20 p-2 rounded-lg border border-white/5 hover:border-white/10 transition">
+                                        <span className="truncate max-w-[200px] text-gray-300" title={v.video_title}>{v.video_title}</span>
+                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{formatDuration(v.duration_seconds)}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
                               ) : (
                                 <span className="text-xs text-gray-600 italic">No videos watched yet</span>
                               )}

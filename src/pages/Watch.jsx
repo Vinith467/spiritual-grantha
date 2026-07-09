@@ -217,6 +217,24 @@ function Watch() {
     if (currentIndex !== -1 && currentIndex < seriesEpisodes.length - 1) {
       const nextEpisode = seriesEpisodes[currentIndex + 1]
       navigate(`/watch/${nextEpisode.id}`, { replace: true })
+    } else {
+      // Last episode in the series - jump to next playlist!
+      const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
+      if (adminVideos.length > 0) {
+        const seriesList = [...new Set(adminVideos.map(v => v.seriesTitle))]
+        const currentSeriesIndex = seriesList.indexOf(series?.title)
+        
+        let nextSeriesTitle = seriesList[0] // Default to first series
+        if (currentSeriesIndex !== -1 && currentSeriesIndex < seriesList.length - 1) {
+          nextSeriesTitle = seriesList[currentSeriesIndex + 1]
+        }
+        
+        // Find the first video of the next series
+        const nextVideo = adminVideos.find(v => v.seriesTitle === nextSeriesTitle)
+        if (nextVideo && nextVideo.id !== id) {
+          navigate(`/watch/${nextVideo.id}`, { replace: true })
+        }
+      }
     }
   }
 
