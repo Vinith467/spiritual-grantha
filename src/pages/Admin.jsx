@@ -21,6 +21,7 @@ function Admin() {
   const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly'
   const [tableStartDate, setTableStartDate] = useState(() => new Date().toISOString().split('T')[0])
   const [tableEndDate, setTableEndDate] = useState(() => new Date().toISOString().split('T')[0])
+  const [tableDatePreset, setTableDatePreset] = useState('today')
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -108,6 +109,31 @@ function Admin() {
     const { data: vData } = await supabase.from('video_views').select('*').order('viewed_at', { ascending: false })
     if (vData) setVideoViews(vData)
   }, [])
+
+  useEffect(() => {
+    if (tableDatePreset === 'custom') return;
+    
+    const now = new Date();
+    const endDate = now.toISOString().split('T')[0];
+    let startDate = new Date(now);
+    
+    if (tableDatePreset === 'today') {
+      // Keep startDate as today
+    } else if (tableDatePreset === '1day') {
+      startDate.setDate(now.getDate() - 1);
+    } else if (tableDatePreset === '7days') {
+      startDate.setDate(now.getDate() - 7);
+    } else if (tableDatePreset === '1month') {
+      startDate.setMonth(now.getMonth() - 1);
+    } else if (tableDatePreset === '3months') {
+      startDate.setMonth(now.getMonth() - 3);
+    } else if (tableDatePreset === '1year') {
+      startDate.setFullYear(now.getFullYear() - 1);
+    }
+    
+    setTableStartDate(startDate.toISOString().split('T')[0]);
+    setTableEndDate(endDate);
+  }, [tableDatePreset]);
 
   useEffect(() => {
     if (localStorage.getItem('isAdmin') === 'true') {
@@ -1124,10 +1150,28 @@ function Admin() {
               <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
                 <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h3 className="font-bold text-white">Devotee Activity</h3>
-                  <div className="flex items-center gap-2">
-                    <input type="date" value={tableStartDate} onChange={(e) => setTableStartDate(e.target.value)} className="bg-black/50 border border-white/10 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
-                    <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">to</span>
-                    <input type="date" value={tableEndDate} onChange={(e) => setTableEndDate(e.target.value)} className="bg-black/50 border border-white/10 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={tableDatePreset}
+                      onChange={(e) => setTableDatePreset(e.target.value)}
+                      className="bg-black/50 border border-white/10 rounded-md px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-[#FF9933] cursor-pointer"
+                    >
+                      <option value="today">Today</option>
+                      <option value="1day">Yesterday</option>
+                      <option value="7days">Last 7 Days</option>
+                      <option value="1month">Last 1 Month</option>
+                      <option value="3months">Last 3 Months</option>
+                      <option value="1year">Last 1 Year</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+
+                    {tableDatePreset === 'custom' && (
+                      <div className="flex items-center gap-2 animate-fade-in">
+                        <input type="date" value={tableStartDate} onChange={(e) => setTableStartDate(e.target.value)} className="bg-black/50 border border-[#FF9933]/30 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                        <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">to</span>
+                        <input type="date" value={tableEndDate} onChange={(e) => setTableEndDate(e.target.value)} className="bg-black/50 border border-[#FF9933]/30 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                      </div>
+                    )}
                   </div>
                 </div>
                 
