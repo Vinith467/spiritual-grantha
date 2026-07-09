@@ -19,6 +19,14 @@ const getLocalYMD = (d = new Date()) => {
   return new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
 }
 
+const formatMinsToHours = (mins) => {
+  if (!mins) return '0m';
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
 function Admin() {
   const navigate = useNavigate()
   // eslint-disable-next-line no-unused-vars
@@ -1188,8 +1196,9 @@ function Admin() {
                       <tr>
                         <th className="px-6 py-4">Devotee</th>
                         <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4">Time (Selected Period)</th>
-                        <th className="px-6 py-4">Watch History (Selected Period)</th>
+                        <th className="px-6 py-4 text-[#FF9933]">All-Time Watch Time</th>
+                        <th className="px-6 py-4">Filtered Watch Time</th>
+                        <th className="px-6 py-4">Filtered Watch History</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -1200,8 +1209,10 @@ function Admin() {
                       }).map(user => {
                         const online = isOnline(user.last_active_at);
                         
-                        const filteredViews = videoViews.filter(v => {
-                          if (v.user_email !== user.email) return false;
+                        const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
+                        const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+
+                        const filteredViews = userAllTimeViews.filter(v => {
                           const vDate = getLocalYMD(v.viewed_at || v.created_at);
                           return vDate >= tableStartDate && vDate <= tableEndDate;
                         });
@@ -1231,8 +1242,11 @@ function Admin() {
                                 </span>
                               )}
                             </td>
+                            <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap">
+                              {formatMinsToHours(totalAllTimeMins)}
+                            </td>
                             <td className="px-6 py-4 font-bold text-white whitespace-nowrap">
-                              {totalFilteredMins > 0 ? `${totalFilteredMins}m` : '0m'}
+                              {formatMinsToHours(totalFilteredMins)}
                             </td>
                             <td className="px-6 py-4 min-w-[300px]">
                               {filteredViews.length > 0 ? (
