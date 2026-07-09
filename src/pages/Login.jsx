@@ -258,8 +258,12 @@ function Login() {
             />
           </div>
           
-          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter leading-tight text-center mb-2 drop-shadow-lg shrink-0">
-            Omisha and the<br />Inner Path
+          <h1 className="text-transparent bg-clip-text bg-gradient-to-b from-[#FF9933] to-[#FF6600] text-3xl sm:text-4xl md:text-5xl font-black tracking-tighter leading-tight text-center mb-2 drop-shadow-lg shrink-0 notranslate">
+            {selectedLang === 'hi' ? (
+              <>ओमिशा एंड द<br />इनर पाथ</>
+            ) : (
+              <>Omisha and the<br />Inner Path</>
+            )}
           </h1>
           
           <div className="flex items-center justify-center w-full mb-4 sm:mb-6">
