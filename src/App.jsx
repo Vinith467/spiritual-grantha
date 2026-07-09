@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from './lib/AuthContext'
+import { useActivityTracker } from './lib/useActivityTracker'
 import ScrollToTop from './components/ScrollToTop'
 import Landing from './pages/Landing'
 import Home from './pages/Home'
@@ -63,6 +64,7 @@ function AdminRoute({ children }) {
 }
 
 function App() {
+  useActivityTracker()
   const location = useLocation()
   const { isSubscribed } = useAuth()
   const [isOffline, setIsOffline] = useState(!navigator.onLine)

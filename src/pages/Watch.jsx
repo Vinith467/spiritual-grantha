@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 import BottomNavbar from '../components/BottomNavbar'
 import YouTube from 'react-youtube'
 import { haptics } from '../utils/haptics'
@@ -8,6 +9,7 @@ import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import ComingSoon from '../components/ComingSoon'
 
 function Watch() {
+  const { profile } = useAuth()
   const { selectedLang } = useGoogleTranslate()
   const { id } = useParams()
   const navigate = useNavigate()
@@ -89,6 +91,9 @@ function Watch() {
     fetchEpisode()
   }, [fetchEpisode])
 
+  const viewRecordIdRef = useRef(null)
+  const lastSyncTimeRef = useRef(0)
+
   useEffect(() => {
     if (!player || !episode) return
     const interval = setInterval(async () => {
@@ -96,6 +101,28 @@ function Watch() {
         const state = await player.getPlayerState()
         // 1 is Playing
         if (state === 1) {
+          // --- ANALYTICS TRACKING ---
+          if (profile?.email) {
+            const now = Date.now()
+            if (now - lastSyncTimeRef.current >= 10000) {
+              lastSyncTimeRef.current = now
+              if (!viewRecordIdRef.current) {
+                const { data } = await supabase.from('video_views').insert([{
+                  user_email: profile.email,
+                  video_id: episode.youtube_id || episode.id,
+                  video_title: episode.title,
+                  duration_seconds: 10
+                }]).select().single()
+                if (data) viewRecordIdRef.current = data.id
+              } else {
+                const { data: current } = await supabase.from('video_views').select('duration_seconds').eq('id', viewRecordIdRef.current).single()
+                if (current) {
+                  await supabase.from('video_views').update({ duration_seconds: current.duration_seconds + 10 }).eq('id', viewRecordIdRef.current)
+                }
+              }
+            }
+          }
+          
           const currentTime = await player.getCurrentTime()
           const duration = await player.getDuration()
           
@@ -129,6 +156,8 @@ function Watch() {
 
   const handlePlayerReady = (event) => {
     setPlayer(event.target)
+    viewRecordIdRef.current = null // Reset view record on new video
+    lastSyncTimeRef.current = 0
     
     // Resume playback if we have saved progress
     try {
