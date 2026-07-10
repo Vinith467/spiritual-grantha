@@ -16,6 +16,7 @@ function Home() {
   const [seriesList, setSeriesList] = useState([])
   const [bannerList, setBannerList] = useState([])
   const [loading, setLoading] = useState(true)
+  const [liveStream, setLiveStream] = useState(null)
 
   const fetchSeries = useCallback(async () => {
 
@@ -53,10 +54,28 @@ function Home() {
       console.error('Error fetching banners:', e)
     }
 
+    let activeLiveStream = null
+    try {
+      const { data } = await supabase
+        .from('live_streams')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+      if (data) {
+        activeLiveStream = data
+        setLiveStream(data)
+      }
+    } catch (e) {
+      if (e.code !== 'PGRST116') console.error('Error fetching live stream:', e)
+    }
+
     setSeriesList(supabaseSeries)
 
+    let finalBanners = []
     if (supabaseBanners.length > 0) {
-      const customBanners = supabaseBanners.map(b => ({
+      finalBanners = supabaseBanners.map(b => ({
         id: b.id,
         title: b.title,
         description: b.description,
@@ -65,16 +84,43 @@ function Home() {
         desktop_thumbnail_url: b.desktop_url,
         episodes: [{ id: b.target_id }]
       }))
-      setBannerList(customBanners)
     } else {
-      setBannerList(supabaseSeries)
+      finalBanners = [...supabaseSeries]
     }
+
+    if (activeLiveStream) {
+      finalBanners.unshift({
+        id: 'live-' + activeLiveStream.id,
+        title: activeLiveStream.title,
+        description: 'Join the live broadcast now',
+        category: '🔴 LIVE BROADCAST',
+        thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/maxresdefault.jpg`,
+        desktop_thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/maxresdefault.jpg`,
+        isLive: true,
+        episodes: [] // No episodes needed
+      })
+    }
+
+    setBannerList(finalBanners)
     setLoading(false)
   }, [contentLang])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSeries()
+
+    const channel = supabase
+      .channel('home_live_streams')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'live_streams' },
+        () => fetchSeries()
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [fetchSeries])
 
   return (

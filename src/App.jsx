@@ -19,7 +19,6 @@ import NotFound from './pages/NotFound'
 import { AnimatePresence } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import OfflineScreen from './components/OfflineScreen'
-import LiveBanner from './components/LiveBanner'
 
 function ProtectedRoute({ children }) {
   const { isSubscribed, isAdmin } = useAuth()

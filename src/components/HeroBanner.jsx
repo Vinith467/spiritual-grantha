@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import ShareModal from './ShareModal'
-import LiveBanner from './LiveBanner'
 
 function HeroBanner({ seriesList }) {
   const navigate = useNavigate()
@@ -40,9 +39,6 @@ function HeroBanner({ seriesList }) {
         shareData={shareData} 
       />
       
-      {/* Live Banner */}
-      <LiveBanner />
-
       {/* Main Viewport Container */}
       <div className="relative group w-full">
         
@@ -80,28 +76,40 @@ function HeroBanner({ seriesList }) {
                   {/* Content Info Area inside slide */}
                   <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 lg:px-20 pb-5 md:pb-12 z-10">
                     <div className="max-w-2xl">
-                      {series.category && (
+                      {series.isLive ? (
+                        <span className="text-red-500 text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-2 drop-shadow-md">
+                          <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+                          {series.category}
+                        </span>
+                      ) : series.category && (
                         <span className="text-[#FF9933] text-[10px] md:text-xs font-bold uppercase tracking-widest block mb-2">{series.category}</span>
                       )}
                       <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-1 md:mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
                       <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
                       <div className="flex gap-3 w-full sm:w-auto">
-                        {firstEpisode && (
+                        {(firstEpisode || series.isLive) && (
                           <button
                             onClick={() => {
-                              if (isWatched) {
+                              if (series.isLive) {
+                                navigate('/live')
+                              } else if (isWatched) {
                                 navigate(`/watch/${lastWatched.id}`)
                               } else {
                                 navigate(`/watch/${firstEpisode.id}`)
                               }
                             }}
-                            className="flex-[1.5] sm:flex-none justify-center bg-white text-black px-4 sm:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-gray-200 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] cursor-pointer"
+                            className={`flex-[1.5] sm:flex-none justify-center px-4 sm:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide active:scale-95 transition-all cursor-pointer ${
+                              series.isLive 
+                                ? 'bg-red-600 text-white hover:bg-red-700 shadow-[0_0_20px_rgba(220,38,38,0.4)]' 
+                                : 'bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.3)]'
+                            }`}
                           >
-                            {isWatched ? 'Continue' : 'Watch Now'}
+                            {series.isLive ? 'Watch Live Now' : isWatched ? 'Continue' : 'Watch Now'}
                           </button>
                         )}
-                        <button
-                          onClick={async () => {
+                        {!series.isLive && (
+                          <button
+                            onClick={async () => {
                             const shareUrl = window.location.origin + `/watch/${firstEpisode?.id || ''}`
                             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                             
@@ -145,15 +153,14 @@ function HeroBanner({ seriesList }) {
                                 thumbnail: series.thumbnail_url
                               })
                               setShowShareModal(true)
-                            }
-                          }}
-                          className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/20 text-white backdrop-blur-md px-4 sm:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-white/30 active:scale-95 transition-all shadow-lg border border-white/10 cursor-pointer"
-                        >
-                          <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                          </svg>
-                          <span className="truncate">Share</span>
-                        </button>
+                              }
+                            }}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white/20 text-white backdrop-blur-md px-4 sm:px-6 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide hover:bg-white/30 active:scale-95 transition-all shadow-lg border border-white/10 cursor-pointer"
+                          >
+                            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                            Share
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
