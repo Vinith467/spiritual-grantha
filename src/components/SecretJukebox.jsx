@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
+import { Reorder, motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 
 function SecretJukebox({ onClose }) {
@@ -20,6 +21,7 @@ function SecretJukebox({ onClose }) {
       const { data, error } = await supabase
         .from('admin_jukebox')
         .select('*')
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
       if (error) throw error;
       if (data) {
@@ -54,7 +56,8 @@ function SecretJukebox({ onClose }) {
       const newTrack = {
         youtube_id: videoId,
         title: `Track ${playlist.length + 1}`,
-        thumbnail_url: thumbnailUrl
+        thumbnail_url: thumbnailUrl,
+        sort_order: playlist.length
       };
 
       const { data, error } = await supabase
@@ -79,18 +82,46 @@ function SecretJukebox({ onClose }) {
 
   const deleteTrack = async (id) => {
     try {
-      await supabase.from('admin_jukebox').delete().eq('id', id);
-      setPlaylist(playlist.filter(t => t.id !== id));
-      
       const index = playlist.findIndex(t => t.id === id);
+      const newPlaylist = playlist.filter(t => t.id !== id);
+      
+      // Update local state first for immediate UI response
+      setPlaylist(newPlaylist);
+      
       if (currentTrackIndex === index) {
         setCurrentTrackIndex(-1);
         setIsPlaying(false);
       } else if (currentTrackIndex > index) {
         setCurrentTrackIndex(currentTrackIndex - 1);
       }
+      
+      await supabase.from('admin_jukebox').delete().eq('id', id);
     } catch (err) {
       console.error('Error deleting track:', err);
+    }
+  };
+
+  const handleReorder = async (newPlaylist) => {
+    // Keep track of the currently playing track ID so we can update the index!
+    const activeTrackId = playlist[currentTrackIndex]?.id;
+    
+    setPlaylist(newPlaylist);
+    
+    // Update the active index based on the new positions
+    if (activeTrackId) {
+      const newIndex = newPlaylist.findIndex(t => t.id === activeTrackId);
+      setCurrentTrackIndex(newIndex);
+    }
+
+    try {
+      // Fire off individual updates to avoid needing full rows for upsert
+      await Promise.all(
+        newPlaylist.map((track, index) => 
+          supabase.from('admin_jukebox').update({ sort_order: index }).eq('id', track.id)
+        )
+      );
+    } catch (err) {
+      console.error('Error reordering:', err);
     }
   };
 
@@ -244,42 +275,68 @@ function SecretJukebox({ onClose }) {
                   <p className="text-sm font-medium">It's quiet in here...</p>
                 </div>
               ) : (
-                playlist.map((track, i) => (
-                  <div 
-                    key={track.id} 
-                    className={`flex items-center gap-4 p-3 rounded-xl transition-all group ${
-                      i === currentTrackIndex 
-                        ? 'bg-gradient-to-r from-[#FF9933]/20 to-transparent border border-[#FF9933]/30 shadow-[0_0_15px_rgba(255,153,51,0.1)]' 
-                        : 'hover:bg-white/5 border border-transparent cursor-pointer'
-                    }`}
-                  >
-                    <div 
-                      className="w-16 h-12 rounded-lg bg-black overflow-hidden flex-shrink-0 cursor-pointer relative shadow-md" 
-                      onClick={() => setCurrentTrackIndex(i)}
-                    >
-                      <img src={track.thumbnail_url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Thumbnail" />
-                      {i === currentTrackIndex && isPlaying && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                          <span className="text-[#FF9933] text-xs animate-pulse">▶</span>
+                <Reorder.Group axis="y" values={playlist} onReorder={handleReorder} className="space-y-2 h-full overflow-y-auto overflow-x-hidden p-1">
+                  <AnimatePresence initial={false}>
+                    {playlist.map((track, i) => (
+                      <Reorder.Item 
+                        key={track.id} 
+                        value={track} 
+                        className="relative rounded-xl cursor-grab active:cursor-grabbing"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                      >
+                        {/* The red background that shows when swiping left */}
+                        <div className="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-end px-4 z-0">
+                          <span className="text-white font-bold tracking-wider text-sm flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            Delete
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setCurrentTrackIndex(i)}>
-                      <p className={`text-sm font-bold truncate transition-colors ${i === currentTrackIndex ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
-                        {track.title}
-                      </p>
-                    </div>
-                    
-                    <button 
-                      onClick={() => deleteTrack(track.id)} 
-                      className="text-gray-500 hover:text-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100"
-                      title="Remove track"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))
+                        
+                        {/* The Draggable Track Card */}
+                        <motion.div 
+                          drag="x"
+                          dragConstraints={{ left: -100, right: 0 }}
+                          dragElastic={{ left: 0.5, right: 0 }}
+                          dragDirectionLock
+                          onDragEnd={(e, info) => {
+                            if (info.offset.x < -60) {
+                              deleteTrack(track.id);
+                            }
+                          }}
+                          className={`relative z-10 flex items-center gap-4 p-3 rounded-xl transition-all group bg-[#111111] shadow-[0_4px_15px_rgba(0,0,0,0.5)] border ${
+                            i === currentTrackIndex 
+                              ? 'border-[#FF9933]/50' 
+                              : 'border-white/5 hover:bg-[#1a1a1a]'
+                          }`}
+                        >
+                          <div className="flex flex-col items-center justify-center text-gray-500 cursor-grab px-1 touch-none">
+                            <span className="text-xl">⣿</span>
+                          </div>
+
+                          <div 
+                            className="w-16 h-12 rounded-lg bg-black overflow-hidden flex-shrink-0 cursor-pointer relative shadow-md" 
+                            onClick={() => setCurrentTrackIndex(i)}
+                          >
+                            <img src={track.thumbnail_url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Thumbnail" />
+                            {i === currentTrackIndex && isPlaying && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                <span className="text-[#FF9933] text-xs animate-pulse">▶</span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setCurrentTrackIndex(i)}>
+                            <p className={`text-sm font-bold truncate transition-colors ${i === currentTrackIndex ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
+                              {track.title}
+                            </p>
+                          </div>
+                        </motion.div>
+                      </Reorder.Item>
+                    ))}
+                  </AnimatePresence>
+                </Reorder.Group>
               )}
             </div>
           </div>
