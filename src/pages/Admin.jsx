@@ -86,9 +86,8 @@ function Admin() {
 
   // Form States
   const [bannerForm, setBannerForm] = useState({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '', content_language: 'hi' })
-  const [seriesForm, setSeriesForm] = useState({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'hi', aspect_ratio: '9:16' })
   const [episodeForm, setEpisodeForm] = useState({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '', content_language: 'hi' })
-  const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'hi' })
+  const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'hi', sortOrder: 0 })
   const [shortForm, setShortForm] = useState({ title: 'Divine Short', description: '', youtubeId: '', content_language: 'hi' })
 
   // Data Loaders
@@ -106,7 +105,7 @@ function Admin() {
   }, [])
 
   const loadMusic = useCallback(async () => {
-    const { data, error } = await supabase.from('music_tracks').select('*').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('music_tracks').select('*').order('sort_order', { ascending: true })
     if (!error && data) setMusic(data)
   }, [])
 
@@ -377,7 +376,8 @@ function Admin() {
       youtube_id: musicForm.youtubeId,
       cover_url: musicForm.coverUrl || `https://img.youtube.com/vi/${musicForm.youtubeId}/hqdefault.jpg`,
       category: musicForm.category,
-      content_language: musicForm.content_language
+      content_language: musicForm.content_language,
+      sort_order: parseInt(musicForm.sortOrder) || 0
     }
 
     try {
@@ -388,7 +388,7 @@ function Admin() {
         const { error } = await supabase.from('music_tracks').insert([payload])
         if (error) throw error
       }
-      setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'hi' })
+      setMusicForm({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'hi', sortOrder: 0 })
       setEditingMusicId(null)
       await loadMusic()
     } catch (err) {
@@ -405,7 +405,8 @@ function Admin() {
       youtubeId: item.youtube_id || '',
       coverUrl: item.cover_url || '',
       category: item.category || 'Devotional',
-      content_language: item.content_language || 'hi'
+      content_language: item.content_language || 'hi',
+      sortOrder: item.sort_order || 0
     })
     setEditingMusicId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -850,7 +851,10 @@ function Admin() {
                 <input required type="text" placeholder="Track Title" value={musicForm.trackTitle} onChange={e => setMusicForm({ ...musicForm, trackTitle: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="Artist / Singer" value={musicForm.artist} onChange={e => setMusicForm({ ...musicForm, artist: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
                 <input required type="text" placeholder="YouTube Video ID (for audio stream)" value={musicForm.youtubeId} onChange={e => setMusicForm({ ...musicForm, youtubeId: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
-                <input type="text" placeholder="Category (e.g. Bhajan, Mantra, Aarti)" value={musicForm.category} onChange={e => setMusicForm({ ...musicForm, category: e.target.value })} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                <div className="flex gap-2">
+                  <input type="text" placeholder="Category (e.g. Bhajan)" value={musicForm.category} onChange={e => setMusicForm({ ...musicForm, category: e.target.value })} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                  <input type="number" placeholder="Order (e.g. 1)" value={musicForm.sortOrder} onChange={e => setMusicForm({ ...musicForm, sortOrder: e.target.value })} className="w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />
+                </div>
                 <div className="sm:col-span-2 space-y-1">
                   <label className="block text-xs font-bold text-gray-400">Cover Art/Thumbnail URL (Optional)</label>
                   <div className="flex gap-2">
@@ -879,8 +883,11 @@ function Admin() {
                   <div key={m.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
                     <img src={m.cover_url} alt="cover" className="w-14 h-14 object-cover rounded-md bg-black shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{m.track_title}</p>
-                      <p className="text-xs text-gray-400 truncate">{m.artist} • <span className="text-[#FF9933]">{m.category}</span></p>
+                      <p className="font-bold text-sm truncate">
+                        <span className="text-[#FF9933] mr-1">#{m.sort_order || 0}</span>
+                        {m.track_title}
+                      </p>
+                      <p className="text-xs text-gray-400 truncate">{m.artist} • <span className="text-white/50">{m.category}</span></p>
                     </div>
                     <div className="flex flex-col gap-2 shrink-0">
                       <button onClick={() => editMusic(m)} className="text-xs text-[#FF9933] font-bold flex items-center gap-1 hover:underline"><EditOutlined /> Edit</button>

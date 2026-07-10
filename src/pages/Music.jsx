@@ -87,6 +87,7 @@ function Music() {
         const { data, error } = await supabase
           .from('music_tracks')
           .select('*')
+          .order('sort_order', { ascending: true })
           .order('created_at', { ascending: false })
         
         if (!error && data) {
