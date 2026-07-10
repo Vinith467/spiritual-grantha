@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
@@ -10,6 +11,9 @@ import ComingSoon from '../components/ComingSoon'
 function Music() {
   const { profile } = useAuth()
   const { selectedLang, contentLang } = useGoogleTranslate()
+  const [searchParams] = useSearchParams()
+  const trackIdParam = searchParams.get('track')
+  
   const [tracks, setTracks] = useState([])
   const [activeTrack, setActiveTrack] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -58,6 +62,24 @@ function Music() {
     return () => clearInterval(interval)
   }, [player, activeTrack, profile?.email])
 
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/music?track=${activeTrack.id}`
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Listen to ${activeTrack.title}`,
+          text: `Listen to ${activeTrack.title} by ${activeTrack.singer} on Omisha and the Inner Path!`,
+          url: shareUrl
+        })
+      } catch (err) {
+        console.error('Error sharing', err)
+      }
+    } else {
+      navigator.clipboard.writeText(shareUrl)
+      alert('Link copied to clipboard!')
+    }
+  }
+
   useEffect(() => {
     const fetchMusic = async () => {
       setLoading(true)
@@ -79,7 +101,12 @@ function Music() {
           }))
           setTracks(dbTracks)
           if (dbTracks.length > 0) {
-            setActiveTrack(dbTracks[0])
+            let initialTrack = dbTracks[0]
+            if (trackIdParam) {
+              const found = dbTracks.find(t => t.id === trackIdParam || t.id.toString() === trackIdParam)
+              if (found) initialTrack = found
+            }
+            setActiveTrack(initialTrack)
           } else {
             setActiveTrack(null)
           }
@@ -161,9 +188,18 @@ function Music() {
           
           {/* Left Side: Active Player */}
         <div className="w-full md:w-80 lg:w-[400px] shrink-0 bg-black/40 backdrop-blur-md border border-[#FF9933]/15 rounded-3xl p-5 sm:p-6 flex flex-col items-center shadow-2xl md:sticky md:top-28 h-fit">
-          <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] mb-5 uppercase tracking-widest">
-            Now Playing
-          </span>
+          <div className="flex items-center justify-between w-full mb-5">
+            <span className="bg-[#FF9933]/15 border border-[#FF9933]/20 px-3 py-1 rounded-full text-xs font-bold text-[#FF9933] uppercase tracking-widest">
+              Now Playing
+            </span>
+            <button 
+              onClick={handleShare}
+              className="p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-colors"
+              title="Share this track"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+            </button>
+          </div>
 
           {/* Embedded YouTube Audio Player */}
           <div className="w-full aspect-video rounded-xl overflow-hidden mb-5 border border-white/5 shadow-2xl">
@@ -182,10 +218,11 @@ function Music() {
               iframeClassName="w-full h-full"
               onReady={(event) => setPlayer(event.target)}
               onEnd={() => {
-                // Find next track across all categories
-                const currentIndex = tracks.findIndex(t => t.id === activeTrack.id)
-                if (currentIndex >= 0 && currentIndex < tracks.length - 1) {
-                  setActiveTrack(tracks[currentIndex + 1])
+                // Find next track across all categories and loop back to start if at the end
+                if (tracks.length > 0) {
+                  const currentIndex = tracks.findIndex(t => t.id === activeTrack.id)
+                  const nextIndex = (currentIndex + 1) % tracks.length
+                  setActiveTrack(tracks[nextIndex])
                 }
               }}
             />
