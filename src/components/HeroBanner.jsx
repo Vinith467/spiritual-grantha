@@ -58,23 +58,35 @@ function HeroBanner({ seriesList }) {
 
             return (
               <div key={series.id} className="w-full shrink-0 flex-none px-6 md:px-0">
-                <div className="relative w-full overflow-hidden rounded-2xl md:rounded-none aspect-[2/3] md:aspect-[21/9] lg:aspect-[3/1] shadow-2xl select-none">
-                  {/* Banner Image */}
-                  <picture>
+                <div className="relative w-full overflow-hidden rounded-2xl md:rounded-none flex flex-col md:block md:aspect-[21/9] lg:aspect-[3/1] shadow-2xl bg-[#0a0a0a]">
+                  
+                  {/* Mobile Image Container (16:9) */}
+                  <div className="w-full aspect-video md:hidden relative">
+                    <img
+                      src={series.thumbnail_url}
+                      alt={series.title}
+                      className="w-full h-full object-cover"
+                      draggable="false"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent h-full w-full" />
+                  </div>
+
+                  {/* Desktop Image (Cover) */}
+                  <picture className="hidden md:block absolute inset-0">
                     <source media="(min-width: 768px)" srcSet={series.desktop_thumbnail_url || series.thumbnail_url} />
                     <img
                       src={series.thumbnail_url}
                       alt={series.title}
-                      className="w-full h-full object-cover object-top sm:object-center"
+                      className="w-full h-full object-cover object-center"
                       draggable="false"
                     />
                   </picture>
 
-                  {/* Gradient Overlays */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                  {/* Gradient Overlays (Desktop Only) */}
+                  <div className="hidden md:block absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-                  {/* Content Info Area inside slide */}
-                  <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 lg:px-20 pb-5 md:pb-12 z-10">
+                  {/* Content Info Area */}
+                  <div className="relative md:absolute md:bottom-0 md:left-0 md:right-0 px-4 md:px-12 lg:px-20 pb-6 pt-2 md:pb-12 z-10 flex flex-col bg-[#0a0a0a] md:bg-transparent">
                     <div className="max-w-2xl">
                       {series.isLive ? (
                         <span className="text-red-500 text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center gap-2 mb-2 drop-shadow-md">
@@ -84,8 +96,9 @@ function HeroBanner({ seriesList }) {
                       ) : series.category && (
                         <span className="text-[#FF9933] text-[10px] md:text-xs font-bold uppercase tracking-widest block mb-2">{series.category}</span>
                       )}
-                      <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-1 md:mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
-                      <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
+                      <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
+                      <p className="text-gray-300 md:text-gray-200 text-sm md:text-base line-clamp-2 md:line-clamp-3 mb-5 md:mb-6 drop-shadow-md">{series.description}</p>
+                      
                       <div className="flex gap-3 w-full sm:w-auto">
                         {(firstEpisode || series.isLive) && (
                           <button
@@ -98,7 +111,7 @@ function HeroBanner({ seriesList }) {
                                 navigate(`/watch/${firstEpisode.id}`)
                               }
                             }}
-                            className={`flex-[1.5] sm:flex-none justify-center px-4 sm:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl font-bold text-sm tracking-wide active:scale-95 transition-all cursor-pointer ${
+                            className={`flex-[1.5] sm:flex-none justify-center px-4 sm:px-8 py-3 md:py-3 rounded-xl font-bold text-sm tracking-wide active:scale-95 transition-all cursor-pointer ${
                               series.isLive 
                                 ? 'bg-red-600 text-white hover:bg-red-700 shadow-[0_0_20px_rgba(220,38,38,0.4)]' 
                                 : 'bg-white text-black hover:bg-gray-200 shadow-[0_0_20px_rgba(255,255,255,0.3)]'
