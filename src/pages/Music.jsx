@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
-import ReactPlayer from 'react-player'
+import YouTube from 'react-youtube'
 import ComingSoon from '../components/ComingSoon'
 
 function Music() {
@@ -121,16 +121,23 @@ function Music() {
 
           {/* Embedded YouTube Audio Player */}
           <div className="w-full aspect-video rounded-xl overflow-hidden mb-5 border border-white/5 shadow-2xl">
-            <ReactPlayer
-              url={`https://www.youtube.com/watch?v=${activeTrack.youtubeId}`}
-              width="100%"
-              height="100%"
-              playing={true}
-              controls={true}
-              config={{ youtube: { playerVars: { modestbranding: 1 } } }}
-              onEnded={() => {
+            <YouTube
+              videoId={activeTrack.youtubeId}
+              opts={{
+                width: '100%',
+                height: '100%',
+                playerVars: {
+                  autoplay: 1,
+                  modestbranding: 1,
+                  rel: 0
+                }
+              }}
+              className="w-full h-full"
+              iframeClassName="w-full h-full"
+              onEnd={() => {
+                // Find next track across all categories
                 const currentIndex = tracks.findIndex(t => t.id === activeTrack.id)
-                if (currentIndex < tracks.length - 1) {
+                if (currentIndex >= 0 && currentIndex < tracks.length - 1) {
                   setActiveTrack(tracks[currentIndex + 1])
                 }
               }}
