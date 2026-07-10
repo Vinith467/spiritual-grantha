@@ -145,10 +145,10 @@ function Music() {
       {activeTrack && (
         <div className="fixed inset-0 z-0 pointer-events-none">
           <div 
-            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-110 opacity-60 blur-2xl"
+            className="absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out scale-125 opacity-100 blur-3xl saturate-150"
             style={{ backgroundImage: `url(${activeTrack.thumbnail})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-[#141414]/70 to-[#141414]/90" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-[#141414]/50 to-[#141414]/90 backdrop-saturate-150" />
         </div>
       )}
 
