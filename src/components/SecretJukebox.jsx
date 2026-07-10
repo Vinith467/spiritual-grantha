@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import { Reorder, motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabase';
 
 function SecretJukebox({ onClose }) {
   const [url, setUrl] = useState('');
@@ -12,26 +11,28 @@ function SecretJukebox({ onClose }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const playerRef = useRef(null);
 
+  const [isLooping, setIsLooping] = useState(false);
+
   useEffect(() => {
     loadPlaylist();
   }, []);
 
-  const loadPlaylist = async () => {
+  const loadPlaylist = () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_jukebox')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      if (data) {
-        setPlaylist(data);
+      const stored = localStorage.getItem('admin_jukebox_playlist');
+      if (stored) {
+        setPlaylist(JSON.parse(stored));
       }
     } catch (err) {
       console.error('Error loading jukebox:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const savePlaylist = (newPlaylist) => {
+    localStorage.setItem('admin_jukebox_playlist', JSON.stringify(newPlaylist));
+    setPlaylist(newPlaylist);
   };
 
   const extractVideoId = (input) => {
@@ -54,21 +55,13 @@ function SecretJukebox({ onClose }) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       
       const newTrack = {
+        id: crypto.randomUUID(),
         youtube_id: videoId,
         title: `Track ${playlist.length + 1}`,
         thumbnail_url: thumbnailUrl,
-        sort_order: playlist.length
       };
-
-      const { data, error } = await supabase
-        .from('admin_jukebox')
-        .insert([newTrack])
-        .select()
-        .single();
-        
-      if (error) throw error;
       
-      setPlaylist([...playlist, data]);
+      savePlaylist([...playlist, newTrack]);
       setUrl('');
       
       if (currentTrackIndex === -1) {
@@ -80,13 +73,12 @@ function SecretJukebox({ onClose }) {
     }
   };
 
-  const deleteTrack = async (id) => {
+  const deleteTrack = (id) => {
     try {
       const index = playlist.findIndex(t => t.id === id);
       const newPlaylist = playlist.filter(t => t.id !== id);
       
-      // Update local state first for immediate UI response
-      setPlaylist(newPlaylist);
+      savePlaylist(newPlaylist);
       
       if (currentTrackIndex === index) {
         setCurrentTrackIndex(-1);
@@ -94,41 +86,32 @@ function SecretJukebox({ onClose }) {
       } else if (currentTrackIndex > index) {
         setCurrentTrackIndex(currentTrackIndex - 1);
       }
-      
-      await supabase.from('admin_jukebox').delete().eq('id', id);
     } catch (err) {
       console.error('Error deleting track:', err);
     }
   };
 
-  const handleReorder = async (newPlaylist) => {
-    // Keep track of the currently playing track ID so we can update the index!
+  const handleReorder = (newPlaylist) => {
     const activeTrackId = playlist[currentTrackIndex]?.id;
     
-    setPlaylist(newPlaylist);
+    savePlaylist(newPlaylist);
     
-    // Update the active index based on the new positions
     if (activeTrackId) {
       const newIndex = newPlaylist.findIndex(t => t.id === activeTrackId);
       setCurrentTrackIndex(newIndex);
-    }
-
-    try {
-      // Fire off individual updates to avoid needing full rows for upsert
-      await Promise.all(
-        newPlaylist.map((track, index) => 
-          supabase.from('admin_jukebox').update({ sort_order: index }).eq('id', track.id)
-        )
-      );
-    } catch (err) {
-      console.error('Error reordering:', err);
     }
   };
 
   const playNext = () => {
     if (playlist.length === 0) return;
     let nextIndex = currentTrackIndex + 1;
-    if (nextIndex >= playlist.length) nextIndex = 0;
+    if (nextIndex >= playlist.length) {
+      if (isLooping) {
+        nextIndex = 0;
+      } else {
+        return; // Don't loop by default unless enabled
+      }
+    }
     setCurrentTrackIndex(nextIndex);
   };
 
@@ -168,6 +151,13 @@ function SecretJukebox({ onClose }) {
               {isPlaying ? '⏸' : '▶'}
             </button>
             <button onClick={playNext} className="text-gray-400 hover:text-white transition-colors">⏭</button>
+            <button 
+              onClick={() => setIsLooping(!isLooping)} 
+              className={`text-xs ml-2 font-bold ${isLooping ? 'text-[#FF9933]' : 'text-gray-600 hover:text-gray-400'}`}
+              title={isLooping ? 'Looping Playlist' : 'Loop Disabled'}
+            >
+              🔁
+            </button>
           </div>
         </div>
         <button onClick={() => setMinimized(false)} className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors">⤢</button>
@@ -243,6 +233,16 @@ function SecretJukebox({ onClose }) {
                      <p className="text-[#FF9933] text-xs font-bold uppercase tracking-widest mb-1">Now Playing</p>
                      <h3 className="text-white text-xl font-bold line-clamp-1">{playlist[currentTrackIndex].title}</h3>
                    </div>
+                   <button 
+                     onClick={() => setIsLooping(!isLooping)} 
+                     className={`text-sm flex items-center gap-2 px-4 py-2 rounded-xl border transition-all ${
+                       isLooping 
+                         ? 'bg-[#FF9933]/20 border-[#FF9933]/50 text-[#FF9933] shadow-[0_0_15px_rgba(255,153,51,0.2)]' 
+                         : 'bg-white/5 border-white/10 text-gray-500 hover:text-gray-300 hover:bg-white/10'
+                     }`}
+                   >
+                     🔁 {isLooping ? 'Looping' : 'Loop'}
+                   </button>
                  </div>
                </div>
              )}
