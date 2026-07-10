@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import { Reorder, motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabase';
 
 function SecretJukebox({ onClose }) {
   const [url, setUrl] = useState('');
-  const [playlist, setPlaylist] = useState([]);
+  const [allTracks, setAllTracks] = useState([]);
+  const [activePlaylistName, setActivePlaylistName] = useState('Default');
   const [currentTrackIndex, setCurrentTrackIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
   const [minimized, setMinimized] = useState(false);
@@ -13,26 +15,36 @@ function SecretJukebox({ onClose }) {
 
   const [isLooping, setIsLooping] = useState(false);
 
+  // Derived active playlist
+  const playlist = allTracks
+    .filter(t => (t.playlist_name || 'Default') === activePlaylistName)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+
+  // Compute all unique playlists
+  const availablePlaylists = Array.from(new Set(allTracks.map(t => t.playlist_name || 'Default')));
+  if (!availablePlaylists.includes('Default')) availablePlaylists.unshift('Default');
+  if (!availablePlaylists.includes(activePlaylistName)) availablePlaylists.push(activePlaylistName);
+
   useEffect(() => {
     loadPlaylist();
   }, []);
 
-  const loadPlaylist = () => {
+  const loadPlaylist = async () => {
     try {
-      const stored = localStorage.getItem('admin_jukebox_playlist');
-      if (stored) {
-        setPlaylist(JSON.parse(stored));
+      const { data, error } = await supabase
+        .from('admin_jukebox')
+        .select('*')
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      if (data) {
+        setAllTracks(data);
       }
     } catch (err) {
       console.error('Error loading jukebox:', err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const savePlaylist = (newPlaylist) => {
-    localStorage.setItem('admin_jukebox_playlist', JSON.stringify(newPlaylist));
-    setPlaylist(newPlaylist);
   };
 
   const extractVideoId = (input) => {
@@ -55,13 +67,22 @@ function SecretJukebox({ onClose }) {
       const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
       
       const newTrack = {
-        id: crypto.randomUUID(),
         youtube_id: videoId,
         title: `Track ${playlist.length + 1}`,
         thumbnail_url: thumbnailUrl,
+        sort_order: playlist.length,
+        playlist_name: activePlaylistName
       };
+
+      const { data, error } = await supabase
+        .from('admin_jukebox')
+        .insert([newTrack])
+        .select()
+        .single();
+        
+      if (error) throw error;
       
-      savePlaylist([...playlist, newTrack]);
+      setAllTracks([...allTracks, data]);
       setUrl('');
       
       if (currentTrackIndex === -1) {
@@ -73,12 +94,11 @@ function SecretJukebox({ onClose }) {
     }
   };
 
-  const deleteTrack = (id) => {
+  const deleteTrack = async (id) => {
     try {
       const index = playlist.findIndex(t => t.id === id);
-      const newPlaylist = playlist.filter(t => t.id !== id);
       
-      savePlaylist(newPlaylist);
+      setAllTracks(allTracks.filter(t => t.id !== id));
       
       if (currentTrackIndex === index) {
         setCurrentTrackIndex(-1);
@@ -86,19 +106,33 @@ function SecretJukebox({ onClose }) {
       } else if (currentTrackIndex > index) {
         setCurrentTrackIndex(currentTrackIndex - 1);
       }
+      
+      await supabase.from('admin_jukebox').delete().eq('id', id);
     } catch (err) {
       console.error('Error deleting track:', err);
     }
   };
 
-  const handleReorder = (newPlaylist) => {
+  const handleReorder = async (newPlaylist) => {
     const activeTrackId = playlist[currentTrackIndex]?.id;
     
-    savePlaylist(newPlaylist);
+    const otherTracks = allTracks.filter(t => (t.playlist_name || 'Default') !== activePlaylistName);
+    const updatedNewPlaylist = newPlaylist.map((t, i) => ({ ...t, sort_order: i }));
+    setAllTracks([...otherTracks, ...updatedNewPlaylist]);
     
     if (activeTrackId) {
-      const newIndex = newPlaylist.findIndex(t => t.id === activeTrackId);
+      const newIndex = updatedNewPlaylist.findIndex(t => t.id === activeTrackId);
       setCurrentTrackIndex(newIndex);
+    }
+
+    try {
+      await Promise.all(
+        updatedNewPlaylist.map((track) => 
+          supabase.from('admin_jukebox').update({ sort_order: track.sort_order }).eq('id', track.id)
+        )
+      );
+    } catch (err) {
+      console.error('Error reordering:', err);
     }
   };
 
@@ -173,18 +207,55 @@ function SecretJukebox({ onClose }) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-[#FF9933]/20 blur-[100px] pointer-events-none rounded-full"></div>
 
         {/* Header */}
-        <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center relative z-10">
-          <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 flex items-center gap-3">
-            <span className="text-[#FF9933] drop-shadow-[0_0_10px_rgba(255,153,51,0.5)]">🎵</span> 
-            Secret Jukebox
-          </h2>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setMinimized(true)} className="px-4 py-1.5 bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-sm text-white font-semibold transition-all hover:scale-105 active:scale-95">
-              Minimize
+        <div className="px-6 py-5 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between relative z-10 gap-4">
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 flex items-center gap-3">
+              <span className="text-[#FF9933] drop-shadow-[0_0_10px_rgba(255,153,51,0.5)]">🎵</span> 
+              Secret Jukebox
+            </h2>
+            <div className="flex md:hidden items-center gap-3">
+              <button onClick={() => setMinimized(true)} className="px-4 py-1.5 bg-white/5 border border-white/10 rounded-full text-sm text-white font-semibold">Minimize</button>
+              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center bg-red-500/10 text-red-500 rounded-full">✕</button>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+            <select 
+              value={activePlaylistName}
+              onChange={(e) => {
+                setActivePlaylistName(e.target.value);
+                setCurrentTrackIndex(-1);
+                setIsPlaying(false);
+              }}
+              className="bg-black/50 border border-[#FF9933]/30 text-white text-sm rounded-xl px-4 py-2 outline-none focus:border-[#FF9933] transition-colors min-w-[140px] cursor-pointer"
+            >
+              {availablePlaylists.map(name => (
+                <option key={name} value={name}>{name}</option>
+              ))}
+            </select>
+            
+            <button 
+              onClick={() => {
+                const name = prompt("Enter new playlist name:");
+                if (name && name.trim()) {
+                  setActivePlaylistName(name.trim());
+                  setCurrentTrackIndex(-1);
+                  setIsPlaying(false);
+                }
+              }}
+              className="flex-shrink-0 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm text-[#FF9933] font-semibold transition-colors flex items-center gap-2"
+            >
+              <span>+</span> New Playlist
             </button>
-            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all hover:scale-105 active:scale-95">
-              ✕
-            </button>
+            
+            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-white/10 ml-2">
+              <button onClick={() => setMinimized(true)} className="px-4 py-1.5 bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-sm text-white font-semibold transition-all hover:scale-105 active:scale-95">
+                Minimize
+              </button>
+              <button onClick={onClose} className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all hover:scale-105 active:scale-95">
+                ✕
+              </button>
+            </div>
           </div>
         </div>
 
