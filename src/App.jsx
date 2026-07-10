@@ -155,7 +155,6 @@ function App() {
 
   return (
     <>
-      <LiveBanner />
       <ScrollToTop />
       {isOffline && <OfflineScreen />}
 

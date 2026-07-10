@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import ShareModal from './ShareModal'
+import LiveBanner from './LiveBanner'
 
 function HeroBanner({ seriesList }) {
   const navigate = useNavigate()
@@ -38,6 +39,10 @@ function HeroBanner({ seriesList }) {
         onClose={() => setShowShareModal(false)} 
         shareData={shareData} 
       />
+      
+      {/* Live Banner */}
+      <LiveBanner />
+
       {/* Main Viewport Container */}
       <div className="relative group w-full">
         
