@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { haptics } from '../utils/haptics'
 
-function VideoCard({ episode, progress }) {
+function VideoCard({ episode, progress, isLandscape }) {
   const navigate = useNavigate()
 
   return (
@@ -10,9 +10,9 @@ function VideoCard({ episode, progress }) {
         haptics.selection()
         navigate(`/watch/${episode.id}`)
       }}
-      className="min-w-[120px] max-w-[120px] md:min-w-[160px] md:max-w-[160px] cursor-pointer group flex-shrink-0"
+      className={`cursor-pointer group flex-shrink-0 ${isLandscape ? 'min-w-[200px] max-w-[200px] md:min-w-[280px] md:max-w-[280px]' : 'min-w-[120px] max-w-[120px] md:min-w-[160px] md:max-w-[160px]'}`}
     >
-      <div className="relative overflow-hidden rounded-md aspect-[9/16]">
+      <div className={`relative overflow-hidden rounded-md ${isLandscape ? 'aspect-video' : 'aspect-[9/16]'}`}>
         <img
           src={episode.thumbnail_url || `https://img.youtube.com/vi/${episode.youtube_id}/hqdefault.jpg`}
           alt={episode.title}
