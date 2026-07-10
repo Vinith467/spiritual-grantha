@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
+import SecretJukebox from '../components/SecretJukebox'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, Legend } from 'recharts'
 import {
   VideoCameraOutlined,
@@ -33,8 +35,9 @@ function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem('isAdmin') === 'true')
   const [activeTab, setActiveTab] = useState('videos')
   const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly'
-  const [tableStartDate, setTableStartDate] = useState(() => getLocalYMD())
-  const [tableEndDate, setTableEndDate] = useState(() => getLocalYMD())
+  const [tableStartDate, setTableStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+  const [tableEndDate, setTableEndDate] = useState(new Date().toISOString().split('T')[0])
+  const [showJukebox, setShowJukebox] = useState(false)
   const [tableDatePreset, setTableDatePreset] = useState('today')
 
   // Loading States
@@ -633,7 +636,14 @@ function Admin() {
 
       {/* Top Header */}
       <div className="sticky top-0 z-50 bg-black/60 backdrop-blur-md border-b border-white/10 px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3 cursor-pointer select-none"
+          onClick={(e) => {
+            if (e.detail === 3) {
+              setShowJukebox(true);
+            }
+          }}
+        >
           <img src="/icon-192.png" alt="Logo" className="w-8 h-8 rounded-full border border-[#FF9933]/50" />
           <h1 className="font-black text-sm tracking-tight flex items-center gap-2">
             Admin <span className="text-[#FF9933]">Dashboard</span>
@@ -1357,6 +1367,10 @@ function Admin() {
             </div>
           </div>
         </div>
+      )}
+      {/* Secret Jukebox */}
+      {showJukebox && (
+        <SecretJukebox onClose={() => setShowJukebox(false)} />
       )}
     </div>
   )
