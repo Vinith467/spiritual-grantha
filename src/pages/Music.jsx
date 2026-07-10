@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
@@ -7,10 +8,55 @@ import YouTube from 'react-youtube'
 import ComingSoon from '../components/ComingSoon'
 
 function Music() {
+  const { profile } = useAuth()
   const { selectedLang, contentLang } = useGoogleTranslate()
   const [tracks, setTracks] = useState([])
   const [activeTrack, setActiveTrack] = useState(null)
   const [loading, setLoading] = useState(true)
+
+  const [player, setPlayer] = useState(null)
+  const viewRecordIdRef = useRef(null)
+  const lastSyncTimeRef = useRef(0)
+
+  useEffect(() => {
+    viewRecordIdRef.current = null
+    lastSyncTimeRef.current = 0
+  }, [activeTrack])
+
+  useEffect(() => {
+    if (!player || !activeTrack) return
+    const interval = setInterval(async () => {
+      try {
+        const state = await player.getPlayerState()
+        // 1 is Playing
+        if (state === 1) {
+          if (profile?.email) {
+            const now = Date.now()
+            if (now - lastSyncTimeRef.current >= 10000) {
+              lastSyncTimeRef.current = now
+              if (!viewRecordIdRef.current) {
+                const { data } = await supabase.from('video_views').insert([{
+                  user_email: profile.email,
+                  video_id: activeTrack.youtubeId || activeTrack.id,
+                  video_title: activeTrack.title,
+                  duration_seconds: 10
+                }]).select().single()
+                if (data) viewRecordIdRef.current = data.id
+              } else {
+                const { data: current } = await supabase.from('video_views').select('duration_seconds').eq('id', viewRecordIdRef.current).single()
+                if (current) {
+                  await supabase.from('video_views').update({ duration_seconds: current.duration_seconds + 10 }).eq('id', viewRecordIdRef.current)
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error saving progress", err)
+      }
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [player, activeTrack, profile?.email])
 
   useEffect(() => {
     const fetchMusic = async () => {
@@ -134,6 +180,7 @@ function Music() {
               }}
               className="w-full h-full"
               iframeClassName="w-full h-full"
+              onReady={(event) => setPlayer(event.target)}
               onEnd={() => {
                 // Find next track across all categories
                 const currentIndex = tracks.findIndex(t => t.id === activeTrack.id)

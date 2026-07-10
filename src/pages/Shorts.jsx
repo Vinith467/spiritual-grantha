@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import ComingSoon from '../components/ComingSoon'
@@ -9,6 +10,8 @@ const ShortVideo = ({ short, index, activeIndex }) => {
   const isNear = Math.abs(index - activeIndex) <= 2
   const isActive = index === activeIndex
   const iframeRef = useRef(null)
+  const { profile } = useAuth()
+  const viewRecordIdRef = useRef(null)
 
   // Lock the initial src so the iframe doesn't reload when isActive changes
   const initialSrc = useRef(`https://www.youtube.com/embed/${short.youtubeId}?enablejsapi=1&autoplay=${isActive ? 1 : 0}&mute=0&controls=1&modestbranding=1&rel=0&iv_load_policy=3&origin=${window.location.origin}`)
@@ -26,6 +29,36 @@ const ShortVideo = ({ short, index, activeIndex }) => {
       }
     }
   }, [isActive])
+
+  // Analytics tracking for watch time
+  useEffect(() => {
+    if (!isActive || !profile?.email) return
+    
+    viewRecordIdRef.current = null
+    
+    const interval = setInterval(async () => {
+      try {
+        if (!viewRecordIdRef.current) {
+          const { data } = await supabase.from('video_views').insert([{
+            user_email: profile.email,
+            video_id: short.youtubeId,
+            video_title: short.title || `Short: ${short.youtubeId}`,
+            duration_seconds: 10
+          }]).select().single()
+          if (data) viewRecordIdRef.current = data.id
+        } else {
+          const { data: current } = await supabase.from('video_views').select('duration_seconds').eq('id', viewRecordIdRef.current).single()
+          if (current) {
+            await supabase.from('video_views').update({ duration_seconds: current.duration_seconds + 10 }).eq('id', viewRecordIdRef.current)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to log short view:', err)
+      }
+    }, 10000)
+    
+    return () => clearInterval(interval)
+  }, [isActive, profile?.email, short])
 
   return (
     <div
