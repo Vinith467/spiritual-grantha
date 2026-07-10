@@ -903,8 +903,8 @@ function Admin() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {shorts.map(s => (
                   <div key={s.id} className="bg-white/5 border border-white/10 p-3 rounded-xl flex gap-4 items-center relative overflow-hidden group hover:border-[#FF9933]/30 transition-all">
-                    <div className="w-10 h-14 bg-black rounded-md flex items-center justify-center border border-white/10 shrink-0">
-                      <span className="text-lg">📱</span>
+                    <div className="w-10 h-14 bg-black rounded-md flex items-center justify-center border border-white/10 shrink-0 overflow-hidden">
+                      <img src={`https://img.youtube.com/vi/${s.youtube_id}/hqdefault.jpg`} alt="Thumbnail" className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{s.title}</p>
