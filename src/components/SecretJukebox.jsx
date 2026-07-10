@@ -117,125 +117,165 @@ function SecretJukebox({ onClose }) {
   if (minimized) {
     const activeTrack = currentTrackIndex >= 0 ? playlist[currentTrackIndex] : null;
     return (
-      <div className="fixed bottom-20 right-4 md:right-8 z-[9999] bg-[#1a1a1a] border border-[#FF9933]/50 rounded-2xl shadow-2xl p-3 flex items-center gap-3 w-64 animate-in slide-in-from-bottom-5">
-        <div className="w-12 h-12 rounded-lg overflow-hidden bg-black flex-shrink-0 relative">
+      <div className="fixed bottom-20 right-4 md:right-8 z-[9999] bg-black/60 backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] p-3 flex items-center gap-3 w-64 animate-in slide-in-from-bottom-5 hover:bg-black/80 transition-colors">
+        <div className="w-12 h-12 rounded-xl overflow-hidden bg-black flex-shrink-0 relative shadow-inner">
            {activeTrack ? (
-             <img src={activeTrack.thumbnail_url} className="w-full h-full object-cover opacity-80" />
+             <img src={activeTrack.thumbnail_url} className="w-full h-full object-cover opacity-90" alt="Thumbnail" />
            ) : (
-             <div className="w-full h-full bg-white/10 flex items-center justify-center text-xs text-gray-500">None</div>
+             <div className="w-full h-full bg-white/5 flex items-center justify-center text-xs text-gray-500">None</div>
            )}
-           {isPlaying && <div className="absolute inset-0 border-2 border-[#FF9933] rounded-lg animate-pulse" />}
+           {isPlaying && <div className="absolute inset-0 border-2 border-[#FF9933] rounded-xl animate-pulse" />}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white text-xs font-bold truncate">{activeTrack ? 'Playing...' : 'Paused'}</p>
-          <div className="flex gap-2 mt-1">
-            <button onClick={playPrevious} className="text-gray-400 hover:text-white">⏮</button>
+          <p className="text-white text-xs font-bold truncate tracking-wide">{activeTrack ? activeTrack.title : 'Paused'}</p>
+          <div className="flex gap-3 mt-1.5 items-center">
+            <button onClick={playPrevious} className="text-gray-400 hover:text-white transition-colors">⏮</button>
             <button onClick={() => {
               if (isPlaying) { playerRef.current?.pauseVideo(); setIsPlaying(false); }
               else { playerRef.current?.playVideo(); setIsPlaying(true); }
-            }} className="text-[#FF9933]">
+            }} className="text-[#FF9933] hover:text-[#ffaa44] transition-colors scale-110">
               {isPlaying ? '⏸' : '▶'}
             </button>
-            <button onClick={playNext} className="text-gray-400 hover:text-white">⏭</button>
+            <button onClick={playNext} className="text-gray-400 hover:text-white transition-colors">⏭</button>
           </div>
         </div>
-        <button onClick={() => setMinimized(false)} className="text-gray-400 hover:text-white p-1">⤢</button>
+        <button onClick={() => setMinimized(false)} className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-colors">⤢</button>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
+      <div className="bg-[#111111]/80 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.8)] w-full max-w-4xl flex flex-col max-h-[90vh] overflow-hidden relative">
         
+        {/* Ambient Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-[#FF9933]/20 blur-[100px] pointer-events-none rounded-full"></div>
+
         {/* Header */}
-        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-black via-black to-[#1a1a1a]">
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            🎵 Secret <span className="text-[#FF9933]">Jukebox</span>
+        <div className="px-6 py-5 border-b border-white/5 flex justify-between items-center relative z-10">
+          <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 flex items-center gap-3">
+            <span className="text-[#FF9933] drop-shadow-[0_0_10px_rgba(255,153,51,0.5)]">🎵</span> 
+            Secret Jukebox
           </h2>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setMinimized(true)} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-md text-sm text-white transition-colors">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMinimized(true)} className="px-4 py-1.5 bg-white/5 hover:bg-white/15 border border-white/10 rounded-full text-sm text-white font-semibold transition-all hover:scale-105 active:scale-95">
               Minimize
             </button>
-            <button onClick={onClose} className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-500 rounded-md text-sm transition-colors">
-              Close
+            <button onClick={onClose} className="w-8 h-8 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all hover:scale-105 active:scale-95">
+              ✕
             </button>
           </div>
         </div>
 
-        {/* Player Area (Hidden but active) */}
-        <div className="hidden">
-          {currentTrackIndex >= 0 && playlist[currentTrackIndex] && (
-            <YouTube
-              videoId={playlist[currentTrackIndex].youtube_id}
-              opts={{ height: '0', width: '0', playerVars: { autoplay: 1 } }}
-              onReady={handleReady}
-              onEnd={playNext}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-            />
-          )}
-        </div>
-
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col md:flex-row gap-6">
-          {/* Active Track Viz */}
-          <div className="md:w-1/2 flex flex-col items-center justify-center">
+        <div className="flex-1 overflow-y-auto p-6 flex flex-col lg:flex-row gap-8 relative z-10">
+          
+          {/* Active Track Player (Visible) */}
+          <div className="lg:w-7/12 flex flex-col">
              {currentTrackIndex >= 0 && playlist[currentTrackIndex] ? (
-               <div className="w-full aspect-video rounded-xl overflow-hidden shadow-[0_0_30px_rgba(255,153,51,0.2)] relative border border-white/10">
-                 <img src={playlist[currentTrackIndex].thumbnail_url} className="w-full h-full object-cover animate-in fade-in duration-1000" />
-                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                   <div className="flex gap-4">
-                     <button onClick={playPrevious} className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all hover:scale-110">⏮</button>
-                     <button onClick={() => {
-                        if (isPlaying) { playerRef.current?.pauseVideo(); setIsPlaying(false); }
-                        else { playerRef.current?.playVideo(); setIsPlaying(true); }
-                     }} className="w-16 h-16 bg-[#FF9933] hover:bg-[#ff8800] rounded-full flex items-center justify-center text-white shadow-[0_0_20px_rgba(255,153,51,0.5)] transition-all hover:scale-110">
-                       {isPlaying ? '⏸' : '▶'}
-                     </button>
-                     <button onClick={playNext} className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white backdrop-blur-md transition-all hover:scale-110">⏭</button>
-                   </div>
-                 </div>
+               <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] relative border border-white/10 bg-black group">
+                 {/* 
+                    By rendering the YouTube iframe visibly, we bypass mobile autoplay restrictions.
+                    The user can see the beautiful video visuals and interact with it directly.
+                 */}
+                 <YouTube
+                   videoId={playlist[currentTrackIndex].youtube_id}
+                   opts={{ 
+                     height: '100%', 
+                     width: '100%', 
+                     playerVars: { 
+                       autoplay: 1,
+                       controls: 1,
+                       modestbranding: 1,
+                       rel: 0
+                     } 
+                   }}
+                   onReady={handleReady}
+                   onEnd={playNext}
+                   onPlay={() => setIsPlaying(true)}
+                   onPause={() => setIsPlaying(false)}
+                   className="absolute inset-0 w-full h-full"
+                 />
                </div>
              ) : (
-               <div className="w-full aspect-video rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-500">
-                 No track playing
+               <div className="w-full aspect-video rounded-2xl bg-black/40 border border-white/5 flex flex-col items-center justify-center text-gray-500 shadow-inner">
+                 <span className="text-4xl mb-3 opacity-50">🎧</span>
+                 <span className="font-medium tracking-wide">Select a track to play</span>
+               </div>
+             )}
+
+             {/* Currently Playing Info */}
+             {currentTrackIndex >= 0 && playlist[currentTrackIndex] && (
+               <div className="mt-6 px-2">
+                 <div className="flex items-center gap-4">
+                   <div className="flex-1">
+                     <p className="text-[#FF9933] text-xs font-bold uppercase tracking-widest mb-1">Now Playing</p>
+                     <h3 className="text-white text-xl font-bold line-clamp-1">{playlist[currentTrackIndex].title}</h3>
+                   </div>
+                 </div>
                </div>
              )}
           </div>
 
           {/* Playlist Manager */}
-          <div className="md:w-1/2 flex flex-col">
-            <form onSubmit={handleAddUrl} className="flex gap-2 mb-4">
+          <div className="lg:w-5/12 flex flex-col h-[400px] lg:h-auto">
+            <form onSubmit={handleAddUrl} className="flex gap-2 mb-6">
               <input
                 type="text"
                 placeholder="Paste YouTube Link..."
                 value={url}
                 onChange={e => setUrl(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-[#FF9933]/50 outline-none text-white"
+                className="flex-1 bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 focus:bg-black/60 outline-none text-white transition-all shadow-inner placeholder:text-gray-600"
               />
-              <button type="submit" className="bg-[#FF9933] text-black font-bold px-4 rounded-lg text-sm hover:opacity-90">
+              <button type="submit" className="bg-gradient-to-br from-[#FF9933] to-[#e68a2e] text-black font-black px-6 rounded-xl text-sm hover:opacity-90 transition-all shadow-[0_0_15px_rgba(255,153,51,0.3)] hover:shadow-[0_0_25px_rgba(255,153,51,0.5)] active:scale-95">
                 Add
               </button>
             </form>
 
-            <div className="flex-1 bg-black/50 border border-white/10 rounded-xl overflow-y-auto p-2 space-y-2 max-h-[300px]">
+            <div className="flex-1 bg-black/20 border border-white/5 rounded-2xl overflow-y-auto p-2 space-y-2 relative">
               {loading ? (
-                <p className="text-center text-gray-500 text-sm mt-10 animate-pulse">Loading playlist...</p>
+                <div className="flex flex-col items-center justify-center h-full text-gray-500 space-y-3">
+                  <div className="w-6 h-6 border-2 border-[#FF9933] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-sm font-medium">Loading playlist...</p>
+                </div>
               ) : playlist.length === 0 ? (
-                <p className="text-center text-gray-500 text-sm mt-10">Playlist is empty</p>
+                <div className="flex flex-col items-center justify-center h-full text-gray-600 space-y-2">
+                  <span className="text-3xl">👻</span>
+                  <p className="text-sm font-medium">It's quiet in here...</p>
+                </div>
               ) : (
                 playlist.map((track, i) => (
-                  <div key={track.id} className={`flex items-center gap-3 p-2 rounded-lg transition-colors group ${i === currentTrackIndex ? 'bg-[#FF9933]/20 border border-[#FF9933]/30' : 'hover:bg-white/5 border border-transparent'}`}>
-                    <div className="w-12 h-12 rounded bg-black overflow-hidden flex-shrink-0 cursor-pointer" onClick={() => setCurrentTrackIndex(i)}>
-                      <img src={track.thumbnail_url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <div 
+                    key={track.id} 
+                    className={`flex items-center gap-4 p-3 rounded-xl transition-all group ${
+                      i === currentTrackIndex 
+                        ? 'bg-gradient-to-r from-[#FF9933]/20 to-transparent border border-[#FF9933]/30 shadow-[0_0_15px_rgba(255,153,51,0.1)]' 
+                        : 'hover:bg-white/5 border border-transparent cursor-pointer'
+                    }`}
+                  >
+                    <div 
+                      className="w-16 h-12 rounded-lg bg-black overflow-hidden flex-shrink-0 cursor-pointer relative shadow-md" 
+                      onClick={() => setCurrentTrackIndex(i)}
+                    >
+                      <img src={track.thumbnail_url} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="Thumbnail" />
+                      {i === currentTrackIndex && isPlaying && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span className="text-[#FF9933] text-xs animate-pulse">▶</span>
+                        </div>
+                      )}
                     </div>
+                    
                     <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setCurrentTrackIndex(i)}>
-                      <p className={`text-sm font-bold truncate ${i === currentTrackIndex ? 'text-[#FF9933]' : 'text-gray-300'}`}>
-                        {i === currentTrackIndex && isPlaying ? '▶ ' : ''}{track.title}
+                      <p className={`text-sm font-bold truncate transition-colors ${i === currentTrackIndex ? 'text-white' : 'text-gray-400 group-hover:text-gray-200'}`}>
+                        {track.title}
                       </p>
                     </div>
-                    <button onClick={() => deleteTrack(track.id)} className="text-gray-500 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    
+                    <button 
+                      onClick={() => deleteTrack(track.id)} 
+                      className="text-gray-500 hover:text-red-500 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all focus:opacity-100"
+                      title="Remove track"
+                    >
                       ✕
                     </button>
                   </div>
