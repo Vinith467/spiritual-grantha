@@ -100,10 +100,18 @@ function Login() {
         });
 
         // Security check: Verify if they match the admin google accounts list
-        const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+        const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
           .split(',')
           .map(e => e.trim().toLowerCase())
           .filter(Boolean);
+          
+        const hardcodedAdmins = [
+          'vinuvinith0007@gmail.com',
+          'omishamarketingfaculty@gmail.com',
+          'lakshmikanthng2@gmail.com'
+        ];
+        
+        const ADMIN_EMAILS = [...envAdmins, ...hardcodedAdmins];
         
         let role = 'User';
         if (email && ADMIN_EMAILS.includes(email)) {
