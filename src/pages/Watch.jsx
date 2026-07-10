@@ -414,7 +414,9 @@ function Watch() {
       </div>
 
       {/* More episodes */}
-      {seriesEpisodes.length > 1 && (
+      {seriesEpisodes.length > 1 && (() => {
+        const isLandscape = series?.aspect_ratio === '16:9' || (!series?.aspect_ratio && series?.title?.toLowerCase().includes('mind unlocked'));
+        return (
         <div className="px-4 py-4">
           <h3 className="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wider">
             More Episodes — {series?.title}
@@ -436,9 +438,9 @@ function Watch() {
                   }`}
               >
                 {/* Thumbnail */}
-                <div className="relative flex-shrink-0 w-20 md:w-28 aspect-[9/16] rounded-l-xl overflow-hidden shadow-2xl">
+                <div className={`relative flex-shrink-0 rounded-l-xl overflow-hidden shadow-2xl ${isLandscape ? 'w-32 md:w-40 aspect-video' : 'w-20 md:w-28 aspect-[9/16]'}`}>
                   <img
-                    src={ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/hqdefault.jpg`}
+                    src={ep.thumbnail_url || `https://img.youtube.com/vi/${ep.youtube_id}/maxresdefault.jpg`}
                     alt={ep.title}
                     className={`w-full h-full object-cover transition-transform duration-700 ${ep.id !== episode.id ? 'group-hover:scale-105' : 'scale-105'}`}
                   />
@@ -484,7 +486,8 @@ function Watch() {
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Speed Menu Modal */}
       {showSpeedMenu && (
