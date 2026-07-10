@@ -10,6 +10,7 @@ import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Shorts from './pages/Shorts'
 import Music from './pages/Music'
+import Live from './pages/Live'
 import Account from './pages/Account'
 import About from './pages/About'
 import Privacy from './pages/Privacy'
@@ -18,6 +19,7 @@ import NotFound from './pages/NotFound'
 import { AnimatePresence } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import OfflineScreen from './components/OfflineScreen'
+import LiveBanner from './components/LiveBanner'
 
 function ProtectedRoute({ children }) {
   const { isSubscribed, isAdmin } = useAuth()
@@ -153,6 +155,7 @@ function App() {
 
   return (
     <>
+      <LiveBanner />
       <ScrollToTop />
       {isOffline && <OfflineScreen />}
 
@@ -257,6 +260,13 @@ function App() {
             <ProtectedRoute>
               <PageTransition>
                 <Music />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/live" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <Live />
               </PageTransition>
             </ProtectedRoute>
           } />

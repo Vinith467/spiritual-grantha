@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
 import SecretJukebox from '../components/SecretJukebox'
+import AdminLiveTab from '../components/AdminLiveTab'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, Legend } from 'recharts'
 import {
   VideoCameraOutlined,
@@ -12,7 +13,8 @@ import {
   EditOutlined,
   DeleteOutlined,
   FolderOpenOutlined,
-  PlayCircleOutlined
+  PlayCircleOutlined,
+  YoutubeOutlined
 } from '@ant-design/icons'
 const getLocalYMD = (d = new Date()) => {
   const dateObj = typeof d === 'string' ? new Date(d) : d;
@@ -628,6 +630,7 @@ function Admin() {
     { id: 'videos', label: 'Videos', icon: <VideoCameraOutlined /> },
     { id: 'music', label: 'Music', icon: <CustomerServiceOutlined /> },
     { id: 'shorts', label: 'Shorts', icon: <MobileOutlined /> },
+    { id: 'live', label: 'Live', icon: <YoutubeOutlined /> },
     { id: 'users', label: 'Users', icon: <UserOutlined /> },
   ]
 
@@ -1368,6 +1371,13 @@ function Admin() {
           </div>
         </div>
       )}
+
+      {activeTab === 'live' && (
+        <div className="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-12">
+          <AdminLiveTab />
+        </div>
+      )}
+
       {/* Secret Jukebox */}
       {showJukebox && (
         <SecretJukebox onClose={() => setShowJukebox(false)} />
