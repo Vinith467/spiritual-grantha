@@ -205,7 +205,7 @@ function Watch() {
     setShowSpeedMenu(false)
   }
 
-  const handleVideoEnd = () => {
+  const handleVideoEnd = async () => {
     const watched = JSON.parse(localStorage.getItem('watched_episodes') || '[]')
     if (!watched.includes(id)) {
       watched.push(id)
@@ -219,6 +219,32 @@ function Watch() {
       navigate(`/watch/${nextEpisode.id}`, { replace: true })
     } else {
       // Last episode in the series - jump to next playlist!
+      
+      if (episode && episode.series_id && !String(episode.series_id).startsWith('admin_')) {
+        const { data: allSeries } = await supabase
+          .from('series')
+          .select('*, episodes(*)')
+          .order('created_at', { ascending: false })
+          
+        if (allSeries && allSeries.length > 0) {
+          const currentSeriesIndex = allSeries.findIndex(s => s.id === episode.series_id)
+          let nextSeries = allSeries[0]
+          if (currentSeriesIndex !== -1 && currentSeriesIndex < allSeries.length - 1) {
+            nextSeries = allSeries[currentSeriesIndex + 1]
+          }
+          
+          if (nextSeries && nextSeries.episodes && nextSeries.episodes.length > 0) {
+             nextSeries.episodes.sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0))
+             const nextVideoId = nextSeries.episodes[0].id
+             if (nextVideoId !== id) {
+               navigate(`/watch/${nextVideoId}`, { replace: true })
+               return
+             }
+          }
+        }
+      }
+
+      // Fallback for local admin videos
       const adminVideos = JSON.parse(localStorage.getItem('admin_videos') || '[]')
       if (adminVideos.length > 0) {
         const seriesList = [...new Set(adminVideos.map(v => v.seriesTitle))]
