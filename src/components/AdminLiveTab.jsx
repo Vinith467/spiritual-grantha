@@ -35,7 +35,7 @@ function AdminLiveTab() {
   };
 
   const extractVideoId = (input) => {
-    const match = input.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+    const match = input.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|live\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
     return match ? match[1] : null;
   };
 
