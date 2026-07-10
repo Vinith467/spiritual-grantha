@@ -81,7 +81,7 @@ function Admin() {
 
   // Form States
   const [bannerForm, setBannerForm] = useState({ title: '', description: '', targetId: '', mobileUrl: '', desktopUrl: '', content_language: 'hi' })
-  const [seriesForm, setSeriesForm] = useState({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'hi' })
+  const [seriesForm, setSeriesForm] = useState({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'hi', aspect_ratio: '9:16' })
   const [episodeForm, setEpisodeForm] = useState({ series_id: '', title: '', youtube_id: '', thumbnail_url: '', episode_number: '', description: '', content_language: 'hi' })
   const [musicForm, setMusicForm] = useState({ trackTitle: '', artist: '', youtubeId: '', coverUrl: '', category: 'Devotional', content_language: 'hi' })
   const [shortForm, setShortForm] = useState({ title: 'Divine Short', description: '', youtubeId: '', content_language: 'hi' })
@@ -247,7 +247,8 @@ function Admin() {
       description: seriesForm.description,
       thumbnail_url: seriesForm.thumbnail_url,
       desktop_thumbnail_url: seriesForm.desktop_thumbnail_url,
-      content_language: seriesForm.content_language
+      content_language: seriesForm.content_language,
+      aspect_ratio: seriesForm.aspect_ratio
     }
 
     try {
@@ -258,7 +259,7 @@ function Admin() {
         const { error } = await supabase.from('series').insert([payload])
         if (error) throw error
       }
-      setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'hi' })
+      setSeriesForm({ title: '', thumbnail_url: '', desktop_thumbnail_url: '', description: '', content_language: 'hi', aspect_ratio: '9:16' })
       setEditingSeriesId(null)
       await loadSeriesAndEpisodes()
     } catch (err) {
@@ -274,7 +275,8 @@ function Admin() {
       description: item.description || '',
       thumbnail_url: item.thumbnail_url || '',
       desktop_thumbnail_url: item.desktop_thumbnail_url || '',
-      content_language: item.content_language || 'hi'
+      content_language: item.content_language || 'hi',
+      aspect_ratio: item.aspect_ratio || '9:16'
     })
     setEditingSeriesId(item.id)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -750,6 +752,13 @@ function Admin() {
                       <select value={seriesForm.content_language} onChange={e => setSeriesForm({ ...seriesForm, content_language: e.target.value })} className="notranslate w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
                         <option value="hi">Hindi</option>
                         <option value="kn">Kannada</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-xs font-bold text-gray-400">Thumbnail Aspect Ratio</label>
+                      <select value={seriesForm.aspect_ratio} onChange={e => setSeriesForm({ ...seriesForm, aspect_ratio: e.target.value })} className="notranslate w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none text-white [&>option]:bg-[#141414] [&>option]:text-white">
+                        <option value="9:16">Portrait (9:16)</option>
+                        <option value="16:9">Landscape (16:9)</option>
                       </select>
                     </div>
                     <input required type="text" placeholder="Series/Show Title" value={seriesForm.title} onChange={e => setSeriesForm({ ...seriesForm, title: e.target.value })} className="w-full sm:col-span-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none" />

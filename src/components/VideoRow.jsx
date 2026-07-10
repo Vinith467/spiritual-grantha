@@ -3,7 +3,7 @@ import VideoCard from './VideoCard'
 function VideoRow({ series }) {
   if (!series.episodes || series.episodes.length === 0) return null
 
-  const isLandscape = series.title?.toLowerCase().includes('mind unlocked')
+  const isLandscape = series.aspect_ratio === '16:9' || (!series.aspect_ratio && series.title?.toLowerCase().includes('mind unlocked'))
 
   return (
     <div className="mb-6 px-4 md:px-8">
