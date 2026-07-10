@@ -163,7 +163,8 @@ function Music() {
         <div className="flex-1 flex flex-col min-w-0 bg-black/20 rounded-3xl p-4 sm:p-6 border border-white/5 overflow-y-auto max-h-[80vh] hide-scrollbar">
           {Object.entries(
             tracks.reduce((acc, track) => {
-              const cat = track.category || 'Devotional'
+              const rawCat = track.category || 'Devotional'
+              const cat = rawCat.trim().toUpperCase()
               if (!acc[cat]) acc[cat] = []
               acc[cat].push(track)
               return acc
