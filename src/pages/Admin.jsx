@@ -1365,7 +1365,12 @@ function Admin() {
                           const q = userSearch.toLowerCase();
                           return (user.name || '').toLowerCase().includes(q) || (user.email || '').toLowerCase().includes(q);
                         })
-                        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                        .sort((a, b) => {
+                          const aOnline = isOnline(a.last_active_at) ? 1 : 0;
+                          const bOnline = isOnline(b.last_active_at) ? 1 : 0;
+                          if (aOnline !== bOnline) return bOnline - aOnline;
+                          return (a.name || '').localeCompare(b.name || '');
+                        })
                         .map(user => {
                         const online = isOnline(user.last_active_at);
                         const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
@@ -1450,7 +1455,12 @@ function Admin() {
                         const q = userSearch.toLowerCase();
                         return (user.name || '').toLowerCase().includes(q) || (user.email || '').toLowerCase().includes(q);
                       })
-                      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                      .sort((a, b) => {
+                        const aOnline = isOnline(a.last_active_at) ? 1 : 0;
+                        const bOnline = isOnline(b.last_active_at) ? 1 : 0;
+                        if (aOnline !== bOnline) return bOnline - aOnline;
+                        return (a.name || '').localeCompare(b.name || '');
+                      })
                       .map(user => {
                       const online = isOnline(user.last_active_at);
                       const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
