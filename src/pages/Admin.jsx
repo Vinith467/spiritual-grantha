@@ -45,6 +45,7 @@ function Admin() {
   const [videoChartFilter, setVideoChartFilter] = useState('daily') // 'daily' | 'all-time'
   const [showJukebox, setShowJukebox] = useState(false)
   const [tableDatePreset, setTableDatePreset] = useState('today')
+  const [userSearch, setUserSearch] = useState('')
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -1310,6 +1311,16 @@ function Admin() {
                 <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h3 className="font-bold text-white">Devotee Activity</h3>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+                    <div className="relative w-full sm:w-56">
+                      <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                      <input
+                        type="text"
+                        placeholder="Search by name or email..."
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                        className="w-full bg-black/50 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#FF9933]/50 transition"
+                      />
+                    </div>
                     <select
                       value={tableDatePreset}
                       onChange={(e) => setTableDatePreset(e.target.value)}
@@ -1348,11 +1359,14 @@ function Admin() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                      {[...profiles].sort((a, b) => {
-                        const aOnline = isOnline(a.last_active_at) ? 1 : 0;
-                        const bOnline = isOnline(b.last_active_at) ? 1 : 0;
-                        return bOnline - aOnline;
-                      }).map(user => {
+                      {[...profiles]
+                        .filter(user => {
+                          if (!userSearch.trim()) return true;
+                          const q = userSearch.toLowerCase();
+                          return (user.name || '').toLowerCase().includes(q) || (user.email || '').toLowerCase().includes(q);
+                        })
+                        .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                        .map(user => {
                         const online = isOnline(user.last_active_at);
                         const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
                         const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
@@ -1430,11 +1444,14 @@ function Admin() {
 
                   {/* Mobile Cards - shown only on mobile */}
                   <div className="md:hidden space-y-3 p-3">
-                    {[...profiles].sort((a, b) => {
-                      const aOnline = isOnline(a.last_active_at) ? 1 : 0;
-                      const bOnline = isOnline(b.last_active_at) ? 1 : 0;
-                      return bOnline - aOnline;
-                    }).map(user => {
+                    {[...profiles]
+                      .filter(user => {
+                        if (!userSearch.trim()) return true;
+                        const q = userSearch.toLowerCase();
+                        return (user.name || '').toLowerCase().includes(q) || (user.email || '').toLowerCase().includes(q);
+                      })
+                      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                      .map(user => {
                       const online = isOnline(user.last_active_at);
                       const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
                       const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
