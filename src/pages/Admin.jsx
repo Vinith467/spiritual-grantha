@@ -1110,11 +1110,12 @@ function Admin() {
                         <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
                           <span>Watch Time ({timeFilter})</span>
                           <button onClick={() => setWatchTimeUnit(watchTimeUnit === 'hours' ? 'minutes' : 'hours')} className="text-[#FF9933] hover:text-white capitalize text-[10px] bg-white/10 px-2 py-0.5 rounded transition">
-                            Switch to {watchTimeUnit === 'hours' ? 'Mins' : 'Hours'}
+                            <span>Switch to {watchTimeUnit === 'hours' ? 'Mins' : 'Hours'}</span>
                           </button>
                         </p>
-                        <p className="text-4xl font-black text-blue-500">
-                          {watchTimeUnit === 'hours' ? (totalFilteredMinutes / 60).toFixed(1) : totalFilteredMinutes} <span className="text-sm font-normal text-gray-500">{watchTimeUnit}</span>
+                        <p className="text-4xl font-black text-blue-500 flex items-baseline gap-2">
+                          <span>{watchTimeUnit === 'hours' ? (totalFilteredMinutes / 60).toFixed(1) : totalFilteredMinutes}</span> 
+                          <span className="text-sm font-normal text-gray-500">{watchTimeUnit}</span>
                         </p>
                       </div>
                       <div className="bg-black/40 border border-green-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
