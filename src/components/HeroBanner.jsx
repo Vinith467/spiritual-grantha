@@ -105,7 +105,7 @@ function HeroBanner({ seriesList }) {
                       ) : series.category && (
                         <span className="text-[#FF9933] text-[10px] md:text-xs font-bold uppercase tracking-widest block mb-2">{series.category}</span>
                       )}
-                      <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white mb-1 md:mb-2 leading-tight drop-shadow-lg">{series.title}</h2>
+                      <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-2 md:mb-3 leading-tight drop-shadow-lg line-clamp-3">{series.title}</h2>
                       <p className="text-gray-200 text-xs md:text-base line-clamp-2 md:line-clamp-3 mb-4 md:mb-6 drop-shadow-md">{series.description}</p>
                       <div className="flex gap-3 w-full sm:w-auto">
                         {(firstEpisode || series.isLive) && (
