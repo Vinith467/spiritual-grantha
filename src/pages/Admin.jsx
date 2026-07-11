@@ -37,6 +37,7 @@ function Admin() {
   const [authed, setAuthed] = useState(() => localStorage.getItem('isAdmin') === 'true')
   const [activeTab, setActiveTab] = useState('videos') // 'videos' | 'music' | 'shorts' | 'users'
   const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom'
+  const [watchTimeUnit, setWatchTimeUnit] = useState('hours')
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate, setCustomEndDate] = useState('')
   const [tableStartDate, setTableStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
@@ -1105,9 +1106,16 @@ function Admin() {
                         <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Total Devotees</p>
                         <p className="text-4xl font-black text-white">{profiles.length}</p>
                       </div>
-                      <div className="bg-black/40 border border-blue-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Watch Time ({timeFilter})</p>
-                        <p className="text-4xl font-black text-blue-500">{(totalFilteredMinutes / 60).toFixed(1)} <span className="text-sm font-normal text-gray-500">hours</span></p>
+                      <div className="bg-black/40 border border-blue-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(59,130,246,0.1)] relative">
+                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center justify-between">
+                          <span>Watch Time ({timeFilter})</span>
+                          <button onClick={() => setWatchTimeUnit(watchTimeUnit === 'hours' ? 'minutes' : 'hours')} className="text-[#FF9933] hover:text-white capitalize text-[10px] bg-white/10 px-2 py-0.5 rounded transition">
+                            Switch to {watchTimeUnit === 'hours' ? 'Mins' : 'Hours'}
+                          </button>
+                        </p>
+                        <p className="text-4xl font-black text-blue-500">
+                          {watchTimeUnit === 'hours' ? (totalFilteredMinutes / 60).toFixed(1) : totalFilteredMinutes} <span className="text-sm font-normal text-gray-500">{watchTimeUnit}</span>
+                        </p>
                       </div>
                       <div className="bg-black/40 border border-green-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
                         <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
@@ -1126,7 +1134,7 @@ function Admin() {
                       </h4>
                       <div className="h-72 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={timelineData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                          <AreaChart data={timelineData.map(d => ({ ...d, watchTimeDisplay: watchTimeUnit === 'hours' ? parseFloat((d.minutes / 60).toFixed(1)) : d.minutes }))} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <defs>
                               <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#FF9933" stopOpacity={0.8}/>
@@ -1141,7 +1149,7 @@ function Admin() {
                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} />
                             <Tooltip contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} />
                             <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-                            <Area type="monotone" dataKey="minutes" name="Watch Time (Mins)" stroke="#FF9933" strokeWidth={3} fillOpacity={1} fill="url(#colorMinutes)" />
+                            <Area type="monotone" dataKey="watchTimeDisplay" name={`Watch Time (${watchTimeUnit === 'hours' ? 'Hours' : 'Mins'})`} stroke="#FF9933" strokeWidth={3} fillOpacity={1} fill="url(#colorMinutes)" />
                             <Area type="monotone" dataKey="views" name="Total Views" stroke="#22c55e" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" />
                           </AreaChart>
                         </ResponsiveContainer>
