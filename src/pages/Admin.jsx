@@ -1253,27 +1253,23 @@ function Admin() {
                             ))}
                           </div>
                         </div>
-                        <div className="flex-1 w-full flex flex-col justify-end gap-3 min-h-[250px]">
+                        <div className="flex-1 w-full flex flex-col gap-3 min-h-[200px]">
                           {topVideosData.length > 0 && topVideosData.some(v => v.time > 0) ? (
-                            <div className="flex items-end h-full gap-2 mt-4 relative">
+                            <div className="flex flex-col gap-3">
                               {topVideosData.map((v, i) => {
                                 const maxTime = Math.max(...topVideosData.map(d => d.time));
-                                const heightPercent = Math.max((v.time / maxTime) * 100, 5);
+                                const widthPercent = Math.max((v.time / maxTime) * 100, 8);
                                 return (
-                                  <div key={i} className="flex-1 flex flex-col items-center justify-end group">
-                                    {/* Tooltip */}
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-0 -translate-y-full bg-[#141414] border border-white/10 text-white text-xs p-2 rounded-lg pointer-events-none whitespace-nowrap z-10 shadow-2xl">
-                                      <p className="font-bold text-green-400 mb-1">{v.title}</p>
-                                      <p>{formatMinsToHours(v.time)} Watch Time</p>
+                                  <div key={i} className="flex flex-col gap-1">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-xs text-gray-300 truncate pr-2 flex-1" title={v.title}>{v.title}</p>
+                                      <span className="text-xs font-bold text-green-400 whitespace-nowrap">{formatMinsToHours(v.time)}</span>
                                     </div>
-                                    <div 
-                                      className={`w-full rounded-t-md transition-all duration-500 ease-out ${i === 0 ? 'bg-green-500' : 'bg-green-500/50 group-hover:bg-green-500/70'}`}
-                                      style={{ height: `${heightPercent}%` }}
-                                    ></div>
-                                    <div className="mt-2 text-center w-full relative h-10">
-                                      <p className="text-[10px] text-gray-400 truncate w-[150%] absolute left-1/2 -translate-x-1/2" title={v.title}>
-                                        {v.title}
-                                      </p>
+                                    <div className="w-full bg-white/5 rounded-full h-3 overflow-hidden">
+                                      <div 
+                                        className={`h-full rounded-full transition-all duration-500 ${i === 0 ? 'bg-green-500' : 'bg-green-500/50'}`}
+                                        style={{ width: `${widthPercent}%` }}
+                                      ></div>
                                     </div>
                                   </div>
                                 );
@@ -1335,15 +1331,16 @@ function Admin() {
                 </div>
                 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm text-gray-400">
-                    <thead className="text-xs text-gray-500 uppercase bg-white/5 border-b border-white/10">
+                  {/* Desktop Table - hidden on mobile */}
+                  <table className="hidden md:table w-full text-left text-sm text-gray-400">
+                    <thead className="text-xs uppercase tracking-wider bg-white/5">
                       <tr>
-                        <th className="px-3 md:px-6 py-3 md:py-4">Devotee</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4">Status</th>
-                        <th className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 text-[#FF9933]">All-Time Watch Time</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4">Filtered Watch Time</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4">Filtered Watch History</th>
-                        <th className="px-3 md:px-6 py-3 md:py-4 text-center">Actions</th>
+                        <th className="px-6 py-4">Devotee</th>
+                        <th className="px-6 py-4">Status</th>
+                        <th className="px-6 py-4 text-[#FF9933]">All-Time Watch Time</th>
+                        <th className="px-6 py-4">Filtered Watch Time</th>
+                        <th className="px-6 py-4">Filtered Watch History</th>
+                        <th className="px-6 py-4 text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -1353,47 +1350,43 @@ function Admin() {
                         return bOnline - aOnline;
                       }).map(user => {
                         const online = isOnline(user.last_active_at);
-                        
                         const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
                         const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
-
                         const filteredViews = userAllTimeViews.filter(v => {
                           const vDate = getLocalYMD(v.viewed_at || v.created_at);
                           return vDate >= tableStartDate && vDate <= tableEndDate;
                         });
-                        
                         const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
-                        
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                            <td className="px-3 md:px-6 py-3 md:py-4 min-w-[150px] md:min-w-[200px]">
-                              <div className="flex items-center gap-2 md:gap-3">
-                                <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/10 shrink-0 object-cover" />
+                            <td className="px-6 py-4 min-w-[200px]">
+                              <div className="flex items-center gap-3">
+                                <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-8 h-8 rounded-full bg-white/10 shrink-0 object-cover" />
                                 <div>
-                                  <div className="font-bold text-white text-xs md:text-sm">{user.name}</div>
-                                  <div className="text-[10px] md:text-xs break-all">{user.email}</div>
+                                  <div className="font-bold text-white text-sm">{user.name}</div>
+                                  <div className="text-xs break-all">{user.email}</div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4">
+                            <td className="px-6 py-4">
                               {online ? (
-                                <span className="inline-flex items-center gap-1.5 px-2 py-1 md:px-2.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
                                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                                   Online
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2 py-1 md:px-2.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
                                   Offline
                                 </span>
                               )}
                             </td>
-                            <td className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
+                            <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
                               {formatMinsToHours(totalAllTimeMins)}
                             </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 font-bold text-white whitespace-nowrap notranslate" translate="no">
+                            <td className="px-6 py-4 font-bold text-white whitespace-nowrap notranslate" translate="no">
                               {formatMinsToHours(totalFilteredMins)}
                             </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 min-w-[200px] md:min-w-[300px]">
+                            <td className="px-6 py-4 min-w-[300px]">
                               {filteredViews.length > 0 ? (
                                 <details className="group">
                                   <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition flex items-center justify-between select-none">
@@ -1413,13 +1406,13 @@ function Admin() {
                                 <span className="text-xs text-gray-600 italic">No videos watched in this period</span>
                               )}
                             </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 text-center">
+                            <td className="px-6 py-4 text-center">
                               <button 
                                 onClick={() => handleForcePause(user.email)}
-                                className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-[10px] sm:text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 mx-auto overflow-hidden whitespace-nowrap"
+                                className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-2 mx-auto overflow-hidden whitespace-nowrap"
                               >
                                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
-                                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-4 h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 <span className="drop-shadow-md uppercase">Force Pause</span>
@@ -1430,6 +1423,88 @@ function Admin() {
                       })}
                     </tbody>
                   </table>
+
+                  {/* Mobile Cards - shown only on mobile */}
+                  <div className="md:hidden space-y-3 p-3">
+                    {[...profiles].sort((a, b) => {
+                      const aOnline = isOnline(a.last_active_at) ? 1 : 0;
+                      const bOnline = isOnline(b.last_active_at) ? 1 : 0;
+                      return bOnline - aOnline;
+                    }).map(user => {
+                      const online = isOnline(user.last_active_at);
+                      const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
+                      const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+                      const filteredViews = userAllTimeViews.filter(v => {
+                        const vDate = getLocalYMD(v.viewed_at || v.created_at);
+                        return vDate >= tableStartDate && vDate <= tableEndDate;
+                      });
+                      const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+                      return (
+                        <div key={user.id} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                          {/* User info + status */}
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-8 h-8 rounded-full bg-white/10 shrink-0 object-cover" />
+                              <div>
+                                <div className="font-bold text-white text-sm">{user.name}</div>
+                                <div className="text-[10px] text-gray-500 break-all">{user.email}</div>
+                              </div>
+                            </div>
+                            {online ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                Online
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-white/5 text-gray-400 border border-white/10">
+                                Offline
+                              </span>
+                            )}
+                          </div>
+                          {/* Watch time stats */}
+                          <div className="flex gap-3">
+                            <div className="flex-1 bg-black/30 rounded-lg p-2 text-center">
+                              <div className="text-[10px] text-gray-500 uppercase font-bold">All-Time</div>
+                              <div className="text-sm font-bold text-[#FF9933] notranslate" translate="no">{formatMinsToHours(totalAllTimeMins)}</div>
+                            </div>
+                            <div className="flex-1 bg-black/30 rounded-lg p-2 text-center">
+                              <div className="text-[10px] text-gray-500 uppercase font-bold">Filtered</div>
+                              <div className="text-sm font-bold text-white notranslate" translate="no">{formatMinsToHours(totalFilteredMins)}</div>
+                            </div>
+                          </div>
+                          {/* Watch history */}
+                          {filteredViews.length > 0 ? (
+                            <details className="group">
+                              <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 flex items-center justify-between select-none">
+                                <span>Watch History ({filteredViews.length} Videos)</span>
+                                <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                              </summary>
+                              <div className="mt-2 space-y-1.5 max-h-40 overflow-y-auto">
+                                {filteredViews.map(v => (
+                                  <div key={v.id} className="text-xs flex items-center justify-between gap-2 bg-black/20 p-2 rounded-lg border border-white/5">
+                                    <span className="truncate text-gray-300" title={v.video_title}>{v.video_title}</span>
+                                    <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil(v.duration_seconds / 60)}m</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          ) : (
+                            <p className="text-xs text-gray-600 italic">No videos watched in this period</p>
+                          )}
+                          {/* Force Pause button */}
+                          <button 
+                            onClick={() => handleForcePause(user.email)}
+                            className="w-full px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 text-white font-black tracking-wider rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-2 border border-red-500/30"
+                          >
+                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="uppercase">Force Pause</span>
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
