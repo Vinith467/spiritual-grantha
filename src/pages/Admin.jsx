@@ -489,19 +489,23 @@ function Admin() {
     }
   }
 
-  const handleDeleteUser = async (email) => {
-    if (!window.confirm(`Are you sure you want to remove the user with email ${email}? This will delete their profile data.`)) return;
-    
-    try {
-      const { error } = await supabase.from('profiles').delete().eq('email', email);
-      if (error) throw error;
-      
-      setProfiles(prev => prev.filter(p => p.email !== email));
-      showAlert('Success', 'User removed successfully.');
-    } catch (err) {
-      console.error('Failed to remove user:', err);
-      showAlert('Error', 'Failed to remove user. They may have dependent records.');
-    }
+  const handleDeleteUser = (email) => {
+    showConfirm(
+      'Remove User',
+      `Are you sure you want to remove the user with email ${email}? This will delete their profile data.`,
+      async () => {
+        try {
+          const { error } = await supabase.from('profiles').delete().eq('email', email);
+          if (error) throw error;
+          
+          setProfiles(prev => prev.filter(p => p.email !== email));
+          showAlert('Success', 'User removed successfully.');
+        } catch (err) {
+          console.error('Failed to remove user:', err);
+          showAlert('Error', 'Failed to remove user. They may have dependent records.');
+        }
+      }
+    );
   }
 
   const handleShortSubmit = async (e) => {
