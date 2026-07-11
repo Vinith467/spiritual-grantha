@@ -489,6 +489,21 @@ function Admin() {
     }
   }
 
+  const handleDeleteUser = async (email) => {
+    if (!window.confirm(`Are you sure you want to remove the user with email ${email}? This will delete their profile data.`)) return;
+    
+    try {
+      const { error } = await supabase.from('profiles').delete().eq('email', email);
+      if (error) throw error;
+      
+      setProfiles(prev => prev.filter(p => p.email !== email));
+      showAlert('Success', 'User removed successfully.');
+    } catch (err) {
+      console.error('Failed to remove user:', err);
+      showAlert('Error', 'Failed to remove user. They may have dependent records.');
+    }
+  }
+
   const handleShortSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -1430,16 +1445,27 @@ function Admin() {
                               )}
                             </td>
                             <td className="px-6 py-4 text-center">
-                              <button 
-                                onClick={() => handleForcePause(user.email)}
-                                className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-2 mx-auto overflow-hidden whitespace-nowrap"
-                              >
-                                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
-                                <svg className="w-4 h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span className="drop-shadow-md uppercase">Force Pause</span>
-                              </button>
+                              <div className="flex items-center justify-center gap-2 mx-auto">
+                                <button 
+                                  onClick={() => handleForcePause(user.email)}
+                                  className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap"
+                                >
+                                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+                                  <svg className="w-4 h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  <span className="drop-shadow-md uppercase">Force Pause</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(user.email)}
+                                  title="Remove User"
+                                  className="p-2 bg-gray-800 hover:bg-red-900/50 text-gray-400 hover:text-red-500 border border-gray-700 hover:border-red-500/50 rounded-xl transition-all active:scale-95"
+                                >
+                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         )
@@ -1522,16 +1548,26 @@ function Admin() {
                           ) : (
                             <p className="text-xs text-gray-600 italic">No videos watched in this period</p>
                           )}
-                          {/* Force Pause button */}
-                          <button 
-                            onClick={() => handleForcePause(user.email)}
-                            className="w-full px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 text-white font-black tracking-wider rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-2 border border-red-500/30"
-                          >
-                            <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span className="uppercase">Force Pause</span>
-                          </button>
+                          {/* Force Pause and Delete buttons */}
+                          <div className="flex items-center gap-2">
+                            <button 
+                              onClick={() => handleForcePause(user.email)}
+                              className="flex-1 px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 text-white font-black tracking-wider rounded-xl text-xs transition-all active:scale-95 flex items-center justify-center gap-2 border border-red-500/30"
+                            >
+                              <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="uppercase">Force Pause</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(user.email)}
+                              className="p-2 bg-gray-800 text-gray-400 border border-gray-700 rounded-xl transition-all active:scale-95 flex items-center justify-center"
+                            >
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
                       )
                     })}
