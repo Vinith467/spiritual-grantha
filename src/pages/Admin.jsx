@@ -1081,7 +1081,7 @@ function Admin() {
                       </div>
                       <div className="bg-black/40 border border-blue-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
                         <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">Watch Time ({timeFilter})</p>
-                        <p className="text-4xl font-black text-blue-500">{totalFilteredMinutes} <span className="text-sm font-normal text-gray-500">mins</span></p>
+                        <p className="text-4xl font-black text-blue-500">{(totalFilteredMinutes / 60).toFixed(1)} <span className="text-sm font-normal text-gray-500">hours</span></p>
                       </div>
                       <div className="bg-black/40 border border-green-500/30 rounded-2xl p-5 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
                         <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
