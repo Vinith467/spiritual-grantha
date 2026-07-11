@@ -4,8 +4,10 @@ import { useAuth } from '../lib/AuthContext'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import BottomNavbar from '../components/BottomNavbar'
 import ComingSoon from '../components/ComingSoon'
+import { useWatchLimit } from '../hooks/useWatchLimit'
+import BreakModal from '../components/BreakModal'
 
-const ShortVideo = ({ short, index, activeIndex }) => {
+const ShortVideo = ({ short, index, activeIndex, addWatchTime }) => {
   // Mount the heavy player if it's within 2 slots of the active one (Preloading)
   const isNear = Math.abs(index - activeIndex) <= 2
   const isActive = index === activeIndex
@@ -52,6 +54,7 @@ const ShortVideo = ({ short, index, activeIndex }) => {
             await supabase.from('video_views').update({ duration_seconds: current.duration_seconds + 10 }).eq('id', viewRecordIdRef.current)
           }
         }
+        addWatchTime(10)
       } catch (err) {
         console.error('Failed to log short view:', err)
       }
@@ -136,6 +139,8 @@ function Shorts() {
   const [shortsData, setShortsData] = useState([])
   const [loading, setLoading] = useState(true)
   const [activeIndex, setActiveIndex] = useState(0)
+
+  const { addWatchTime, hasReachedLimit, acknowledgeBreak } = useWatchLimit()
 
   // Fetch all shorts from Supabase
   useEffect(() => {
@@ -235,10 +240,26 @@ function Shorts() {
               short={short} 
               index={index} 
               activeIndex={activeIndex} 
+              addWatchTime={addWatchTime}
             />
           ))
         )}
       </div>
+
+      {hasReachedLimit && (
+        <BreakModal 
+          onPause={() => {
+            const activeIframe = document.querySelector(`iframe[src*="youtube"]`)
+            if (activeIframe && activeIframe.contentWindow) {
+              activeIframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'pauseVideo'
+              }), '*')
+            }
+          }}
+          onAcknowledge={acknowledgeBreak}
+        />
+      )}
 
       {/* Floating Bottom Navbar */}
       <BottomNavbar />

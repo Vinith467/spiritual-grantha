@@ -7,6 +7,8 @@ import YouTube from 'react-youtube'
 import { haptics } from '../utils/haptics'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import ComingSoon from '../components/ComingSoon'
+import { useWatchLimit } from '../hooks/useWatchLimit'
+import BreakModal from '../components/BreakModal'
 
 function Watch() {
   const { profile } = useAuth()
@@ -19,6 +21,8 @@ function Watch() {
   const [isForceLandscape, setIsForceLandscape] = useState(false)
   const [player, setPlayer] = useState(null)
   
+  const { addWatchTime, hasReachedLimit, acknowledgeBreak } = useWatchLimit()
+
   const [playbackSpeed, setPlaybackSpeed] = useState(1)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   
@@ -121,6 +125,9 @@ function Watch() {
                 }
               }
             }
+
+            // Call useWatchLimit to track local time for the break limit
+            addWatchTime(10)
           }
           
           const currentTime = await player.getCurrentTime()
@@ -152,7 +159,7 @@ function Watch() {
       }
     }, 5000)
     return () => clearInterval(interval)
-  }, [player, id, episode, series])
+  }, [player, id, episode, series, addWatchTime])
 
   const handlePlayerReady = (event) => {
     setPlayer(event.target)
@@ -545,6 +552,12 @@ function Watch() {
       )}
 
       <BottomNavbar />
+      {hasReachedLimit && (
+        <BreakModal 
+          onPause={() => player?.pauseVideo()} 
+          onAcknowledge={acknowledgeBreak} 
+        />
+      )}
     </div>
   )
 }

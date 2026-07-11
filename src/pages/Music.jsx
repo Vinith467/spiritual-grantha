@@ -7,6 +7,8 @@ import BottomNavbar from '../components/BottomNavbar'
 import Navbar from '../components/Navbar'
 import YouTube from 'react-youtube'
 import ComingSoon from '../components/ComingSoon'
+import { useWatchLimit } from '../hooks/useWatchLimit'
+import BreakModal from '../components/BreakModal'
 
 function Music() {
   const { profile } = useAuth()
@@ -21,6 +23,8 @@ function Music() {
   const [player, setPlayer] = useState(null)
   const viewRecordIdRef = useRef(null)
   const lastSyncTimeRef = useRef(0)
+
+  const { addWatchTime, hasReachedLimit, acknowledgeBreak } = useWatchLimit()
 
   useEffect(() => {
     viewRecordIdRef.current = null
@@ -54,13 +58,14 @@ function Music() {
               }
             }
           }
+          addWatchTime(10)
         }
       } catch (err) {
         console.error("Error saving progress", err)
       }
     }, 5000)
     return () => clearInterval(interval)
-  }, [player, activeTrack, profile?.email])
+  }, [player, activeTrack, profile?.email, addWatchTime])
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/music?track=${activeTrack.id}`
@@ -152,6 +157,12 @@ function Music() {
         <ComingSoon language="Kannada" />
       </div>
       <BottomNavbar />
+      {hasReachedLimit && (
+        <BreakModal 
+          onPause={() => player?.pauseVideo()} 
+          onAcknowledge={acknowledgeBreak} 
+        />
+      )}
     </div>
   )
 
@@ -315,6 +326,13 @@ function Music() {
 
         {/* Floating Bottom Navbar */}
         <BottomNavbar />
+        
+        {hasReachedLimit && (
+          <BreakModal 
+            onPause={() => player?.pauseVideo()} 
+            onAcknowledge={acknowledgeBreak} 
+          />
+        )}
       </div>
     </div>
   )

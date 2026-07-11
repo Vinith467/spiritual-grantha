@@ -452,6 +452,16 @@ function Admin() {
   // ============================================================
   // SHORTS CRUD
   // ============================================================
+  const handleForcePause = async (email) => {
+    try {
+      await supabase.from('profiles').update({ force_paused: true }).eq('email', email)
+      alert('User forcefully paused. Their app will stop playing shortly.')
+    } catch (err) {
+      console.error('Failed to force pause user:', err)
+      alert('Failed to force pause user.')
+    }
+  }
+
   const handleShortSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -1282,6 +1292,7 @@ function Admin() {
                         <th className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 text-[#FF9933]">All-Time Watch Time</th>
                         <th className="px-3 md:px-6 py-3 md:py-4">Filtered Watch Time</th>
                         <th className="px-3 md:px-6 py-3 md:py-4">Filtered Watch History</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4 text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -1350,6 +1361,14 @@ function Admin() {
                               ) : (
                                 <span className="text-xs text-gray-600 italic">No videos watched in this period</span>
                               )}
+                            </td>
+                            <td className="px-3 md:px-6 py-3 md:py-4 text-center">
+                              <button 
+                                onClick={() => handleForcePause(user.email)}
+                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-lg text-xs transition border border-red-500/20 active:scale-95 whitespace-nowrap"
+                              >
+                                Force Pause
+                              </button>
                             </td>
                           </tr>
                         )

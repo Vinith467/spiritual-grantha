@@ -14,7 +14,7 @@ function VideoCard({ episode, progress, isLandscape }) {
     >
       <div className={`relative overflow-hidden rounded-md ${isLandscape ? 'aspect-video' : 'aspect-[9/16]'}`}>
         <img
-          src={episode.thumbnail_url || `https://img.youtube.com/vi/${episode.youtube_id}/hqdefault.jpg`}
+          src={episode.thumbnail_url || `https://img.youtube.com/vi/${episode.youtube_id}/maxresdefault.jpg`}
           alt={episode.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
