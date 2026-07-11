@@ -1362,10 +1362,10 @@ function Admin() {
                                 </span>
                               )}
                             </td>
-                            <td className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 font-bold text-[#FF9933] whitespace-nowrap">
+                            <td className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
                               {formatMinsToHours(totalAllTimeMins)}
                             </td>
-                            <td className="px-3 md:px-6 py-3 md:py-4 font-bold text-white whitespace-nowrap">
+                            <td className="px-3 md:px-6 py-3 md:py-4 font-bold text-white whitespace-nowrap notranslate" translate="no">
                               {formatMinsToHours(totalFilteredMins)}
                             </td>
                             <td className="px-3 md:px-6 py-3 md:py-4 min-w-[200px] md:min-w-[300px]">
