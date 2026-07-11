@@ -7,7 +7,7 @@ function BreakModal({ onPause, onAcknowledge }) {
     if (onPause) {
       onPause();
     }
-    haptics.notification('warning');
+    haptics.heavy();
   }, [onPause]);
 
   return (
