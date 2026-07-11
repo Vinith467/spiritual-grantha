@@ -179,6 +179,25 @@ function Admin() {
     }
   }, [navigate, loadBanners, loadSeriesAndEpisodes, loadMusic, loadShorts, loadProfiles])
 
+  useEffect(() => {
+    if (localStorage.getItem('isAdmin') !== 'true') return;
+
+    const channel = supabase
+      .channel('admin_dashboard_profiles')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          loadProfiles();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadProfiles]);
+
   // ============================================================
   // BANNERS CRUD
   // ============================================================
