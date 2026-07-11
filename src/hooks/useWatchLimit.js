@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 
-// FOR TESTING: 30 seconds limit. Change to 36000 (10 hours) for production.
-export const DAILY_LIMIT_SECONDS = 30;
+// 10 hours for production (36000 seconds)
+export const DAILY_LIMIT_SECONDS = 36000;
 
 export function useWatchLimit() {
   const { profile } = useAuth();
