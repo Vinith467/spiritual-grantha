@@ -7,6 +7,7 @@ function AdminLiveTab() {
   const [liveStream, setLiveStream] = useState(null);
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
 
   useEffect(() => {
     loadLiveStream();
@@ -25,7 +26,8 @@ function AdminLiveTab() {
       if (data) {
         setLiveStream(data);
         setUrl(`https://youtube.com/watch?v=${data.youtube_id}`);
-        setTitle(data.title);
+        setTitle(data.title || '');
+        setDescription(data.description || '');
       }
     } catch (err) {
       console.error('Error loading live stream:', err);
@@ -56,6 +58,7 @@ function AdminLiveTab() {
         const payload = {
           youtube_id: videoId,
           title: title,
+          description: description,
           is_active: true,
           created_at: new Date().toISOString()
         };
@@ -125,6 +128,18 @@ function AdminLiveTab() {
               onChange={e => setTitle(e.target.value)} 
               disabled={isActive}
               className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none disabled:opacity-50"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-xs font-bold text-gray-400">Broadcast Description (Optional)</label>
+            <textarea 
+              placeholder="Enter a short description about this live broadcast..." 
+              value={description} 
+              onChange={e => setDescription(e.target.value)} 
+              disabled={isActive}
+              rows={3}
+              className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-[#FF9933]/50 outline-none disabled:opacity-50 resize-none"
             />
           </div>
 
