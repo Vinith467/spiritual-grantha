@@ -1248,11 +1248,11 @@ function Admin() {
               <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden shadow-2xl mt-6">
                 <div className="px-6 py-4 border-b border-white/10 bg-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h3 className="font-bold text-white">Devotee Activity</h3>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
                     <select
                       value={tableDatePreset}
                       onChange={(e) => setTableDatePreset(e.target.value)}
-                      className="bg-black/50 border border-white/10 rounded-md px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-[#FF9933] cursor-pointer"
+                      className="bg-black/50 border border-white/10 rounded-md px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:border-[#FF9933] cursor-pointer w-full sm:w-auto"
                     >
                       <option value="today">Today</option>
                       <option value="1day">Yesterday</option>
@@ -1264,10 +1264,10 @@ function Admin() {
                     </select>
 
                     {tableDatePreset === 'custom' && (
-                      <div className="flex items-center gap-2 animate-fade-in">
-                        <input type="date" value={tableStartDate} onChange={(e) => setTableStartDate(e.target.value)} className="bg-black/50 border border-[#FF9933]/30 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                      <div className="flex items-center gap-2 animate-fade-in w-full sm:w-auto">
+                        <input type="date" value={tableStartDate} onChange={(e) => setTableStartDate(e.target.value)} className="bg-black/50 border border-[#FF9933]/30 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933] w-full sm:w-auto" />
                         <span className="text-gray-500 text-xs font-bold uppercase tracking-wide">to</span>
-                        <input type="date" value={tableEndDate} onChange={(e) => setTableEndDate(e.target.value)} className="bg-black/50 border border-[#FF9933]/30 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933]" />
+                        <input type="date" value={tableEndDate} onChange={(e) => setTableEndDate(e.target.value)} className="bg-black/50 border border-[#FF9933]/30 rounded-md px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#FF9933] w-full sm:w-auto" />
                       </div>
                     )}
                   </div>
@@ -1277,11 +1277,11 @@ function Admin() {
                   <table className="w-full text-left text-sm text-gray-400">
                     <thead className="text-xs text-gray-500 uppercase bg-white/5 border-b border-white/10">
                       <tr>
-                        <th className="px-6 py-4">Devotee</th>
-                        <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-[#FF9933]">All-Time Watch Time</th>
-                        <th className="px-6 py-4">Filtered Watch Time</th>
-                        <th className="px-6 py-4">Filtered Watch History</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4">Devotee</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4">Status</th>
+                        <th className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 text-[#FF9933]">All-Time Watch Time</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4">Filtered Watch Time</th>
+                        <th className="px-3 md:px-6 py-3 md:py-4">Filtered Watch History</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
@@ -1304,34 +1304,34 @@ function Admin() {
                         
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 min-w-[200px]">
-                              <div className="flex items-center gap-3">
-                                <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-8 h-8 rounded-full bg-white/10 shrink-0 object-cover" />
+                            <td className="px-3 md:px-6 py-3 md:py-4 min-w-[150px] md:min-w-[200px]">
+                              <div className="flex items-center gap-2 md:gap-3">
+                                <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/10 shrink-0 object-cover" />
                                 <div>
-                                  <div className="font-bold text-white">{user.name}</div>
-                                  <div className="text-xs break-all">{user.email}</div>
+                                  <div className="font-bold text-white text-xs md:text-sm">{user.name}</div>
+                                  <div className="text-[10px] md:text-xs break-all">{user.email}</div>
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4">
+                            <td className="px-3 md:px-6 py-3 md:py-4">
                               {online ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                                <span className="inline-flex items-center gap-1.5 px-2 py-1 md:px-2.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
                                   <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                                   Online
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
+                                <span className="inline-flex items-center gap-1.5 px-2 py-1 md:px-2.5 md:py-1 rounded-full text-[10px] md:text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
                                   Offline
                                 </span>
                               )}
                             </td>
-                            <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap">
+                            <td className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4 font-bold text-[#FF9933] whitespace-nowrap">
                               {formatMinsToHours(totalAllTimeMins)}
                             </td>
-                            <td className="px-6 py-4 font-bold text-white whitespace-nowrap">
+                            <td className="px-3 md:px-6 py-3 md:py-4 font-bold text-white whitespace-nowrap">
                               {formatMinsToHours(totalFilteredMins)}
                             </td>
-                            <td className="px-6 py-4 min-w-[300px]">
+                            <td className="px-3 md:px-6 py-3 md:py-4 min-w-[200px] md:min-w-[300px]">
                               {filteredViews.length > 0 ? (
                                 <details className="group">
                                   <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition flex items-center justify-between select-none">
