@@ -455,10 +455,10 @@ function Admin() {
   const handleForcePause = async (email) => {
     try {
       await supabase.from('profiles').update({ force_paused: true }).eq('email', email)
-      alert('User forcefully paused. Their app will stop playing shortly.')
+      showAlert('Success', 'User forcefully paused. Their app will stop playing shortly.')
     } catch (err) {
       console.error('Failed to force pause user:', err)
-      alert('Failed to force pause user.')
+      showAlert('Error', 'Failed to force pause user.')
     }
   }
 
@@ -690,7 +690,7 @@ function Admin() {
       </div>
 
       {/* Main Content Area */}
-      <div className="p-5 max-w-4xl mx-auto space-y-8">
+      <div className="p-4 md:p-8 max-w-[1400px] w-full mx-auto space-y-8">
 
         {/* VIDEOS TAB */}
         {activeTab === 'videos' && (
@@ -1365,9 +1365,13 @@ function Admin() {
                             <td className="px-3 md:px-6 py-3 md:py-4 text-center">
                               <button 
                                 onClick={() => handleForcePause(user.email)}
-                                className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 font-bold rounded-lg text-xs transition border border-red-500/20 active:scale-95 whitespace-nowrap"
+                                className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-[10px] sm:text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-1.5 sm:gap-2 mx-auto overflow-hidden whitespace-nowrap"
                               >
-                                Force Pause
+                                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+                                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span className="drop-shadow-md uppercase">Force Pause</span>
                               </button>
                             </td>
                           </tr>
