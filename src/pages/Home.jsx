@@ -92,8 +92,8 @@ function Home() {
       finalBanners.unshift({
         id: 'live-' + activeLiveStream.id,
         title: activeLiveStream.title,
-        description: 'Join the live broadcast now',
-        category: '🔴 LIVE BROADCAST',
+        description: activeLiveStream.description || 'Join the live broadcast now',
+        category: 'LIVE BROADCAST',
         thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/maxresdefault.jpg`,
         desktop_thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/maxresdefault.jpg`,
         isLive: true,
