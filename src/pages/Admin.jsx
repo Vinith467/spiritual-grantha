@@ -35,8 +35,10 @@ function Admin() {
   const navigate = useNavigate()
   // eslint-disable-next-line no-unused-vars
   const [authed, setAuthed] = useState(() => localStorage.getItem('isAdmin') === 'true')
-  const [activeTab, setActiveTab] = useState('videos')
-  const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly'
+  const [activeTab, setActiveTab] = useState('videos') // 'videos' | 'music' | 'shorts' | 'users'
+  const [timeFilter, setTimeFilter] = useState('daily') // 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom'
+  const [customStartDate, setCustomStartDate] = useState('')
+  const [customEndDate, setCustomEndDate] = useState('')
   const [tableStartDate, setTableStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
   const [tableEndDate, setTableEndDate] = useState(new Date().toISOString().split('T')[0])
   const [showJukebox, setShowJukebox] = useState(false)
@@ -972,16 +974,25 @@ function Admin() {
                 <h2 className="text-2xl font-black text-white flex items-center gap-2">
                   Studio Analytics 📊
                 </h2>
-                <div className="flex bg-black/40 border border-white/10 rounded-lg p-1">
-                  {['daily', 'weekly', 'monthly', 'yearly'].map(f => (
-                    <button
-                      key={f}
-                      onClick={() => setTimeFilter(f)}
-                      className={`px-4 py-1.5 rounded-md text-xs font-bold capitalize transition ${timeFilter === f ? 'bg-[#FF9933] text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
-                    >
-                      {f}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex bg-black/40 border border-white/10 rounded-lg p-1">
+                    {['daily', 'weekly', 'monthly', 'yearly', 'custom'].map(f => (
+                      <button
+                        key={f}
+                        onClick={() => setTimeFilter(f)}
+                        className={`px-4 py-1.5 rounded-md text-xs font-bold capitalize transition ${timeFilter === f ? 'bg-[#FF9933] text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                  {timeFilter === 'custom' && (
+                    <div className="flex items-center gap-2 bg-black/40 border border-white/10 rounded-lg px-2 py-1">
+                      <input type="date" value={customStartDate} onChange={e => setCustomStartDate(e.target.value)} className="bg-transparent text-xs text-white outline-none cursor-pointer" />
+                      <span className="text-gray-500 text-xs font-bold">to</span>
+                      <input type="date" value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} className="bg-transparent text-xs text-white outline-none cursor-pointer" />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1027,6 +1038,20 @@ function Admin() {
                       const dY = d.getFullYear(), dM = d.getMonth();
                       const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
                       buckets.push({ label, match: (vDate) => vDate.getMonth() === dM && vDate.getFullYear() === dY, views: 0, minutes: 0 });
+                    }
+                  } else if (filter === 'custom' && customStartDate && customEndDate) {
+                    const start = new Date(customStartDate);
+                    const end = new Date(customEndDate);
+                    if (start <= end) {
+                      let current = new Date(start);
+                      let iterations = 0;
+                      while (current <= end && iterations < 366) {
+                        const dY = current.getFullYear(), dM = current.getMonth(), dD = current.getDate();
+                        const label = current.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        buckets.push({ label, match: (vDate) => vDate.getFullYear() === dY && vDate.getMonth() === dM && vDate.getDate() === dD, views: 0, minutes: 0 });
+                        current.setDate(current.getDate() + 1);
+                        iterations++;
+                      }
                     }
                   }
                   return buckets;
