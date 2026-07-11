@@ -42,6 +42,7 @@ function Admin() {
   const [customEndDate, setCustomEndDate] = useState('')
   const [tableStartDate, setTableStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
   const [tableEndDate, setTableEndDate] = useState(new Date().toISOString().split('T')[0])
+  const [videoChartFilter, setVideoChartFilter] = useState('daily') // 'daily' | 'all-time'
   const [showJukebox, setShowJukebox] = useState(false)
   const [tableDatePreset, setTableDatePreset] = useState('today')
 
@@ -1212,24 +1213,49 @@ function Admin() {
                       </div>
 
                       {/* Most Played Videos Chart */}
-                      <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl">
-                        <h4 className="font-bold text-sm text-green-400 uppercase mb-4 tracking-wide">Most Played Videos ({timeFilter})</h4>
-                        <div className="h-64 w-full">
-                          {topVideos.length > 0 && topVideos.some(v => v.time > 0) ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={topVideos} margin={{ top: 20, right: 0, left: 0, bottom: 40 }}>
-                                <XAxis dataKey="title" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} interval={0} angle={-35} textAnchor="end" />
-                                <YAxis hide />
-                                <Tooltip formatter={(value) => [formatMinsToHours(value), 'Watch Time']} cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ backgroundColor: '#141414', borderColor: '#333', borderRadius: '8px' }} itemStyle={{ color: '#fff' }} />
-                                <Bar dataKey="time" radius={[4, 4, 0, 0]}>
-                                  {topVideos.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={index === 0 ? '#22c55e' : '#22c55e80'} />
-                                  ))}
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
+                      <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl flex flex-col">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-bold text-sm text-green-400 uppercase tracking-wide">Most Played Videos</h4>
+                          <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5">
+                            {['daily', 'all-time'].map(f => (
+                              <button
+                                key={f}
+                                onClick={() => setVideoChartFilter(f)}
+                                className={`px-3 py-1 rounded-md text-[10px] font-bold capitalize transition ${videoChartFilter === f ? 'bg-green-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                              >
+                                {f}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex-1 w-full flex flex-col justify-end gap-3 min-h-[250px]">
+                          {topVideosData.length > 0 && topVideosData.some(v => v.time > 0) ? (
+                            <div className="flex items-end h-full gap-2 mt-4 relative">
+                              {topVideosData.map((v, i) => {
+                                const maxTime = Math.max(...topVideosData.map(d => d.time));
+                                const heightPercent = Math.max((v.time / maxTime) * 100, 5);
+                                return (
+                                  <div key={i} className="flex-1 flex flex-col items-center justify-end group">
+                                    {/* Tooltip */}
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute top-0 -translate-y-full bg-[#141414] border border-white/10 text-white text-xs p-2 rounded-lg pointer-events-none whitespace-nowrap z-10 shadow-2xl">
+                                      <p className="font-bold text-green-400 mb-1">{v.title}</p>
+                                      <p>{formatMinsToHours(v.time)} Watch Time</p>
+                                    </div>
+                                    <div 
+                                      className={`w-full rounded-t-md transition-all duration-500 ease-out ${i === 0 ? 'bg-green-500' : 'bg-green-500/50 group-hover:bg-green-500/70'}`}
+                                      style={{ height: `${heightPercent}%` }}
+                                    ></div>
+                                    <div className="mt-2 text-center w-full relative h-10">
+                                      <p className="text-[10px] text-gray-400 truncate w-[150%] absolute left-1/2 -translate-x-1/2" title={v.title}>
+                                        {v.title}
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           ) : (
-                            <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">No video views yet</div>
+                            <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">No video views {videoChartFilter === 'daily' ? 'today' : 'yet'}</div>
                           )}
                         </div>
                       </div>
