@@ -132,6 +132,30 @@ function Admin() {
     if (vData) setVideoViews(vData)
   }, [])
 
+  const topVideosData = useMemo(() => {
+    try {
+      const map = {};
+      const today = getLocalYMD(new Date());
+      videoViews.forEach(v => {
+        const rawDate = v.viewed_at || v.created_at || new Date();
+        const vDateStr = getLocalYMD(rawDate) || today;
+        
+        if (videoChartFilter === 'daily' && vDateStr !== today) return;
+        
+        const title = v.video_title || 'Unknown Video';
+        if (!map[title]) map[title] = 0;
+        map[title] += Math.ceil((v.duration_seconds || 0) / 60);
+      });
+      return Object.keys(map).map(title => ({
+        title: title,
+        time: map[title]
+      })).sort((a, b) => b.time - a.time).slice(0, 5);
+    } catch (err) {
+      console.error("Error generating topVideosData:", err);
+      return [];
+    }
+  }, [videoViews, videoChartFilter]);
+
   useEffect(() => {
     if (tableDatePreset === 'custom') return;
     
