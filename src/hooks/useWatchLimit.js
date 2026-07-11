@@ -32,7 +32,7 @@ export function useWatchLimit() {
 
   // Poll database for force_paused status
   useEffect(() => {
-    if (!profile?.email || hasAcknowledged) return;
+    if (!profile?.email) return;
 
     const checkForcePause = async () => {
       try {
@@ -45,6 +45,11 @@ export function useWatchLimit() {
         if (data && data.force_paused) {
           setIsForcePaused(true);
           setHasReachedLimit(true);
+          setHasAcknowledged(false); // Force them back into the modal
+          
+          // Clear their local acknowledgment so the modal stays up
+          const { ackKey } = getTodayKey();
+          localStorage.removeItem(ackKey);
         }
       } catch (err) {
         console.error("Failed to check force_paused", err);
@@ -55,7 +60,7 @@ export function useWatchLimit() {
     checkForcePause();
     const interval = setInterval(checkForcePause, 5000);
     return () => clearInterval(interval);
-  }, [profile?.email, hasAcknowledged]);
+  }, [profile?.email]);
 
   const addWatchTime = useCallback((seconds) => {
     if (hasAcknowledged || !profile) return;
