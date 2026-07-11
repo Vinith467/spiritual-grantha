@@ -64,11 +64,12 @@ function HeroBanner({ seriesList }) {
                     /* LIVE CARD: Image at the top half (no cropping), text at bottom */
                     <>
                       {/* Blurred background to fill empty space */}
-                      <img src={series.thumbnail_url} className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-125" alt="" />
+                      <img src={series.thumbnail_url} onError={(e) => { if (!e.target.dataset.failed) { e.target.dataset.failed = true; e.target.src = series.thumbnail_url.replace('maxresdefault', 'hqdefault'); } }} className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-125" alt="" />
                       {/* Actual uncropped thumbnail at the top */}
                       <div className="absolute top-0 inset-x-0 h-1/2 flex items-center justify-center p-4">
                         <img
                           src={series.thumbnail_url}
+                          onError={(e) => { if (!e.target.dataset.failed) { e.target.dataset.failed = true; e.target.src = series.thumbnail_url.replace('maxresdefault', 'hqdefault'); } }}
                           alt={series.title}
                           className="w-full h-full object-contain rounded-xl shadow-lg"
                           draggable="false"
@@ -84,6 +85,7 @@ function HeroBanner({ seriesList }) {
                         <source media="(min-width: 768px)" srcSet={series.desktop_thumbnail_url || series.thumbnail_url} />
                         <img
                           src={series.thumbnail_url}
+                          onError={(e) => { if (!e.target.dataset.failed) { e.target.dataset.failed = true; e.target.src = series.thumbnail_url.replace('maxresdefault', 'hqdefault'); } }}
                           alt={series.title}
                           className="w-full h-full object-cover object-top sm:object-center"
                           draggable="false"
