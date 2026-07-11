@@ -1121,26 +1121,30 @@ function Admin() {
                 const activeVideoTimeMap = {};
                 
                 videoViews.forEach(v => {
-                  const vDate = new Date(v.viewed_at || v.created_at || new Date());
-                  const bucket = timelineData.find(b => b.match(vDate));
-                  if (bucket) {
-                    bucket.views += 1;
-                    const mins = Math.ceil(v.duration_seconds / 60);
-                    bucket.minutes += mins;
-                    totalFilteredMinutes += mins;
-                    totalFilteredViews += 1;
-                    
-                    if (!activeVideoTimeMap[v.video_title]) activeVideoTimeMap[v.video_title] = 0;
-                    activeVideoTimeMap[v.video_title] += mins;
-                  }
+                  try {
+                    const vDate = new Date(v.viewed_at || v.created_at || new Date());
+                    if (isNaN(vDate.getTime())) return;
+                    const bucket = timelineData.find(b => b.match(vDate));
+                    if (bucket) {
+                      bucket.views += 1;
+                      const mins = Math.ceil((v.duration_seconds || 0) / 60);
+                      bucket.minutes += mins;
+                      totalFilteredMinutes += mins;
+                      totalFilteredViews += 1;
+                      
+                      const vTitle = v.video_title || 'Unknown';
+                      if (!activeVideoTimeMap[vTitle]) activeVideoTimeMap[vTitle] = 0;
+                      activeVideoTimeMap[vTitle] += mins;
+                    }
+                  } catch(e) { /* skip bad record */ }
                 });
                 
                 const userTotalTime = profiles.map(user => {
                   const session = userSessions.find(s => s.user_email === user.email);
-                  const name = user.name.length > 15 ? user.name.substring(0, 15) + '...' : user.name;
+                  const name = (user.name || 'Unknown').length > 15 ? (user.name || 'Unknown').substring(0, 15) + '...' : (user.name || 'Unknown');
                   return {
                     name: name,
-                    time: session ? Math.ceil(session.duration_seconds / 60) : 0
+                    time: session ? Math.ceil((session.duration_seconds || 0) / 60) : 0
                   };
                 }).sort((a, b) => b.time - a.time).slice(0, 5);
 
@@ -1351,12 +1355,12 @@ function Admin() {
                       }).map(user => {
                         const online = isOnline(user.last_active_at);
                         const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
-                        const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+                        const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
                         const filteredViews = userAllTimeViews.filter(v => {
                           const vDate = getLocalYMD(v.viewed_at || v.created_at);
                           return vDate >= tableStartDate && vDate <= tableEndDate;
                         });
-                        const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+                        const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
                             <td className="px-6 py-4 min-w-[200px]">
@@ -1397,7 +1401,7 @@ function Admin() {
                                     {filteredViews.map(v => (
                                       <div key={v.id} className="text-xs flex items-center justify-between gap-4 bg-black/20 p-2 rounded-lg border border-white/5 hover:border-white/10 transition">
                                         <span className="truncate max-w-[200px] text-gray-300" title={v.video_title}>{v.video_title}</span>
-                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil(v.duration_seconds / 60)}m</span>
+                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil((v.duration_seconds || 0) / 60)}m</span>
                                       </div>
                                     ))}
                                   </div>
@@ -1433,12 +1437,12 @@ function Admin() {
                     }).map(user => {
                       const online = isOnline(user.last_active_at);
                       const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
-                      const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+                      const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
                       const filteredViews = userAllTimeViews.filter(v => {
                         const vDate = getLocalYMD(v.viewed_at || v.created_at);
                         return vDate >= tableStartDate && vDate <= tableEndDate;
                       });
-                      const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil(curr.duration_seconds / 60), 0);
+                      const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
                       return (
                         <div key={user.id} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
                           {/* User info + status */}
@@ -1483,7 +1487,7 @@ function Admin() {
                                 {filteredViews.map(v => (
                                   <div key={v.id} className="text-xs flex items-center justify-between gap-2 bg-black/20 p-2 rounded-lg border border-white/5">
                                     <span className="truncate text-gray-300" title={v.video_title}>{v.video_title}</span>
-                                    <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil(v.duration_seconds / 60)}m</span>
+                                    <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil((v.duration_seconds || 0) / 60)}m</span>
                                   </div>
                                 ))}
                               </div>
