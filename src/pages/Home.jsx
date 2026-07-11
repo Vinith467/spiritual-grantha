@@ -94,8 +94,8 @@ function Home() {
         title: activeLiveStream.title,
         description: activeLiveStream.description || 'Join the live broadcast now',
         category: 'LIVE BROADCAST',
-        thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/maxresdefault.jpg`,
-        desktop_thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/maxresdefault.jpg`,
+        thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/hqdefault.jpg`,
+        desktop_thumbnail_url: `https://img.youtube.com/vi/${activeLiveStream.youtube_id}/hqdefault.jpg`,
         isLive: true,
         episodes: [] // No episodes needed
       })
