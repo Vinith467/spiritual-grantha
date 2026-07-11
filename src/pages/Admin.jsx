@@ -973,7 +973,7 @@ function Admin() {
                   Studio Analytics 📊
                 </h2>
                 <div className="flex bg-black/40 border border-white/10 rounded-lg p-1">
-                  {['daily', 'weekly', 'monthly'].map(f => (
+                  {['daily', 'weekly', 'monthly', 'yearly'].map(f => (
                     <button
                       key={f}
                       onClick={() => setTimeFilter(f)}
@@ -993,39 +993,40 @@ function Admin() {
                   const now = new Date();
                   
                   if (filter === 'daily') {
-                    for (let i = 6; i >= 0; i--) {
-                      const d = new Date(now);
-                      d.setDate(d.getDate() - i);
-                      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                      const dateKey = d.toISOString().split('T')[0];
-                      buckets.push({ label, dateKey, match: (vDate) => vDate.toISOString().split('T')[0] === dateKey, views: 0, minutes: 0 });
-                    }
-                  } else if (filter === 'weekly') {
-                    for (let i = 3; i >= 0; i--) {
-                      const d = new Date(now);
-                      d.setDate(d.getDate() - (i * 7));
-                      const weekStart = new Date(d);
-                      weekStart.setDate(d.getDate() - d.getDay()); 
-                      const weekEnd = new Date(weekStart);
-                      weekEnd.setDate(weekStart.getDate() + 6);
-                      const label = `${weekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+                    const tYear = now.getFullYear();
+                    const tMonth = now.getMonth();
+                    const tDate = now.getDate();
+                    for (let i = 0; i < 24; i++) {
+                      const hourLabel = i === 0 ? '12 AM' : i < 12 ? `${i} AM` : i === 12 ? '12 PM' : `${i - 12} PM`;
                       buckets.push({ 
-                        label, 
-                        match: (vDate) => vDate.getTime() >= weekStart.getTime() && vDate.getTime() <= weekEnd.getTime() + 86400000, 
+                        label: hourLabel, 
+                        match: (vDate) => vDate.getFullYear() === tYear && vDate.getMonth() === tMonth && vDate.getDate() === tDate && vDate.getHours() === i, 
                         views: 0, 
                         minutes: 0 
                       });
                     }
+                  } else if (filter === 'weekly') {
+                    for (let i = 6; i >= 0; i--) {
+                      const d = new Date(now);
+                      d.setDate(d.getDate() - i);
+                      const dY = d.getFullYear(), dM = d.getMonth(), dD = d.getDate();
+                      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      buckets.push({ label, match: (vDate) => vDate.getFullYear() === dY && vDate.getMonth() === dM && vDate.getDate() === dD, views: 0, minutes: 0 });
+                    }
                   } else if (filter === 'monthly') {
+                    for (let i = 29; i >= 0; i--) {
+                      const d = new Date(now);
+                      d.setDate(d.getDate() - i);
+                      const dY = d.getFullYear(), dM = d.getMonth(), dD = d.getDate();
+                      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      buckets.push({ label, match: (vDate) => vDate.getFullYear() === dY && vDate.getMonth() === dM && vDate.getDate() === dD, views: 0, minutes: 0 });
+                    }
+                  } else if (filter === 'yearly') {
                     for (let i = 11; i >= 0; i--) {
                       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                      const dY = d.getFullYear(), dM = d.getMonth();
                       const label = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-                      buckets.push({
-                        label,
-                        match: (vDate) => vDate.getMonth() === d.getMonth() && vDate.getFullYear() === d.getFullYear(),
-                        views: 0,
-                        minutes: 0
-                      });
+                      buckets.push({ label, match: (vDate) => vDate.getMonth() === dM && vDate.getFullYear() === dY, views: 0, minutes: 0 });
                     }
                   }
                   return buckets;
