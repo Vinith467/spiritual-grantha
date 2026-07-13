@@ -42,7 +42,9 @@ function Admin() {
   const [customEndDate, setCustomEndDate] = useState('')
   const [tableStartDate, setTableStartDate] = useState(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
   const [tableEndDate, setTableEndDate] = useState(new Date().toISOString().split('T')[0])
-  const [videoChartFilter, setVideoChartFilter] = useState('daily') // 'daily' | 'all-time'
+  const [videoChartFilter, setVideoChartFilter] = useState('daily') // 'daily' | 'all-time' | 'custom'
+  const [videoChartStartDate, setVideoChartStartDate] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+  const [videoChartEndDate, setVideoChartEndDate] = useState(new Date().toISOString().split('T')[0])
   const [showJukebox, setShowJukebox] = useState(false)
   const [tableDatePreset, setTableDatePreset] = useState('today')
   const [userSearch, setUserSearch] = useState('')
@@ -144,6 +146,9 @@ function Admin() {
         const vDateStr = getLocalYMD(rawDate) || today;
         
         if (videoChartFilter === 'daily' && vDateStr !== today) return;
+        if (videoChartFilter === 'custom') {
+          if (vDateStr < videoChartStartDate || vDateStr > videoChartEndDate) return;
+        }
         
         const title = v.video_title || 'Unknown Video';
         if (!map[title]) map[title] = 0;
@@ -157,7 +162,7 @@ function Admin() {
       console.error("Error generating topVideosData:", err);
       return [];
     }
-  }, [videoViews, videoChartFilter]);
+  }, [videoViews, videoChartFilter, videoChartStartDate, videoChartEndDate]);
 
   useEffect(() => {
     if (tableDatePreset === 'custom') return;
@@ -1264,18 +1269,37 @@ function Admin() {
 
                       {/* Most Played Videos Chart */}
                       <div className="bg-black/40 border border-white/10 rounded-2xl p-5 shadow-2xl flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                           <h4 className="font-bold text-sm text-green-400 uppercase tracking-wide">Most Played Videos</h4>
-                          <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5">
-                            {['daily', 'all-time'].map(f => (
-                              <button
-                                key={f}
-                                onClick={() => setVideoChartFilter(f)}
-                                className={`px-3 py-1 rounded-md text-[10px] font-bold capitalize transition ${videoChartFilter === f ? 'bg-green-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
-                              >
-                                {f}
-                              </button>
-                            ))}
+                          <div className="flex flex-col sm:flex-row gap-2 sm:items-center self-end sm:self-auto">
+                            {videoChartFilter === 'custom' && (
+                              <div className="flex gap-2 text-xs mr-2 border border-white/10 rounded-lg p-1 bg-black/40">
+                                <input 
+                                  type="date" 
+                                  value={videoChartStartDate}
+                                  onChange={e => setVideoChartStartDate(e.target.value)}
+                                  className="bg-transparent text-gray-300 outline-none focus:text-white"
+                                />
+                                <span className="text-gray-500 flex items-center">-</span>
+                                <input 
+                                  type="date" 
+                                  value={videoChartEndDate}
+                                  onChange={e => setVideoChartEndDate(e.target.value)}
+                                  className="bg-transparent text-gray-300 outline-none focus:text-white"
+                                />
+                              </div>
+                            )}
+                            <div className="flex bg-white/5 border border-white/10 rounded-lg p-0.5">
+                              {['daily', 'custom', 'all-time'].map(f => (
+                                <button
+                                  key={f}
+                                  onClick={() => setVideoChartFilter(f)}
+                                  className={`px-3 py-1 rounded-md text-[10px] font-bold capitalize transition ${videoChartFilter === f ? 'bg-green-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                  {f.replace('-', ' ')}
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                         <div className="flex-1 w-full flex flex-col gap-3 min-h-[200px]">
@@ -1309,7 +1333,9 @@ function Admin() {
                               )}
                             </div>
                           ) : (
-                            <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">No video views {videoChartFilter === 'daily' ? 'today' : 'yet'}</div>
+                            <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">
+                              No video views {videoChartFilter === 'daily' ? 'today' : (videoChartFilter === 'custom' ? 'in this period' : 'yet')}
+                            </div>
                           )}
                         </div>
                       </div>
