@@ -46,6 +46,7 @@ function Admin() {
   const [showJukebox, setShowJukebox] = useState(false)
   const [tableDatePreset, setTableDatePreset] = useState('today')
   const [userSearch, setUserSearch] = useState('')
+  const [showAllTopVideos, setShowAllTopVideos] = useState(false)
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -151,7 +152,7 @@ function Admin() {
       return Object.keys(map).map(title => ({
         title: title,
         time: map[title]
-      })).sort((a, b) => b.time - a.time).slice(0, 5);
+      })).sort((a, b) => b.time - a.time);
     } catch (err) {
       console.error("Error generating topVideosData:", err);
       return [];
@@ -1280,7 +1281,7 @@ function Admin() {
                         <div className="flex-1 w-full flex flex-col gap-3 min-h-[200px]">
                           {topVideosData.length > 0 && topVideosData.some(v => v.time > 0) ? (
                             <div className="flex flex-col gap-3">
-                              {topVideosData.map((v, i) => {
+                              {(showAllTopVideos ? topVideosData : topVideosData.slice(0, 5)).map((v, i) => {
                                 const maxTime = Math.max(...topVideosData.map(d => d.time));
                                 const widthPercent = Math.max((v.time / maxTime) * 100, 8);
                                 return (
@@ -1298,6 +1299,14 @@ function Admin() {
                                   </div>
                                 );
                               })}
+                              {topVideosData.length > 5 && (
+                                <button 
+                                  onClick={() => setShowAllTopVideos(!showAllTopVideos)}
+                                  className="mt-2 text-xs font-bold text-green-400/70 hover:text-green-400 transition-colors uppercase tracking-wider text-center w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg"
+                                >
+                                  {showAllTopVideos ? 'Show Less' : `View All (${topVideosData.length})`}
+                                </button>
+                              )}
                             </div>
                           ) : (
                             <div className="h-full flex items-center justify-center text-gray-500 italic text-sm">No video views {videoChartFilter === 'daily' ? 'today' : 'yet'}</div>
