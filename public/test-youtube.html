@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>YouTube Ad Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body { background: #000; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+      #player { width: 100%; max-width: 800px; aspect-ratio: 16/9; margin: 0 auto; display: block; }
+    </style>
+  </head>
+  <body>
+    <h2>YouTube Ad Test (No React)</h2>
+    <p>This is a barebones iframe to test if ads serve outside of React.</p>
+    
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <div id="player"></div>
+
+    <script>
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player;
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+          height: '100%',
+          width: '100%',
+          videoId: 'wYwJc4D2-9s', // Replace with your monetized video ID
+          playerVars: {
+            'playsinline': 1,
+            'autoplay': 0, // 0 allows click-to-play, which is often required for ads on mobile
+            'rel': 0
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
