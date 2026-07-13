@@ -7,6 +7,13 @@ import BottomNavbar from '../components/BottomNavbar'
 import { InfoCircleOutlined } from '@ant-design/icons'
 import Navbar from '../components/Navbar'
 
+function formatMinsToHours(mins) {
+  if (!mins) return '0m';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+
 function Account() {
   const navigate = useNavigate()
   const { signOut } = useAuth()
@@ -25,6 +32,10 @@ function Account() {
 
     const [showQR, setShowQR] = useState(false)
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
+  
+  // Watch Time States
+  const [todayWatchMins, setTodayWatchMins] = useState(0)
+  const [allTimeWatchMins, setAllTimeWatchMins] = useState(0)
 
   // Load profile data from Supabase
   useEffect(() => {
@@ -67,6 +78,46 @@ function Account() {
         }
       }
       fetchProfile()
+      
+      const fetchWatchTime = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('video_views')
+            .select('duration_seconds, viewed_at, created_at')
+            .eq('user_email', email.toLowerCase())
+          
+          if (!error && data) {
+            let allTime = 0
+            let todayTime = 0
+            
+            // Get local YMD string for "today"
+            const todayObj = new Date();
+            const tzOffset = todayObj.getTimezoneOffset() * 60000; 
+            const localISOTime = (new Date(todayObj - tzOffset)).toISOString().slice(0, -1);
+            const todayStr = localISOTime.split('T')[0];
+
+            data.forEach(v => {
+              const seconds = v.duration_seconds || 0;
+              allTime += seconds;
+              
+              const rawDate = v.viewed_at || v.created_at || new Date();
+              const vDateObj = new Date(rawDate);
+              const vLocalISOTime = (new Date(vDateObj - tzOffset)).toISOString().slice(0, -1);
+              const vDateStr = vLocalISOTime.split('T')[0];
+
+              if (vDateStr === todayStr) {
+                todayTime += seconds;
+              }
+            })
+            
+            setAllTimeWatchMins(Math.ceil(allTime / 60))
+            setTodayWatchMins(Math.ceil(todayTime / 60))
+          }
+        } catch (err) {
+          console.error("Error fetching watch time:", err)
+        }
+      }
+      fetchWatchTime()
     }
   }, [profileEmail])
 
@@ -217,6 +268,49 @@ function Account() {
                   className="w-full bg-[#141414] border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF9933]/60 transition duration-300 font-bold"
                   placeholder="Enter contact number"
                 />
+              </div>
+            </div>
+
+            {/* 📊 Your Dharma Progress */}
+            <div className="border-t border-white/10 pt-6 space-y-5">
+              <h3 className="text-sm font-black text-white tracking-widest uppercase flex items-center gap-2">
+                <span>📊 Your Dharma Progress</span>
+              </h3>
+              
+              <div className="bg-[#141414] border border-white/10 rounded-2xl p-5 shadow-2xl flex flex-col gap-4 relative overflow-hidden">
+                {/* Background Glow */}
+                <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#FF9933]/10 rounded-full blur-3xl"></div>
+                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-green-500/10 rounded-full blur-3xl"></div>
+
+                {/* Today's Watch Time */}
+                <div className="flex justify-between items-center relative z-10">
+                  <div>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Watch Time</p>
+                    <p className="text-[10px] text-gray-500">12 AM to 12 AM</p>
+                  </div>
+                  <div className="text-lg font-black text-green-400">{formatMinsToHours(todayWatchMins)}</div>
+                </div>
+
+                {/* All-Time Watch Time & Progress to 300 Hrs */}
+                <div className="flex flex-col gap-2 pt-4 border-t border-white/5 relative z-10">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-xs font-bold text-[#FF9933] uppercase tracking-wider">Total Journey</p>
+                      <p className="text-[10px] text-gray-500">Goal: 300 Hours</p>
+                    </div>
+                    <div className="text-lg font-black text-white">{formatMinsToHours(allTimeWatchMins)}</div>
+                  </div>
+                  
+                  {/* Progress Bar */}
+                  <div className="w-full bg-black rounded-full h-3 overflow-hidden border border-white/10 mt-1">
+                    <div 
+                      className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-[#FF9933] to-[#FF6600]"
+                      style={{ width: `${Math.max(Math.min((allTimeWatchMins / (300 * 60)) * 100, 100), 2)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-[10px] text-right font-bold text-gray-500">{((allTimeWatchMins / (300 * 60)) * 100).toFixed(1)}% Completed</p>
+                </div>
+
               </div>
             </div>
 
