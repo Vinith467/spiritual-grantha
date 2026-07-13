@@ -91,7 +91,7 @@ function Account() {
           const { data, error } = await supabase
             .from('video_views')
             .select('duration_seconds, viewed_at, created_at')
-            .eq('user_email', email.toLowerCase())
+            .ilike('user_email', email)
           
           if (!error && data) {
             let allTime = 0
@@ -286,7 +286,7 @@ function Account() {
                 <div className="flex justify-between items-center relative z-10">
                   <div>
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Today's Watch Time</p>
-                    <p className="text-[10px] text-gray-500">12 AM to 12 AM</p>
+                    <p className="text-[10px] text-gray-500">Daily</p>
                   </div>
                   <div className="text-lg font-black text-green-400">{formatMinsToHours(todayWatchMins)}</div>
                 </div>
@@ -296,7 +296,7 @@ function Account() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-xs font-bold text-[#FF9933] uppercase tracking-wider">Total Journey</p>
-                      <p className="text-[10px] text-gray-500">Goal: 300 Hours</p>
+                      <p className="text-[10px] text-gray-500">Total target 300 hours</p>
                     </div>
                     <div className="text-lg font-black text-white">{formatMinsToHours(allTimeWatchMins)}</div>
                   </div>
