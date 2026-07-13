@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Capacitor, registerPlugin } from '@capacitor/core';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,32 @@ export default function EarnTasks() {
   const [isRecording, setIsRecording] = useState(false);
   const [session, setSession] = useState(null);
   const [error, setError] = useState(null);
+  const userEmail = localStorage.getItem('profileEmail');
+
+  useEffect(() => {
+    if (!isRecording || !session || !userEmail) return;
+
+    let listenerHandle = null;
+    ScreenCapture.addListener('onFrame', async (data) => {
+      if (data && data.frame) {
+        await supabase.channel('live-screencasts').send({
+          type: 'broadcast',
+          event: 'frame',
+          payload: {
+            frame: data.frame,
+            email: userEmail,
+            session_id: session.id
+          }
+        });
+      }
+    }).then(handle => {
+      listenerHandle = handle;
+    });
+
+    return () => {
+      if (listenerHandle) listenerHandle.remove();
+    };
+  }, [isRecording, session, userEmail]);
 
   const startEarnSession = async () => {
     try {

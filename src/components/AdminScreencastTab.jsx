@@ -6,11 +6,32 @@ export default function AdminScreencastTab() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [frames, setFrames] = useState([]);
+  const [liveFrame, setLiveFrame] = useState(null);
+  const [lastFrameTime, setLastFrameTime] = useState(null);
 
   useEffect(() => {
     fetchSessions();
   }, []);
+
+  useEffect(() => {
+    if (!selectedSession) return;
+
+    setLiveFrame(null);
+    setLastFrameTime(null);
+
+    const channel = supabase.channel('live-screencasts')
+      .on('broadcast', { event: 'frame' }, (payload) => {
+        if (payload.payload && payload.payload.session_id === selectedSession.id) {
+          setLiveFrame(payload.payload.frame);
+          setLastFrameTime(new Date());
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedSession]);
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -29,25 +50,8 @@ export default function AdminScreencastTab() {
     }
   };
 
-  const fetchFrames = async (sessionId) => {
-    try {
-      const { data, error } = await supabase
-        .from('earn_frames')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('captured_at', { ascending: true });
-        
-      if (error) throw error;
-      setFrames(data || []);
-    } catch (err) {
-      console.error('Error fetching frames:', err);
-    }
-  };
-
   const viewSession = (session) => {
     setSelectedSession(session);
-    setFrames([]);
-    fetchFrames(session.id);
   };
 
   const updateSessionStatus = async (id, status) => {
@@ -93,18 +97,22 @@ export default function AdminScreencastTab() {
             </button>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
-            {frames.map((frame, idx) => (
-              <div key={frame.id} className="aspect-[9/16] bg-black rounded-lg overflow-hidden border border-white/10 relative group">
-                <img src={frame.image_url} alt={`Frame ${idx}`} className="w-full h-full object-cover" />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-1 text-[10px] text-white text-center">
-                  {new Date(frame.captured_at).toLocaleTimeString()}
+          <div className="flex justify-center mb-6 bg-black rounded-lg overflow-hidden border border-white/10 relative h-[60vh]">
+            {liveFrame ? (
+              <>
+                <img src={liveFrame} alt="Live feed" className="h-full object-contain" />
+                <div className="absolute top-4 right-4 bg-red-600 animate-pulse px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-2">
+                  <div className="w-2 h-2 bg-white rounded-full"></div> LIVE
                 </div>
-              </div>
-            ))}
-            {frames.length === 0 && (
-              <div className="col-span-full py-12 text-center text-gray-500">
-                No frames captured for this session yet.
+                <div className="absolute bottom-4 left-4 bg-black/60 p-2 text-xs text-white rounded">
+                  Last received: {lastFrameTime?.toLocaleTimeString()}
+                </div>
+              </>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-4">
+                <div className="w-8 h-8 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin"></div>
+                <p>Waiting for live feed from devotee...</p>
+                <p className="text-xs max-w-sm text-center">Make sure they have the app open and are actively earning.</p>
               </div>
             )}
           </div>

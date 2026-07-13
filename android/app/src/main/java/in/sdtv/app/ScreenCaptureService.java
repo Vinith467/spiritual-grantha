@@ -153,33 +153,9 @@ public class ScreenCaptureService extends Service {
     }
 
     private void uploadToSupabase(String base64Frame) {
-        if (supabaseAnonKey == null || supabaseAnonKey.isEmpty()) return;
-
-        new Thread(() -> {
-            try {
-                URL url = new URL(supabaseUrl + "/rest/v1/earn_frames");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setRequestProperty("apikey", supabaseAnonKey);
-                conn.setRequestProperty("Authorization", "Bearer " + supabaseAnonKey);
-                conn.setDoOutput(true);
-
-                JSONObject jsonParam = new JSONObject();
-                jsonParam.put("session_id", sessionId);
-                jsonParam.put("frame_base64", base64Frame);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(jsonParam.toString().getBytes("UTF-8"));
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                Log.d(TAG, "Supabase Upload Response Code: " + responseCode);
-                conn.disconnect();
-            } catch (Exception e) {
-                Log.e(TAG, "Upload failed", e);
-            }
-        }).start();
+        Intent intent = new Intent("ScreenCaptureFrame");
+        intent.putExtra("frame_base64", base64Frame);
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     private void stopRecording() {

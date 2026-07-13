@@ -7,6 +7,9 @@ import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 
 import androidx.activity.result.ActivityResult;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -19,10 +22,31 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 public class ScreenCapturePlugin extends Plugin {
 
     private MediaProjectionManager mediaProjectionManager;
+    private BroadcastReceiver frameReceiver;
 
     @Override
     public void load() {
         mediaProjectionManager = (MediaProjectionManager) getContext().getSystemService(Context.MEDIA_PROJECTION_SERVICE);
+        frameReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent != null && intent.hasExtra("frame_base64")) {
+                    String base64 = intent.getStringExtra("frame_base64");
+                    JSObject ret = new JSObject();
+                    ret.put("frame", base64);
+                    notifyListeners("onFrame", ret);
+                }
+            }
+        };
+        LocalBroadcastManager.getInstance(getContext()).registerReceiver(frameReceiver, new IntentFilter("ScreenCaptureFrame"));
+    }
+
+    @Override
+    protected void handleOnDestroy() {
+        super.handleOnDestroy();
+        if (frameReceiver != null) {
+            LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(frameReceiver);
+        }
     }
 
     @PluginMethod()
@@ -52,6 +76,14 @@ public class ScreenCapturePlugin extends Plugin {
             serviceIntent.setAction(ScreenCaptureService.ACTION_START);
             serviceIntent.putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, resultCode);
             serviceIntent.putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data);
+            
+            PluginCall savedCall = getSavedCall();
+            if (savedCall != null) {
+                String sessionId = savedCall.getString("SESSION_ID");
+                String anonKey = savedCall.getString("SUPABASE_ANON_KEY");
+                serviceIntent.putExtra("SESSION_ID", sessionId);
+                serviceIntent.putExtra("SUPABASE_ANON_KEY", anonKey);
+            }
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 getContext().startForegroundService(serviceIntent);
