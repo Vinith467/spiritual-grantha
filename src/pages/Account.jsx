@@ -90,7 +90,7 @@ function Account() {
         try {
           const { data, error } = await supabase
             .from('video_views')
-            .select('duration_seconds, viewed_at, created_at')
+            .select('duration_seconds, viewed_at')
             .ilike('user_email', email)
           
           if (!error && data) {
