@@ -362,7 +362,8 @@ function Watch() {
             height: '100%',
             playerVars: {
               autoplay: 0,
-              rel: 0
+              rel: 0,
+              origin: window.location.origin
             },
           }}
           className="w-full h-full"
