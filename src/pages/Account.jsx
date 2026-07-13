@@ -14,6 +14,13 @@ function formatMinsToHours(mins) {
   return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
 }
 
+const getLocalYMD = (d = new Date()) => {
+  const dateObj = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dateObj.getTime())) return '';
+  const offset = dateObj.getTimezoneOffset() * 60000;
+  return new Date(dateObj.getTime() - offset).toISOString().split('T')[0];
+}
+
 function Account() {
   const navigate = useNavigate()
   const { signOut } = useAuth()
@@ -90,28 +97,21 @@ function Account() {
             let allTime = 0
             let todayTime = 0
             
-            // Get local YMD string for "today"
-            const todayObj = new Date();
-            const tzOffset = todayObj.getTimezoneOffset() * 60000; 
-            const localISOTime = (new Date(todayObj - tzOffset)).toISOString().slice(0, -1);
-            const todayStr = localISOTime.split('T')[0];
+            const todayStr = getLocalYMD(new Date());
 
             data.forEach(v => {
-              const seconds = v.duration_seconds || 0;
-              allTime += seconds;
+              const mins = Math.ceil((v.duration_seconds || 0) / 60);
+              allTime += mins;
               
-              const rawDate = v.viewed_at || v.created_at || new Date();
-              const vDateObj = new Date(rawDate);
-              const vLocalISOTime = (new Date(vDateObj - tzOffset)).toISOString().slice(0, -1);
-              const vDateStr = vLocalISOTime.split('T')[0];
+              const vDateStr = getLocalYMD(v.viewed_at || v.created_at);
 
               if (vDateStr === todayStr) {
-                todayTime += seconds;
+                todayTime += mins;
               }
             })
             
-            setAllTimeWatchMins(Math.ceil(allTime / 60))
-            setTodayWatchMins(Math.ceil(todayTime / 60))
+            setAllTimeWatchMins(allTime)
+            setTodayWatchMins(todayTime)
           }
         } catch (err) {
           console.error("Error fetching watch time:", err)
