@@ -20,14 +20,9 @@ export function useWatchLimit() {
   };
 
   useEffect(() => {
-    const { watchKey, ackKey } = getTodayKey();
+    const { ackKey } = getTodayKey();
     const ack = localStorage.getItem(ackKey) === 'true';
     setHasAcknowledged(ack);
-    
-    const seconds = parseInt(localStorage.getItem(watchKey) || '0', 10);
-    if (seconds >= DAILY_LIMIT_SECONDS && !ack) {
-      setHasReachedLimit(true);
-    }
   }, []);
 
   // Poll database for force_paused status
@@ -74,11 +69,7 @@ export function useWatchLimit() {
     const currentSeconds = parseInt(localStorage.getItem(watchKey) || '0', 10);
     const newSeconds = currentSeconds + seconds;
     localStorage.setItem(watchKey, newSeconds.toString());
-
-    if (newSeconds >= DAILY_LIMIT_SECONDS && !hasReachedLimit) {
-      setHasReachedLimit(true);
-    }
-  }, [hasAcknowledged, hasReachedLimit, profile]);
+  }, [hasAcknowledged, profile]);
 
   const acknowledgeBreak = useCallback(async () => {
     const { ackKey } = getTodayKey();
