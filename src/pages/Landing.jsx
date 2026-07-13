@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGoogleTranslate } from '../lib/useGoogleTranslate'
 import LanguageSelector from '../components/LanguageSelector'
 import { useAuth } from '../lib/AuthContext'
+import { Capacitor } from '@capacitor/core'
 
 function Landing() {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ function Landing() {
   }
 
   useEffect(() => {
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+    const isStandalone = Capacitor.isNativePlatform() || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
 
     // Only auto-redirect to login if they are in the standalone app
     if (isStandalone) {

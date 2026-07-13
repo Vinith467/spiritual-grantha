@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
 import SecretJukebox from '../components/SecretJukebox'
 import AdminLiveTab from '../components/AdminLiveTab'
+import AdminScreencastTab from '../components/AdminScreencastTab'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, Legend } from 'recharts'
 import {
   VideoCameraOutlined,
@@ -14,7 +15,8 @@ import {
   DeleteOutlined,
   FolderOpenOutlined,
   PlayCircleOutlined,
-  YoutubeOutlined
+  YoutubeOutlined,
+  CameraOutlined
 } from '@ant-design/icons'
 const getLocalYMD = (d = new Date()) => {
   const dateObj = typeof d === 'string' ? new Date(d) : d;
@@ -716,6 +718,7 @@ function Admin() {
     { id: 'music', label: 'Music', icon: <CustomerServiceOutlined /> },
     { id: 'shorts', label: 'Shorts', icon: <MobileOutlined /> },
     { id: 'live', label: 'Live', icon: <YoutubeOutlined /> },
+    { id: 'screencasts', label: 'Screencasts', icon: <CameraOutlined /> },
     { id: 'users', label: 'Users', icon: <UserOutlined /> },
   ]
 
@@ -1691,6 +1694,12 @@ function Admin() {
       {activeTab === 'live' && (
         <div className="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-12">
           <AdminLiveTab />
+        </div>
+      )}
+
+      {activeTab === 'screencasts' && (
+        <div className="max-w-7xl mx-auto px-4 md:px-6 pt-4 pb-12">
+          <AdminScreencastTab />
         </div>
       )}
 

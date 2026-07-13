@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../lib/AuthContext";
+import { Capacitor } from '@capacitor/core';
 import { useGoogleTranslate } from "../lib/useGoogleTranslate";
 import LanguageSelector from "../components/LanguageSelector";
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -11,6 +12,7 @@ function Login() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("idle");
   const [hoverZone, setHoverZone] = useState("none");
+  const [nativeEmail, setNativeEmail] = useState("");
   const { selectedLang, handleLanguageChange } = useGoogleTranslate();
 
 
@@ -136,9 +138,12 @@ function Login() {
         } catch (dbErr) {
           console.error("Failed to sync devotee profile in Supabase:", dbErr);
         }
+      } else {
+        throw new Error("Failed to get user info from Google");
       }
     } catch (err) {
-      console.error("Error retrieving Google user details:", err);
+      console.error("fetchUserInfoAndVerify failed:", err);
+      setStatus("error");
     }
 
     // 2. Perform YouTube check or Admin bypass
@@ -149,6 +154,56 @@ function Login() {
       handleLoginSuccess();
     } else {
       await subscribeToChannel(accessToken);
+    }
+  }
+
+  async function handleNativeLogin(e) {
+    e.preventDefault();
+    if (!nativeEmail) return;
+    setStatus("subscribing");
+    
+    try {
+      const email = nativeEmail.toLowerCase().trim();
+      let isUserAdmin = false;
+      const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '')
+        .split(',')
+        .map(e => e.trim().toLowerCase())
+        .filter(Boolean);
+        
+      const hardcodedAdmins = [
+        'vinuvinith0007@gmail.com',
+        'omishamarketingfaculty@gmail.com',
+        'lakshmikanthng2@gmail.com'
+      ];
+      
+      const ADMIN_EMAILS = [...envAdmins, ...hardcodedAdmins];
+      
+      if (ADMIN_EMAILS.includes(email)) {
+        setAdminStatus(true);
+        isUserAdmin = true;
+      } else {
+        setAdminStatus(false);
+      }
+
+      updateProfile({
+        name: 'Devotee',
+        email: email,
+        avatar: null
+      });
+
+      await supabase.from('profiles').upsert([
+        {
+          email: email,
+          name: 'Devotee',
+          updated_at: new Date().toISOString()
+        }
+      ], { onConflict: 'email' });
+
+      signIn();
+      navigate("/home");
+    } catch (err) {
+      console.error("Native login failed:", err);
+      setStatus("error");
     }
   }
 
@@ -316,26 +371,49 @@ function Login() {
           )}
 
           {/* Buttons */}
-          <div className="w-full space-y-3 shrink-0">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={status === "subscribing" || status === "signing"}
-              className="w-full relative group flex items-center justify-center gap-3 bg-white text-gray-900 py-4 sm:py-5 px-6 rounded-2xl font-extrabold text-[16px] sm:text-lg transition-all duration-300 transform hover:scale-[1.03] shadow-[0_0_40px_rgba(255,153,51,0.5)] hover:shadow-[0_0_60px_rgba(255,153,51,0.8)] border border-[#FF9933]/30 mb-8 overflow-hidden disabled:opacity-70 disabled:hover:scale-100"
-            >
-              {/* Shine effect overlay */}
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-[#FF9933]/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
-
-              <svg className="w-6 h-6 md:w-7 md:h-7 relative z-10" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-              </svg>
-              <span className="text-gray-900 font-extrabold relative z-10">
-                {status === "signing" ? "Opening Google..." : "Continue with Google"}
-              </span>
-            </button>
-
+          <div className="w-full flex justify-center">
+            {status === "signing" || status === "subscribing" ? (
+              <div className="flex flex-col items-center animate-in zoom-in duration-300">
+                <div className="w-12 h-12 border-4 border-[#FF9933]/30 border-t-[#FF9933] rounded-full animate-spin mb-4 shadow-[0_0_15px_rgba(255,153,51,0.5)]"></div>
+                <p className="text-[#FF9933] font-bold tracking-wide animate-pulse notranslate">
+                  {status === "signing" ? "Authenticating..." : "Logging In..."}
+                </p>
+              </div>
+            ) : Capacitor.isNativePlatform() ? (
+              <form onSubmit={handleNativeLogin} className="w-full flex flex-col gap-3">
+                <input 
+                  type="email" 
+                  required 
+                  placeholder="Enter your email to login"
+                  value={nativeEmail}
+                  onChange={(e) => setNativeEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#FF9933] focus:ring-1 focus:ring-[#FF9933]"
+                />
+                <button
+                  type="submit"
+                  className="w-full group relative overflow-hidden bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-400 hover:to-amber-500 text-white px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,153,51,0.4)] flex items-center justify-center gap-3 border border-white/20"
+                >
+                  <span className="relative z-10 tracking-wide uppercase">Login to App</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                </button>
+              </form>
+            ) : (
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full group relative overflow-hidden bg-white text-gray-800 px-8 py-4 rounded-2xl font-black text-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center gap-3 border border-gray-100"
+              >
+                <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-gray-200 p-1">
+                  <svg viewBox="0 0 24 24" className="w-full h-full">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                  </svg>
+                </div>
+                <span className="relative z-10 tracking-wide">Continue with Google</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/5 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              </button>
+            )}
           </div>
 
           {/* Footer */}

@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { useAuth } from './lib/AuthContext'
 import { useActivityTracker } from './lib/useActivityTracker'
 import ScrollToTop from './components/ScrollToTop'
@@ -16,6 +17,7 @@ import About from './pages/About'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
+import EarnTasks from './pages/EarnTasks'
 import { AnimatePresence } from 'framer-motion'
 import PageTransition from './components/PageTransition'
 import OfflineScreen from './components/OfflineScreen'
@@ -24,7 +26,7 @@ function ProtectedRoute({ children }) {
   const { isSubscribed, isAdmin } = useAuth()
   
   const [isStandalone, setIsStandalone] = useState(
-    window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+    Capacitor.isNativePlatform() || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
   )
 
   useEffect(() => {
@@ -258,6 +260,13 @@ function App() {
             <ProtectedRoute>
               <PageTransition>
                 <Music />
+              </PageTransition>
+            </ProtectedRoute>
+          } />
+          <Route path="/earn" element={
+            <ProtectedRoute>
+              <PageTransition>
+                <EarnTasks />
               </PageTransition>
             </ProtectedRoute>
           } />
