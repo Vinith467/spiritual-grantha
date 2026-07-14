@@ -6,6 +6,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(ScreenCapturePlugin.class);
         super.onCreate(savedInstanceState);
         Thread.setDefaultUncaughtExceptionHandler(new CrashHandler(this));
         
@@ -25,6 +26,5 @@ public class MainActivity extends BridgeActivity {
             dialog.show();
             prefs.edit().remove("last_crash").commit();
         }
-        registerPlugin(ScreenCapturePlugin.class);
     }
 }
