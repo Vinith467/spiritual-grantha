@@ -472,8 +472,6 @@ function Account() {
             </button>
           </div>
 
-          </div>
-
           {/* Admin Dashboard Entry (Visible only to authenticated Admin Google Accounts) */}
           {isAdmin && (
             <div className="mt-6 pt-5 border-t border-white/10">
