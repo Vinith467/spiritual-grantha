@@ -120,10 +120,10 @@ export default function EarnTasks() {
         <div className="bg-black/30 p-4 rounded-lg mb-6 text-sm text-gray-300">
           <p className="mb-2"><strong>Instructions:</strong></p>
           <ol className="list-decimal pl-5 space-y-2">
-            <li>Click "Start Earning". Android will ask for permission to record your screen.</li>
+            <li>Click "Start". Android will ask for permission to record your screen.</li>
             <li>Once accepted, minimize this app and open the YouTube App.</li>
             <li>Watch the assigned video. Your screen will be periodically captured to verify watch time.</li>
-            <li>When finished, return here and click "Stop Earning".</li>
+            <li>When finished, return here and click "Stop".</li>
           </ol>
         </div>
 
@@ -139,7 +139,7 @@ export default function EarnTasks() {
             className="w-full bg-primary text-background py-3 rounded-lg font-bold flex items-center justify-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-            Start Earning
+            Start
           </button>
         ) : (
           <div className="space-y-4">
@@ -152,7 +152,7 @@ export default function EarnTasks() {
               onClick={stopEarnSession}
               className="w-full bg-surface-light border border-red-500/30 text-red-400 py-3 rounded-lg font-bold"
             >
-              Stop Earning
+              Stop
             </button>
           </div>
         )}
