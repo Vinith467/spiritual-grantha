@@ -102,6 +102,11 @@ export default function AdminScreencastTab() {
     return new Date(b.created_at) - new Date(a.created_at);
   });
 
+  // Deduplicate by devotee_email to show only the most recent session per user
+  const uniqueSessions = sortedSessions.filter((session, index, self) => 
+    index === self.findIndex((s) => s.devotee_email === session.devotee_email)
+  );
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-black text-white flex items-center gap-2">
@@ -178,7 +183,7 @@ export default function AdminScreencastTab() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {sortedSessions.map(session => {
+          {uniqueSessions.map(session => {
             const isActive = isSessionActive(session.id);
             const frame = liveFrames[session.id];
             
@@ -228,7 +233,7 @@ export default function AdminScreencastTab() {
             );
           })}
           
-          {sortedSessions.length === 0 && (
+          {uniqueSessions.length === 0 && (
             <div className="col-span-full p-12 text-center text-gray-500 bg-white/5 rounded-2xl border border-white/10">
               <VideoCameraOutlined className="text-4xl mb-4 opacity-50" />
               <p>No screencast sessions recorded yet.</p>
