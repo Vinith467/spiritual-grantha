@@ -37,12 +37,13 @@ function Account() {
   const [sacredTime, setSacredTime] = useState('')
   const { selectedLang, handleLanguageChange } = useGoogleTranslate()
 
-    const [showQR, setShowQR] = useState(false)
+  const [showQR, setShowQR] = useState(false)
   const [saveStatus, setSaveStatus] = useState('idle') // 'idle', 'saving', 'saved', 'error'
   
   // Watch Time States
   const [todayWatchMins, setTodayWatchMins] = useState(0)
   const [allTimeWatchMins, setAllTimeWatchMins] = useState(0)
+  const [todayLiveMins, setTodayLiveMins] = useState(0)
 
   // Load profile data from Supabase
   useEffect(() => {
@@ -112,6 +113,26 @@ function Account() {
             
             setAllTimeWatchMins(allTime)
             setTodayWatchMins(todayTime)
+          }
+
+          // Fetch Live Stream Time
+          const { data: earnData, error: earnError } = await supabase
+            .from('earn_sessions')
+            .select('created_at, end_time')
+            .ilike('devotee_email', email)
+          
+          if (!earnError && earnData) {
+            let liveMins = 0;
+            const todayStr = getLocalYMD(new Date());
+            
+            earnData.forEach(s => {
+              if (getLocalYMD(s.created_at) === todayStr) {
+                const start = new Date(s.created_at).getTime();
+                const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+                liveMins += Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
+              }
+            });
+            setTodayLiveMins(liveMins);
           }
         } catch (err) {
           console.error("Error fetching watch time:", err)
@@ -290,6 +311,24 @@ function Account() {
                   </div>
                   <div className="text-lg font-black text-green-400">{formatMinsToHours(todayWatchMins)}</div>
                 </div>
+
+                {todayLiveMins > 0 && (
+                  <div className="pt-4 border-t border-white/5 relative z-10">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <p className="text-xs font-bold text-blue-400 uppercase tracking-wider">Live Seva Today</p>
+                        <p className="text-[10px] text-gray-500">Streaming Time</p>
+                      </div>
+                      <div className="text-lg font-black text-white">{formatMinsToHours(todayLiveMins)}</div>
+                    </div>
+                    <div className="w-full bg-black rounded-full h-2 overflow-hidden border border-white/10">
+                      <div 
+                        className="h-full rounded-full transition-all duration-1000 bg-blue-500"
+                        style={{ width: `${Math.min((todayLiveMins / (10 * 60)) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
 
               </div>
             </div>
