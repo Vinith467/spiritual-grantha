@@ -10,6 +10,7 @@ export default function AdminScreencastTab() {
   // Global map of frames and last received times
   const [liveFrames, setLiveFrames] = useState({});
   const [lastFrameTimes, setLastFrameTimes] = useState({});
+  const [liveMetadata, setLiveMetadata] = useState({});
 
   useEffect(() => {
     fetchSessions();
@@ -19,9 +20,15 @@ export default function AdminScreencastTab() {
     const channel = supabase.channel('live-screencasts')
       .on('broadcast', { event: 'frame' }, (payload) => {
         if (payload.payload && payload.payload.session_id) {
-          const { session_id, frame } = payload.payload;
+          const { session_id, frame, video_title, video_duration, video_position } = payload.payload;
           setLiveFrames(prev => ({ ...prev, [session_id]: frame }));
           setLastFrameTimes(prev => ({ ...prev, [session_id]: new Date() }));
+          if (video_title) {
+            setLiveMetadata(prev => ({
+              ...prev,
+              [session_id]: { video_title, video_duration, video_position }
+            }));
+          }
         }
       })
       .subscribe();
@@ -140,6 +147,28 @@ export default function AdminScreencastTab() {
                   <ClockCircleOutlined /> {formatDuration(calculateDuration(selectedSession))} / 10h limit
                 </span>
               </div>
+              
+              {/* YouTube Metadata Display */}
+              {liveMetadata[selectedSession.id] && (
+                <div className="mt-4 bg-black/50 border border-white/10 rounded-xl p-3 flex flex-col gap-2">
+                  <div className="flex items-center gap-2 text-white font-bold">
+                    <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                    <span className="truncate max-w-md" title={liveMetadata[selectedSession.id].video_title}>
+                      {liveMetadata[selectedSession.id].video_title}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span>{formatDuration(liveMetadata[selectedSession.id].video_position || 0)}</span>
+                    <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-red-500" 
+                        style={{ width: `${Math.min(((liveMetadata[selectedSession.id].video_position || 0) / (liveMetadata[selectedSession.id].video_duration || 1)) * 100, 100)}%` }}
+                      ></div>
+                    </div>
+                    <span>{formatDuration(liveMetadata[selectedSession.id].video_duration || 0)}</span>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <button

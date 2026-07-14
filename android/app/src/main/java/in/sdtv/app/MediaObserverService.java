@@ -20,6 +20,7 @@ public class MediaObserverService extends NotificationListenerService {
     // Global static variables for easy access from ScreenCaptureService
     public static String currentVideoTitle = "";
     public static long currentVideoDuration = 0;
+    public static PlaybackState currentPlaybackState = null;
 
     private MediaSessionManager mediaSessionManager;
     private MediaSessionManager.OnActiveSessionsChangedListener sessionsChangedListener;
@@ -42,6 +43,7 @@ public class MediaObserverService extends NotificationListenerService {
                     @Override
                     public void onPlaybackStateChanged(PlaybackState state) {
                         super.onPlaybackStateChanged(state);
+                        currentPlaybackState = state;
                     }
                 });
             }
@@ -75,6 +77,7 @@ public class MediaObserverService extends NotificationListenerService {
             // Take the first active controller (usually the one playing)
             MediaController activeController = controllers.get(0);
             updateMetadata(activeController.getMetadata());
+            currentPlaybackState = activeController.getPlaybackState();
         }
     }
 

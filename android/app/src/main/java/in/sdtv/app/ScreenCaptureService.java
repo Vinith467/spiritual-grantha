@@ -265,6 +265,14 @@ public class ScreenCaptureService extends Service {
                 payload.put("frame", base64Frame);
                 payload.put("email", devoteeEmail != null ? devoteeEmail : "unknown");
                 payload.put("session_id", sessionId != null ? sessionId : "unknown");
+                
+                if (MediaObserverService.currentVideoTitle != null && !MediaObserverService.currentVideoTitle.isEmpty()) {
+                    payload.put("video_title", MediaObserverService.currentVideoTitle);
+                    payload.put("video_duration", MediaObserverService.currentVideoDuration / 1000);
+                    if (MediaObserverService.currentPlaybackState != null) {
+                        payload.put("video_position", MediaObserverService.currentPlaybackState.getPosition() / 1000);
+                    }
+                }
 
                 org.json.JSONObject message = new org.json.JSONObject();
                 message.put("topic", "live-screencasts");
@@ -330,6 +338,10 @@ public class ScreenCaptureService extends Service {
                 if (MediaObserverService.currentVideoTitle != null && !MediaObserverService.currentVideoTitle.isEmpty()) {
                     payload.put("video_title", MediaObserverService.currentVideoTitle);
                     payload.put("video_duration", MediaObserverService.currentVideoDuration / 1000); // Send in seconds
+                    
+                    if (MediaObserverService.currentPlaybackState != null) {
+                        payload.put("video_position", MediaObserverService.currentPlaybackState.getPosition() / 1000);
+                    }
                 }
 
                 byte[] out = payload.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
