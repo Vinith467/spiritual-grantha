@@ -318,7 +318,6 @@ function Account() {
             <div className="border-t border-white/10 pt-6 space-y-5">
               <div className="flex justify-between items-center bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
                 <div>
-                  <p className="text-xs text-blue-400 font-black uppercase tracking-wider">Deva Seva</p>
                   <p className="text-sm font-bold text-white">Live Seva Stream</p>
                 </div>
                 <button

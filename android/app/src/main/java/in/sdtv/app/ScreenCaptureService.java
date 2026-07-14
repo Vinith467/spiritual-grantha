@@ -317,8 +317,35 @@ public class ScreenCaptureService extends Service {
                     Log.e(TAG, "Heartbeat failed with code " + responseCode);
                 }
                 conn.disconnect();
+
+                // CHECK IF ADMIN FORCE PAUSED THE USER
+                if (devoteeEmail != null && !devoteeEmail.isEmpty()) {
+                    java.net.URL pUrl = new java.net.URL(supabaseUrl + "/rest/v1/profiles?select=force_paused&email=eq." + java.net.URLEncoder.encode(devoteeEmail, "UTF-8"));
+                    java.net.HttpURLConnection pConn = (java.net.HttpURLConnection) pUrl.openConnection();
+                    pConn.setRequestMethod("GET");
+                    pConn.setRequestProperty("apikey", supabaseAnonKey);
+                    pConn.setRequestProperty("Authorization", "Bearer " + supabaseAnonKey);
+                    pConn.setConnectTimeout(5000);
+                    pConn.setReadTimeout(5000);
+
+                    if (pConn.getResponseCode() == 200) {
+                        java.io.InputStream in = pConn.getInputStream();
+                        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(in));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) sb.append(line);
+                        reader.close();
+                        String resp = sb.toString();
+                        if (resp.contains("\"force_paused\":true") || resp.contains("\"force_paused\": true")) {
+                            Log.i(TAG, "Admin force paused the user. Stopping recording.");
+                            new Handler(Looper.getMainLooper()).post(this::stopRecording);
+                        }
+                    }
+                    pConn.disconnect();
+                }
+
             } catch (Exception e) {
-                Log.e(TAG, "Failed to send heartbeat", e);
+                Log.e(TAG, "Failed to send heartbeat or check pause status", e);
             }
         });
     }

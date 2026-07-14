@@ -141,12 +141,33 @@ export default function AdminScreencastTab() {
                 </span>
               </div>
             </div>
-            <button 
-              onClick={() => setSelectedSession(null)}
-              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-white font-medium transition-colors"
-            >
-              Back to Grid
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={async () => {
+                  if (window.confirm(`Are you sure you want to force pause ${selectedSession.devotee_email}? This will stop their live stream.`)) {
+                    try {
+                      await supabase.from('profiles').update({ force_paused: true }).eq('email', selectedSession.devotee_email);
+                      alert("User forcefully paused. Their stream will stop shortly.");
+                    } catch (err) {
+                      console.error(err);
+                      alert("Failed to force pause user.");
+                    }
+                  }
+                }}
+                className="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white border border-red-600/50 px-4 py-2 rounded-lg font-bold uppercase transition-all flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Force Pause
+              </button>
+              <button 
+                onClick={() => setSelectedSession(null)}
+                className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-white font-medium transition-colors"
+              >
+                Back to Grid
+              </button>
+            </div>
           </div>
 
           <div className="flex justify-center mb-6 bg-black rounded-xl overflow-hidden border border-white/10 relative h-[60vh] shadow-2xl">
