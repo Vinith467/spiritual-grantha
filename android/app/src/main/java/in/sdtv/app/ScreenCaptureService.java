@@ -132,6 +132,10 @@ public class ScreenCaptureService extends Service {
             }
         };
         handler.postDelayed(captureRunnable, 1000); // Start after 1 second
+
+        new Handler(Looper.getMainLooper()).post(() -> 
+            android.widget.Toast.makeText(getApplicationContext(), "Live Seva Stream Started!", android.widget.Toast.LENGTH_SHORT).show()
+        );
     }
 
     private void captureAndUploadFrame() {
@@ -175,6 +179,10 @@ public class ScreenCaptureService extends Service {
             }
         } catch (Throwable t) {
             Log.e(TAG, "Error capturing frame", t);
+            final String msg = t.getMessage();
+            new Handler(Looper.getMainLooper()).post(() -> 
+                android.widget.Toast.makeText(getApplicationContext(), "Capture Error: " + msg, android.widget.Toast.LENGTH_SHORT).show()
+            );
         } finally {
             if (scaledBitmap != null && !scaledBitmap.isRecycled()) {
                 scaledBitmap.recycle();
@@ -227,10 +235,20 @@ public class ScreenCaptureService extends Service {
 
                 byte[] out = body.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 conn.getOutputStream().write(out);
-                conn.getResponseCode();
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 400) {
+                    new Handler(Looper.getMainLooper()).post(() -> 
+                        android.widget.Toast.makeText(getApplicationContext(), "Broadcast HTTP Error: " + responseCode, android.widget.Toast.LENGTH_SHORT).show()
+                    );
+                }
                 conn.disconnect();
             } catch (Exception e) {
                 Log.e(TAG, "Failed to broadcast to Supabase via HTTP", e);
+                final String msg = e.getMessage();
+                new Handler(Looper.getMainLooper()).post(() -> 
+                    android.widget.Toast.makeText(getApplicationContext(), "Upload Error: " + msg, android.widget.Toast.LENGTH_SHORT).show()
+                );
             } finally {
                 isUploading = false;
             }
