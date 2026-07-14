@@ -128,6 +128,14 @@ public class ScreenCaptureService extends Service {
 
         imageReader = ImageReader.newInstance(targetWidth, targetHeight, PixelFormat.RGBA_8888, 2);
 
+        mediaProjection.registerCallback(new android.media.projection.MediaProjection.Callback() {
+            @Override
+            public void onStop() {
+                super.onStop();
+                stopSelf();
+            }
+        }, null);
+
         virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
                 targetWidth, targetHeight, mDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
