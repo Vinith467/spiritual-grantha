@@ -291,26 +291,6 @@ function Account() {
                   <div className="text-lg font-black text-green-400">{formatMinsToHours(todayWatchMins)}</div>
                 </div>
 
-                {/* All-Time Watch Time & Progress to 300 Hrs */}
-                <div className="flex flex-col gap-2 pt-4 border-t border-white/5 relative z-10">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-xs font-bold text-[#FF9933] uppercase tracking-wider">Total Journey</p>
-                      <p className="text-[10px] text-gray-500">Total target 300 hours</p>
-                    </div>
-                    <div className="text-lg font-black text-white">{formatMinsToHours(allTimeWatchMins)}</div>
-                  </div>
-                  
-                  {/* Progress Bar */}
-                  <div className="w-full bg-black rounded-full h-3 overflow-hidden border border-white/10 mt-1">
-                    <div 
-                      className="h-full rounded-full transition-all duration-1000 bg-gradient-to-r from-[#FF9933] to-[#FF6600]"
-                      style={{ width: `${Math.max(Math.min((allTimeWatchMins / (300 * 60)) * 100, 100), 2)}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-[10px] text-right font-bold text-gray-500">{((allTimeWatchMins / (300 * 60)) * 100).toFixed(1)}% Completed</p>
-                </div>
-
               </div>
             </div>
 

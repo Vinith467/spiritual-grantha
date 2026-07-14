@@ -1500,6 +1500,16 @@ function Admin() {
                                 return { id: 's'+s.id, title: `Live Seva Stream (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
                             })
                         ];
+
+                        const todayStr = getLocalYMD(new Date());
+                        const todayEarnSessions = userEarnSessions.filter(s => getLocalYMD(s.created_at) === todayStr);
+                        let todayLiveMins = 0;
+                        todayEarnSessions.forEach(s => {
+                            const start = new Date(s.created_at).getTime();
+                            const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+                            todayLiveMins += Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
+                        });
+
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
                             <td className="px-6 py-4 min-w-[200px]">
@@ -1521,6 +1531,17 @@ function Admin() {
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
                                   Offline
                                 </span>
+                              )}
+                              {todayLiveMins > 0 && (
+                                <div className="mt-2 w-full max-w-[120px]">
+                                  <div className="text-[10px] text-gray-400 mb-1 flex justify-between">
+                                    <span>Live Today</span>
+                                    <span>{Math.floor(todayLiveMins / 60)}h {todayLiveMins % 60}m</span>
+                                  </div>
+                                  <div className="h-1.5 w-full bg-black rounded-full overflow-hidden border border-white/10">
+                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((todayLiveMins / (10 * 60)) * 100, 100)}%` }}></div>
+                                  </div>
+                                </div>
                               )}
                             </td>
                             <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
@@ -1598,14 +1619,46 @@ function Admin() {
                         return (a.name || '').localeCompare(b.name || '');
                       })
                       .map(user => {
-                      const online = isOnline(user.last_active_at);
+                      const online = isOnline(user);
                       const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
-                      const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
+                      const userEarnSessions = earnSessions.filter(s => s.devotee_email === user.email);
+                      
+                      let totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
+                      let totalFilteredMins = 0;
+
                       const filteredViews = userAllTimeViews.filter(v => {
                         const vDate = getLocalYMD(v.viewed_at || v.created_at);
-                        return vDate >= tableStartDate && vDate <= tableEndDate;
+                        const inRange = vDate >= tableStartDate && vDate <= tableEndDate;
+                        if (inRange) totalFilteredMins += Math.ceil((v.duration_seconds || 0) / 60);
+                        return inRange;
                       });
-                      const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
+
+                      const filteredEarnSessions = userEarnSessions.filter(s => {
+                          const sDate = getLocalYMD(s.created_at);
+                          const inRange = sDate >= tableStartDate && sDate <= tableEndDate;
+                          return inRange;
+                      });
+
+                      const combinedHistory = [
+                          ...filteredViews.map(v => ({ id: 'v'+v.id, title: v.video_title || 'Unknown Video', mins: Math.ceil((v.duration_seconds || 0) / 60) })),
+                          ...filteredEarnSessions.map(s => {
+                              const start = new Date(s.created_at).getTime();
+                              const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+                              const durationMins = Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
+                              const startTimeStr = new Date(s.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                              const endTimeStr = s.end_time ? new Date(s.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Live';
+                              return { id: 's'+s.id, title: `Live Seva Stream (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
+                          })
+                      ];
+
+                      const todayStr = getLocalYMD(new Date());
+                      const todayEarnSessions = userEarnSessions.filter(s => getLocalYMD(s.created_at) === todayStr);
+                      let todayLiveMins = 0;
+                      todayEarnSessions.forEach(s => {
+                          const start = new Date(s.created_at).getTime();
+                          const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+                          todayLiveMins += Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
+                      });
                       return (
                         <div key={user.id} className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
                           {/* User info + status */}
@@ -1639,18 +1692,29 @@ function Admin() {
                               <div className="text-sm font-bold text-white notranslate" translate="no">{formatMinsToHours(totalFilteredMins)}</div>
                             </div>
                           </div>
+                          {todayLiveMins > 0 && (
+                            <div className="bg-black/30 rounded-lg p-3">
+                              <div className="text-[10px] text-gray-400 mb-1 flex justify-between font-bold">
+                                <span>Live Seva Today</span>
+                                <span>{Math.floor(todayLiveMins / 60)}h {todayLiveMins % 60}m</span>
+                              </div>
+                              <div className="h-2 w-full bg-black rounded-full overflow-hidden border border-white/10">
+                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((todayLiveMins / (10 * 60)) * 100, 100)}%` }}></div>
+                              </div>
+                            </div>
+                          )}
                           {/* Watch history */}
-                          {filteredViews.length > 0 ? (
+                          {combinedHistory.length > 0 ? (
                             <details className="group">
                               <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 flex items-center justify-between select-none">
-                                <span>Watch History ({filteredViews.length} Videos)</span>
+                                <span>Watch History ({combinedHistory.length} Sessions)</span>
                                 <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                               </summary>
                               <div className="mt-2 space-y-1.5 max-h-40 overflow-y-auto">
-                                {filteredViews.map(v => (
+                                {combinedHistory.map(v => (
                                   <div key={v.id} className="text-xs flex items-center justify-between gap-2 bg-black/20 p-2 rounded-lg border border-white/5">
-                                    <span className="truncate text-gray-300" title={v.video_title}>{v.video_title}</span>
-                                    <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil((v.duration_seconds || 0) / 60)}m</span>
+                                    <span className="truncate text-gray-300" title={v.title}>{v.title}</span>
+                                    <span className="text-[#FF9933] font-bold whitespace-nowrap">{v.mins}m</span>
                                   </div>
                                 ))}
                               </div>
