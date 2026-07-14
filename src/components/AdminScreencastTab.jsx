@@ -1,29 +1,27 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { CameraOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { CameraOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, VideoCameraOutlined } from '@ant-design/icons';
 
 export default function AdminScreencastTab() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState(null);
-  const [liveFrame, setLiveFrame] = useState(null);
-  const [lastFrameTime, setLastFrameTime] = useState(null);
+  
+  // Global map of frames and last received times
+  const [liveFrames, setLiveFrames] = useState({});
+  const [lastFrameTimes, setLastFrameTimes] = useState({});
 
   useEffect(() => {
     fetchSessions();
   }, []);
 
   useEffect(() => {
-    if (!selectedSession) return;
-
-    setLiveFrame(null);
-    setLastFrameTime(null);
-
     const channel = supabase.channel('live-screencasts')
       .on('broadcast', { event: 'frame' }, (payload) => {
-        if (payload.payload && payload.payload.session_id === selectedSession.id) {
-          setLiveFrame(payload.payload.frame);
-          setLastFrameTime(new Date());
+        if (payload.payload && payload.payload.session_id) {
+          const { session_id, frame } = payload.payload;
+          setLiveFrames(prev => ({ ...prev, [session_id]: frame }));
+          setLastFrameTimes(prev => ({ ...prev, [session_id]: new Date() }));
         }
       })
       .subscribe();
@@ -31,7 +29,7 @@ export default function AdminScreencastTab() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedSession]);
+  }, []);
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -39,7 +37,8 @@ export default function AdminScreencastTab() {
       const { data, error } = await supabase
         .from('earn_sessions')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50); // Get recent 50 sessions
         
       if (error) throw error;
       setSessions(data || []);
@@ -48,10 +47,6 @@ export default function AdminScreencastTab() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const viewSession = (session) => {
-    setSelectedSession(session);
   };
 
   const updateSessionStatus = async (id, status) => {
@@ -71,48 +66,97 @@ export default function AdminScreencastTab() {
     }
   };
 
+  // 10 Hours limit = 36000 seconds
+  const MAX_SESSION_SECONDS = 10 * 60 * 60;
+
+  const calculateDuration = (session) => {
+    const start = new Date(session.created_at).getTime();
+    const end = session.end_time ? new Date(session.end_time).getTime() : new Date().getTime();
+    return Math.floor((end - start) / 1000); // in seconds
+  };
+
+  const formatDuration = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h}h ${m}m ${s}s`;
+  };
+
+  // Determine if a session is actively broadcasting right now (received frame in last 10 seconds)
+  const isSessionActive = (sessionId) => {
+    const lastTime = lastFrameTimes[sessionId];
+    if (!lastTime) return false;
+    return (new Date() - lastTime) < 10000;
+  };
+
   if (loading) {
     return <div className="p-8 text-center text-gray-400">Loading screencasts...</div>;
   }
 
+  // Sort sessions: active first, then by date desc
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const activeA = isSessionActive(a.id);
+    const activeB = isSessionActive(b.id);
+    if (activeA && !activeB) return -1;
+    if (!activeA && activeB) return 1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-black text-white flex items-center gap-2">
-        <CameraOutlined className="text-[#FF9933]" />
-        Watch & Earn Verification
+        <VideoCameraOutlined className="text-[#FF9933]" />
+        Live Seva Monitor
       </h2>
 
       {selectedSession ? (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-white/10">
+            <div 
+              className="h-full bg-gradient-to-r from-[#FF9933] to-yellow-500 transition-all duration-1000"
+              style={{ width: `${Math.min((calculateDuration(selectedSession) / MAX_SESSION_SECONDS) * 100, 100)}%` }}
+            ></div>
+          </div>
+
+          <div className="flex justify-between items-center mb-6 pt-2">
             <div>
-              <h3 className="text-lg font-bold text-white">Session Review</h3>
-              <p className="text-gray-400 text-sm">{selectedSession.devotee_email}</p>
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                {selectedSession.devotee_email}
+                {isSessionActive(selectedSession.id) ? (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">LIVE</span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-500/20 text-gray-400 border border-gray-500/30">OFFLINE</span>
+                )}
+              </h3>
+              <div className="text-sm text-gray-400 flex items-center gap-4 mt-2">
+                <span><strong>Started:</strong> {new Date(selectedSession.created_at).toLocaleTimeString()}</span>
+                {selectedSession.end_time && <span><strong>Ended:</strong> {new Date(selectedSession.end_time).toLocaleTimeString()}</span>}
+                <span className="flex items-center gap-1 text-[#FF9933]">
+                  <ClockCircleOutlined /> {formatDuration(calculateDuration(selectedSession))} / 10h limit
+                </span>
+              </div>
             </div>
             <button 
               onClick={() => setSelectedSession(null)}
-              className="text-gray-400 hover:text-white"
+              className="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-white font-medium transition-colors"
             >
-              Back to List
+              Back to Grid
             </button>
           </div>
 
-          <div className="flex justify-center mb-6 bg-black rounded-lg overflow-hidden border border-white/10 relative h-[60vh]">
-            {liveFrame ? (
+          <div className="flex justify-center mb-6 bg-black rounded-xl overflow-hidden border border-white/10 relative h-[60vh] shadow-2xl">
+            {liveFrames[selectedSession.id] ? (
               <>
-                <img src={liveFrame} alt="Live feed" className="h-full object-contain" />
-                <div className="absolute top-4 right-4 bg-red-600 animate-pulse px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-2">
-                  <div className="w-2 h-2 bg-white rounded-full"></div> LIVE
-                </div>
-                <div className="absolute bottom-4 left-4 bg-black/60 p-2 text-xs text-white rounded">
-                  Last received: {lastFrameTime?.toLocaleTimeString()}
+                <img src={liveFrames[selectedSession.id]} alt="Live feed" className="h-full object-contain" />
+                <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur-md p-2 text-xs text-white rounded-lg border border-white/10">
+                  Last received: {lastFrameTimes[selectedSession.id]?.toLocaleTimeString()}
                 </div>
               </>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-4">
-                <div className="w-8 h-8 border-4 border-[#FF9933] border-t-transparent rounded-full animate-spin"></div>
-                <p>Waiting for live feed from devotee...</p>
-                <p className="text-xs max-w-sm text-center">Make sure they have the app open and are actively earning.</p>
+                <VideoCameraOutlined className="text-4xl opacity-50 mb-2" />
+                <p>No active feed available.</p>
+                <p className="text-xs max-w-sm text-center">User might have closed the app or stopped earning.</p>
               </div>
             )}
           </div>
@@ -133,51 +177,63 @@ export default function AdminScreencastTab() {
           </div>
         </div>
       ) : (
-        <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-300">
-              <thead className="bg-black/40 text-xs uppercase text-gray-400">
-                <tr>
-                  <th className="px-4 py-3">Devotee</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {sessions.map(s => (
-                  <tr key={s.id} className="hover:bg-white/5">
-                    <td className="px-4 py-3 font-medium">{s.devotee_email}</td>
-                    <td className="px-4 py-3">{new Date(s.created_at).toLocaleString()}</td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${
-                        s.status === 'approved' ? 'bg-green-500/20 text-green-400' :
-                        s.status === 'rejected' ? 'bg-red-500/20 text-red-400' :
-                        'bg-yellow-500/20 text-yellow-400'
-                      }`}>
-                        {s.status.toUpperCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <button 
-                        onClick={() => viewSession(s)}
-                        className="bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-500/30"
-                      >
-                        Review
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {sessions.length === 0 && (
-                  <tr>
-                    <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
-                      No screencast sessions recorded yet.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {sortedSessions.map(session => {
+            const isActive = isSessionActive(session.id);
+            const frame = liveFrames[session.id];
+            
+            return (
+              <div 
+                key={session.id} 
+                onClick={() => setSelectedSession(session)}
+                className={`group cursor-pointer rounded-xl overflow-hidden border transition-all duration-300 relative ${
+                  isActive 
+                    ? 'bg-black border-[#FF9933]/50 hover:border-[#FF9933] hover:shadow-[0_0_15px_rgba(255,153,51,0.2)]' 
+                    : 'bg-white/5 border-white/10 hover:border-white/20'
+                }`}
+              >
+                {/* Video Area */}
+                <div className="aspect-video bg-black relative flex items-center justify-center">
+                  {frame ? (
+                    <img src={frame} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="feed" />
+                  ) : (
+                    <VideoCameraOutlined className="text-3xl text-white/10" />
+                  )}
+                  
+                  {/* Status Badge */}
+                  <div className="absolute top-3 right-3 flex items-center gap-2">
+                    {isActive ? (
+                      <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500 text-white animate-pulse shadow-lg flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div> LIVE
+                      </div>
+                    ) : (
+                      <div className="px-2 py-0.5 rounded text-[10px] font-bold bg-black/60 text-gray-400 border border-white/10 backdrop-blur-md">
+                        OFFLINE
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Info Area */}
+                <div className="p-3 bg-gradient-to-b from-transparent to-black/80 absolute bottom-0 w-full">
+                  <div className="text-sm font-bold text-white truncate drop-shadow-md">
+                    {session.devotee_email.split('@')[0]}
+                  </div>
+                  <div className="text-xs text-gray-300 drop-shadow-md flex justify-between items-center mt-1">
+                    <span>{formatDuration(calculateDuration(session))}</span>
+                    <span className="text-white/60">{new Date(session.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          
+          {sortedSessions.length === 0 && (
+            <div className="col-span-full p-12 text-center text-gray-500 bg-white/5 rounded-2xl border border-white/10">
+              <VideoCameraOutlined className="text-4xl mb-4 opacity-50" />
+              <p>No screencast sessions recorded yet.</p>
+            </div>
+          )}
         </div>
       )}
     </div>

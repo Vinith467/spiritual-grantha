@@ -68,15 +68,35 @@ export default function EarnTasks() {
       }
       
       if (session) {
+        const endTime = new Date();
+        const startTime = new Date(session.created_at);
+        // Calculate duration in seconds
+        const durationSeconds = Math.max(0, Math.floor((endTime - startTime) / 1000));
+
+        // 1. Update session end time
         await supabase
           .from('earn_sessions')
-          .update({ end_time: new Date().toISOString() })
+          .update({ end_time: endTime.toISOString() })
           .eq('id', session.id);
+
+        // 2. Add duration to video_views so it appears in Account progress (All-time and Filtered Watch Time)
+        // We cap the total daily contribution at 10 hours (36000 seconds) in Account.jsx or here.
+        // The user said "10 hour we need but if they do more than that it not the issue", so we just insert it.
+        if (durationSeconds > 0) {
+          await supabase
+            .from('video_views')
+            .insert({
+              user_email: userEmail,
+              video_id: session.video_id || 'live-seva-stream',
+              duration_seconds: durationSeconds,
+              viewed_at: endTime.toISOString()
+            });
+        }
       }
       
       setIsRecording(false);
       setSession(null);
-      alert("Recording stopped. Your session has been submitted for admin review!");
+      alert("Seva stream stopped. Your progress has been added to your Account Journey!");
     } catch (err) {
       console.error(err);
       setError(err.message);
