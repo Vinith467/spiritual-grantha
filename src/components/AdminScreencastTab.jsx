@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { CameraOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { CameraOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, VideoCameraOutlined, TableOutlined } from '@ant-design/icons';
+import YouTubeHistoryTable from './YouTubeHistoryTable';
 
 export default function AdminScreencastTab() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
   
   // Global map of frames and last received times
   const [liveFrames, setLiveFrames] = useState({});
@@ -115,11 +117,21 @@ export default function AdminScreencastTab() {
   );
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-black text-white flex items-center gap-2">
-        <VideoCameraOutlined className="text-[#FF9933]" />
-        Live Seva Monitor
-      </h2>
+    <div className="space-y-6 relative">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-black text-white flex items-center gap-2">
+          <VideoCameraOutlined className="text-[#FF9933]" />
+          Live Seva Monitor
+        </h2>
+        <button
+          onClick={() => setShowHistory(true)}
+          className="bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white border border-blue-600/50 px-4 py-2 rounded-lg font-bold transition flex items-center gap-2"
+        >
+          <TableOutlined /> YouTube History
+        </button>
+      </div>
+
+      {showHistory && <YouTubeHistoryTable onClose={() => setShowHistory(false)} />}
 
       {selectedSession ? (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden">
