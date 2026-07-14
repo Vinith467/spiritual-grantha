@@ -60,6 +60,7 @@ public class ScreenCaptureService extends Service {
     private String devoteeEmail = "";
     private ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
     private volatile boolean isUploading = false;
+    private int silentHeartbeats = 0;
 
     @Override
     public void onCreate() {
@@ -138,7 +139,7 @@ public class ScreenCaptureService extends Service {
         }, null);
 
         virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
-                targetWidth, targetHeight, mDensity,
+                mWidth, mHeight, mScreenDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imageReader.getSurface(), null, null);
 
@@ -146,7 +147,7 @@ public class ScreenCaptureService extends Service {
             @Override
             public void run() {
                 captureAndUploadFrame();
-                handler.postDelayed(this, 1000); // Capture every 1000ms to save battery and avoid queue backup
+                handler.postDelayed(this, 5000); // 1 frame every 5 seconds (low bandwidth mode)
             }
         };
         handler.postDelayed(captureRunnable, 1000); // Start after 1 second
@@ -154,6 +155,22 @@ public class ScreenCaptureService extends Service {
         heartbeatRunnable = new Runnable() {
             @Override
             public void run() {
+                android.media.AudioManager audioManager = (android.media.AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                if (audioManager != null) {
+                    if (audioManager.isMusicActive()) {
+                        silentHeartbeats = 0;
+                    } else {
+                        silentHeartbeats++;
+                        if (silentHeartbeats >= 6) { // 60 seconds (6 * 10s)
+                            Log.i(TAG, "Audio inactive for 60s, auto-stopping stream.");
+                            new Handler(Looper.getMainLooper()).post(() -> {
+                                android.widget.Toast.makeText(getApplicationContext(), "Live Seva Auto-Paused (Video Paused)", android.widget.Toast.LENGTH_LONG).show();
+                                stopRecording();
+                            });
+                            return; // Stop loop
+                        }
+                    }
+                }
                 sendHeartbeat();
                 handler.postDelayed(this, 10000); // Send heartbeat every 10 seconds
             }
