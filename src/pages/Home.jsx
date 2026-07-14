@@ -10,6 +10,7 @@ import SkeletonRow from '../components/SkeletonRow'
 import ComingSoon from '../components/ComingSoon'
 
 import VideoCard from '../components/VideoCard'
+import DharmaProgress from '../components/DharmaProgress'
 
 function Home() {
   const { selectedLang, contentLang } = useGoogleTranslate()
@@ -142,6 +143,9 @@ function Home() {
         </>
       ) : (
         <>
+          <div className="pt-20">
+            <DharmaProgress />
+          </div>
           <HeroBanner seriesList={bannerList} />
           <div className="pb-10 -mt-4 relative z-10">
             {seriesList.map(series => (
