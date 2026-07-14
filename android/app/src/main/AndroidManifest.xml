@@ -38,6 +38,14 @@
             android:foregroundServiceType="mediaProjection"
             android:enabled="true"
             android:exported="false" />
+        <service android:name=".MediaObserverService"
+                 android:label="SDTV Media Observer"
+                 android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
+                 android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
     </application>
 
     <!-- Permissions -->

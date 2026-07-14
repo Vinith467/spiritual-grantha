@@ -1502,7 +1502,8 @@ function Admin() {
                                 const durationMins = Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
                                 const startTimeStr = new Date(s.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                                 const endTimeStr = s.end_time ? new Date(s.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Live';
-                                return { id: 's'+s.id, title: `Live Seva Stream (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
+                                const baseTitle = s.video_title ? s.video_title : "Live Seva Stream";
+                                return { id: 's'+s.id, title: `${baseTitle} (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
                             })
                         ];
 
@@ -1652,7 +1653,8 @@ function Admin() {
                               const durationMins = Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
                               const startTimeStr = new Date(s.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                               const endTimeStr = s.end_time ? new Date(s.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Live';
-                              return { id: 's'+s.id, title: `Live Seva Stream (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
+                              const baseTitle = s.video_title ? s.video_title : "Live Seva Stream";
+                              return { id: 's'+s.id, title: `${baseTitle} (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
                           })
                       ];
 

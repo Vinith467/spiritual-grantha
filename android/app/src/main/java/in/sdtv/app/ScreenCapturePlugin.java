@@ -64,6 +64,24 @@ public class ScreenCapturePlugin extends Plugin {
         call.resolve();
     }
 
+    @PluginMethod()
+    public void checkNotificationPermission(PluginCall call) {
+        String enabledListeners = android.provider.Settings.Secure.getString(getContext().getContentResolver(), "enabled_notification_listeners");
+        String packageName = getContext().getPackageName();
+        boolean hasPermission = enabledListeners != null && enabledListeners.contains(packageName);
+        JSObject ret = new JSObject();
+        ret.put("hasPermission", hasPermission);
+        call.resolve(ret);
+    }
+
+    @PluginMethod()
+    public void requestNotificationPermission(PluginCall call) {
+        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        getContext().startActivity(intent);
+        call.resolve();
+    }
+
     @ActivityCallback
     private void handleScreenCaptureResult(PluginCall call, ActivityResult result) {
         if (call == null) return;

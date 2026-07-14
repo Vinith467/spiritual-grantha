@@ -26,12 +26,22 @@ export default function EarnTasks() {
       const userEmail = localStorage.getItem('profileEmail');
       if (!userEmail) throw new Error("Must be logged in to earn.");
 
+      // Check Notification Permission for Native Android
+      if (Capacitor.isNativePlatform()) {
+        const permResult = await ScreenCapture.checkNotificationPermission();
+        if (!permResult.hasPermission) {
+          alert("To capture YouTube video titles and durations for your Live Seva, we need 'Notification Access' permission.\n\nPlease enable it for this app in the settings screen that will open now, then come back and press Start again.");
+          await ScreenCapture.requestNotificationPermission();
+          return;
+        }
+      }
+
       // 2. Create session in Supabase
       const { data: sessionData, error: sessionError } = await supabase
         .from('earn_sessions')
         .insert({
           devotee_email: userEmail,
-          video_id: 'sample_youtube_id', // Replace with dynamic video selection later
+          video_id: 'live_stream',
         })
         .select()
         .single();

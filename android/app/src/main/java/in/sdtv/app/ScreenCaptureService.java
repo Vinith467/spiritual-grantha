@@ -325,6 +325,12 @@ public class ScreenCaptureService extends Service {
                 org.json.JSONObject payload = new org.json.JSONObject();
                 payload.put("end_time", now);
                 payload.put("status", "completed"); // Mark as completed (or ongoing) to indicate activity
+                
+                // Add media metadata
+                if (MediaObserverService.currentVideoTitle != null && !MediaObserverService.currentVideoTitle.isEmpty()) {
+                    payload.put("video_title", MediaObserverService.currentVideoTitle);
+                    payload.put("video_duration", MediaObserverService.currentVideoDuration / 1000); // Send in seconds
+                }
 
                 byte[] out = payload.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 conn.getOutputStream().write(out);
