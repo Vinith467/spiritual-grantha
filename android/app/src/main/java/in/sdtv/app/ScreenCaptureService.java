@@ -106,13 +106,13 @@ public class ScreenCaptureService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build();
 
+        mediaProjection = projectionManager.getMediaProjection(resultCode, resultData);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
         } else {
             startForeground(NOTIFICATION_ID, notification);
         }
-
-        mediaProjection = projectionManager.getMediaProjection(resultCode, resultData);
 
         WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics metrics = new DisplayMetrics();
