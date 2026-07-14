@@ -144,6 +144,35 @@ function Admin() {
     if (eData) setEarnSessions(eData)
   }, [])
 
+  const handleManualAdjustment = async (email) => {
+    const minsStr = window.prompt(`Enter minutes to add or subtract for ${email}\n(e.g. 60 to add an hour, -30 to subtract half an hour):`);
+    if (!minsStr) return;
+    const mins = parseInt(minsStr, 10);
+    if (isNaN(mins) || mins === 0) {
+      alert("Invalid number of minutes.");
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.from('video_views').insert([{
+        user_email: email,
+        video_id: 'manual-adjustment',
+        video_title: 'Manual Adjustment (Admin)',
+        duration_seconds: mins * 60,
+        viewed_at: new Date().toISOString()
+      }]).select();
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        setVideoViews(prev => [data[0], ...prev]);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to adjust watch time: " + err.message);
+    }
+  };
+
   const topVideosData = useMemo(() => {
     try {
       const map = {};
@@ -1457,12 +1486,6 @@ function Admin() {
                         const filteredEarnSessions = userEarnSessions.filter(s => {
                             const sDate = getLocalYMD(s.created_at);
                             const inRange = sDate >= tableStartDate && sDate <= tableEndDate;
-                            const start = new Date(s.created_at).getTime();
-                            const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
-                            const durationMins = Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
-                            
-                            totalAllTimeMins += durationMins;
-                            if (inRange) totalFilteredMins += durationMins;
                             return inRange;
                         });
 
@@ -1501,7 +1524,12 @@ function Admin() {
                               )}
                             </td>
                             <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
-                              {formatMinsToHours(totalAllTimeMins)}
+                              <div className="flex items-center gap-2">
+                                <span>{formatMinsToHours(totalAllTimeMins)}</span>
+                                <button onClick={() => handleManualAdjustment(user.email)} className="bg-white/10 hover:bg-[#FF9933]/20 hover:text-[#FF9933] text-gray-400 p-1 rounded transition" title="Manual Edit">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                </button>
+                              </div>
                             </td>
                             <td className="px-6 py-4 font-bold text-white whitespace-nowrap notranslate" translate="no">
                               {formatMinsToHours(totalFilteredMins)}
