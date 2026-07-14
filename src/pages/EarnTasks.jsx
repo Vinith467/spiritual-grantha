@@ -13,34 +13,9 @@ export default function EarnTasks() {
   const userEmail = localStorage.getItem('profileEmail');
 
   useEffect(() => {
-    if (!isRecording || !session || !userEmail) return;
-
-    const channel = supabase.channel('live-screencasts', {
-      config: { broadcast: { ack: false } }
-    });
-    channel.subscribe();
-
-    let listenerHandle = null;
-    ScreenCapture.addListener('onFrame', async (data) => {
-      if (data && data.frame) {
-        await channel.send({
-          type: 'broadcast',
-          event: 'frame',
-          payload: {
-            frame: data.frame,
-            email: userEmail,
-            session_id: session.id
-          }
-        });
-      }
-    }).then(handle => {
-      listenerHandle = handle;
-    });
-
-    return () => {
-      if (listenerHandle) listenerHandle.remove();
-      supabase.removeChannel(channel);
-    };
+    // We no longer need to listen to frames in React!
+    // The native Android service will now upload frames DIRECTLY to Supabase Realtime
+    // via HTTP POST, which perfectly handles the app being minimized or screen locked!
   }, [isRecording, session, userEmail]);
 
   const startEarnSession = async () => {
@@ -68,7 +43,9 @@ export default function EarnTasks() {
       if (Capacitor.isNativePlatform()) {
         await ScreenCapture.startRecording({
           SESSION_ID: sessionData.id,
-          SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY // Pass key securely
+          EMAIL: userEmail,
+          SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
+          SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY
         });
       }
 

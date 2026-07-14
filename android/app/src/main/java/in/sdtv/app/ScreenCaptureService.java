@@ -52,10 +52,11 @@ public class ScreenCaptureService extends Service {
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable captureRunnable;
 
-    // TODO: We need to pass these from React via Intent, or hardcode them if testing
-    private String supabaseUrl = "https://obweikuiqjeymihrbodv.supabase.co"; // Based on your previous queries
-    private String supabaseAnonKey = ""; // Will be updated later
-    private String sessionId = "test-session"; 
+    private String supabaseUrl = ""; 
+    private String supabaseAnonKey = ""; 
+    private String sessionId = "";
+    private String devoteeEmail = "";
+    private ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
 
     @Override
     public void onCreate() {
@@ -71,10 +72,12 @@ public class ScreenCaptureService extends Service {
             if (ACTION_START.equals(action)) {
                 int resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0);
                 Intent resultData = intent.getParcelableExtra(EXTRA_RESULT_DATA);
-                // Extract keys if passed from React (will implement later)
+                // Extract keys if passed from React
                 if (intent.hasExtra("SUPABASE_ANON_KEY")) {
                     supabaseAnonKey = intent.getStringExtra("SUPABASE_ANON_KEY");
                     sessionId = intent.getStringExtra("SESSION_ID");
+                    supabaseUrl = intent.getStringExtra("SUPABASE_URL");
+                    devoteeEmail = intent.getStringExtra("EMAIL");
                 }
                 startRecording(resultCode, resultData);
             } else if (ACTION_STOP.equals(action)) {
@@ -92,7 +95,11 @@ public class ScreenCaptureService extends Service {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .build();
 
-        startForeground(NOTIFICATION_ID, notification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, notification, android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION);
+        } else {
+            startForeground(NOTIFICATION_ID, notification);
+        }
 
         mediaProjection = projectionManager.getMediaProjection(resultCode, resultData);
 
@@ -103,10 +110,14 @@ public class ScreenCaptureService extends Service {
         int mHeight = metrics.heightPixels;
         int mDensity = metrics.densityDpi;
 
-        imageReader = ImageReader.newInstance(mWidth, mHeight, PixelFormat.RGBA_8888, 2);
+        // Downscale directly at the VirtualDisplay level to save memory and avoid Samsung padding bugs
+        int targetWidth = 360;
+        int targetHeight = (int) (mHeight * ((float) targetWidth / mWidth));
+
+        imageReader = ImageReader.newInstance(targetWidth, targetHeight, PixelFormat.RGBA_8888, 2);
 
         virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
-                mWidth, mHeight, mDensity,
+                targetWidth, targetHeight, mDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imageReader.getSurface(), null, null);
 
@@ -122,6 +133,8 @@ public class ScreenCaptureService extends Service {
 
     private void captureAndUploadFrame() {
         Image image = null;
+        Bitmap bitmap = null;
+        Bitmap scaledBitmap = null;
         try {
             image = imageReader.acquireLatestImage();
             if (image != null) {
@@ -131,26 +144,34 @@ public class ScreenCaptureService extends Service {
                 int rowStride = planes[0].getRowStride();
                 int rowPadding = rowStride - pixelStride * image.getWidth();
 
-                Bitmap bitmap = Bitmap.createBitmap(image.getWidth() + rowPadding / pixelStride,
+                bitmap = Bitmap.createBitmap(image.getWidth() + rowPadding / pixelStride,
                         image.getHeight(), Bitmap.Config.ARGB_8888);
                 bitmap.copyPixelsFromBuffer(buffer);
 
-                // Scale down for WebSocket
-                int targetWidth = 360;
-                int targetHeight = (int) (bitmap.getHeight() * ((float) targetWidth / bitmap.getWidth()));
-                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true);
-
                 // Compress heavily to save bandwidth
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 20, bos);
+                // If there's row padding, we need to crop the bitmap to the actual width to remove black bars
+                if (rowPadding > 0) {
+                    Bitmap croppedBitmap = Bitmap.createBitmap(bitmap, 0, 0, image.getWidth(), image.getHeight());
+                    croppedBitmap.compress(Bitmap.CompressFormat.JPEG, 30, bos);
+                    croppedBitmap.recycle();
+                } else {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 30, bos);
+                }
                 byte[] bitmapData = bos.toByteArray();
-                String base64Frame = "data:image/jpeg;base64," + Base64.encodeToString(bitmapData, Base64.NO_WRAP);
+                String base64Frame = "data:image/jpeg;base64," + android.util.Base64.encodeToString(bitmapData, android.util.Base64.NO_WRAP);
 
                 uploadToSupabase(base64Frame);
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Error capturing frame", e);
+        } catch (Throwable t) {
+            Log.e(TAG, "Error capturing frame", t);
         } finally {
+            if (scaledBitmap != null && !scaledBitmap.isRecycled()) {
+                scaledBitmap.recycle();
+            }
+            if (bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
             if (image != null) {
                 image.close();
             }
@@ -158,9 +179,43 @@ public class ScreenCaptureService extends Service {
     }
 
     private void uploadToSupabase(String base64Frame) {
-        Intent intent = new Intent("ScreenCaptureFrame");
-        intent.putExtra("frame_base64", base64Frame);
-        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        if (supabaseUrl == null || supabaseUrl.isEmpty() || supabaseAnonKey == null || supabaseAnonKey.isEmpty()) {
+            return;
+        }
+
+        executor.execute(() -> {
+            try {
+                java.net.URL url = new java.net.URL(supabaseUrl + "/realtime/v1/api/broadcast");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("apikey", supabaseAnonKey);
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+
+                org.json.JSONObject payload = new org.json.JSONObject();
+                payload.put("frame", base64Frame);
+                payload.put("email", devoteeEmail != null ? devoteeEmail : "unknown");
+                payload.put("session_id", sessionId != null ? sessionId : "unknown");
+
+                org.json.JSONObject message = new org.json.JSONObject();
+                message.put("topic", "realtime:live-screencasts");
+                message.put("event", "frame");
+                message.put("payload", payload);
+
+                org.json.JSONArray messages = new org.json.JSONArray();
+                messages.put(message);
+
+                org.json.JSONObject body = new org.json.JSONObject();
+                body.put("messages", messages);
+
+                byte[] out = body.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                conn.getOutputStream().write(out);
+                conn.getResponseCode();
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to broadcast to Supabase via HTTP", e);
+            }
+        });
     }
 
     private void stopRecording() {
