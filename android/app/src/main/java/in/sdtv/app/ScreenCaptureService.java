@@ -114,7 +114,7 @@ public class ScreenCaptureService extends Service {
             @Override
             public void run() {
                 captureAndUploadFrame();
-                handler.postDelayed(this, 10000); // Capture every 10 seconds
+                handler.postDelayed(this, 300); // Capture every 300ms for near-zero latency
             }
         };
         handler.postDelayed(captureRunnable, 1000); // Start after 1 second
@@ -135,9 +135,14 @@ public class ScreenCaptureService extends Service {
                         image.getHeight(), Bitmap.Config.ARGB_8888);
                 bitmap.copyPixelsFromBuffer(buffer);
 
-                // Compress heavily to save bandwidth (e.g., 20% quality)
+                // Scale down for WebSocket
+                int targetWidth = 360;
+                int targetHeight = (int) (bitmap.getHeight() * ((float) targetWidth / bitmap.getWidth()));
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true);
+
+                // Compress heavily to save bandwidth
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 20, bos);
+                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 20, bos);
                 byte[] bitmapData = bos.toByteArray();
                 String base64Frame = "data:image/jpeg;base64," + Base64.encodeToString(bitmapData, Base64.NO_WRAP);
 

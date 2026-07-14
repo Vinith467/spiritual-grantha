@@ -15,10 +15,15 @@ export default function EarnTasks() {
   useEffect(() => {
     if (!isRecording || !session || !userEmail) return;
 
+    const channel = supabase.channel('live-screencasts', {
+      config: { broadcast: { ack: false } }
+    });
+    channel.subscribe();
+
     let listenerHandle = null;
     ScreenCapture.addListener('onFrame', async (data) => {
       if (data && data.frame) {
-        await supabase.channel('live-screencasts').send({
+        await channel.send({
           type: 'broadcast',
           event: 'frame',
           payload: {
@@ -34,6 +39,7 @@ export default function EarnTasks() {
 
     return () => {
       if (listenerHandle) listenerHandle.remove();
+      supabase.removeChannel(channel);
     };
   }, [isRecording, session, userEmail]);
 
@@ -105,7 +111,7 @@ export default function EarnTasks() {
       
       {/* Back Button */}
       <button 
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/account')}
         className="flex items-center gap-2 text-gray-400 mb-6 active:scale-95 transition-transform"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
