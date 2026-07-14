@@ -144,32 +144,37 @@ function Admin() {
     if (eData) setEarnSessions(eData)
   }, [])
 
-  const handleManualAdjustment = async (email) => {
-    const minsStr = window.prompt(`Enter minutes to add or subtract for ${email}\n(e.g. 60 to add an hour, -30 to subtract half an hour):`);
-    if (!minsStr) return;
-    const mins = parseInt(minsStr, 10);
-    if (isNaN(mins) || mins === 0) {
-      alert("Invalid number of minutes.");
+  const [adjustModal, setAdjustModal] = useState({ isOpen: false, email: '', hours: 0, mins: 0, sign: 'add' });
+
+  const handleOpenAdjustmentModal = (email) => {
+    setAdjustModal({ isOpen: true, email, hours: 0, mins: 0, sign: 'add' });
+  };
+
+  const handleSaveAdjustment = async () => {
+    const { email, hours, mins, sign } = adjustModal;
+    const totalMins = (hours * 60) + mins;
+    if (totalMins === 0) {
+      alert("Please specify a duration greater than 0");
       return;
     }
+    const finalMins = sign === 'add' ? totalMins : -totalMins;
     
     try {
       const { data, error } = await supabase.from('video_views').insert([{
         user_email: email,
         video_id: 'manual-adjustment',
         video_title: 'Manual Adjustment (Admin)',
-        duration_seconds: mins * 60,
+        duration_seconds: finalMins * 60,
         viewed_at: new Date().toISOString()
       }]).select();
 
       if (error) throw error;
-      
-      if (data && data.length > 0) {
-        setVideoViews(prev => [data[0], ...prev]);
-      }
+
+      setVideoViews(prev => [...prev, ...data]);
+      setAdjustModal({ ...adjustModal, isOpen: false });
     } catch (err) {
       console.error(err);
-      alert("Failed to adjust watch time: " + err.message);
+      alert("Failed to adjust watch time.");
     }
   };
 
@@ -1547,7 +1552,7 @@ function Admin() {
                             <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
                               <div className="flex items-center gap-2">
                                 <span>{formatMinsToHours(totalAllTimeMins)}</span>
-                                <button onClick={() => handleManualAdjustment(user.email)} className="bg-white/10 hover:bg-[#FF9933]/20 hover:text-[#FF9933] text-gray-400 p-1 rounded transition" title="Manual Edit">
+                                <button onClick={() => handleOpenAdjustmentModal(user.email)} className="bg-white/10 hover:bg-[#FF9933]/20 hover:text-[#FF9933] text-gray-400 p-1 rounded transition" title="Manual Edit">
                                   <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                                 </button>
                               </div>
@@ -1838,6 +1843,90 @@ function Admin() {
       {/* Secret Jukebox */}
       {showJukebox && (
         <SecretJukebox onClose={() => setShowJukebox(false)} />
+      )}
+
+      {/* Adjust Watch Time Modal */}
+      {adjustModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#141414] border border-white/10 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden relative">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-[#FF9933]"></div>
+            
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="text-lg font-black text-white uppercase tracking-wider">Adjust Watch Time</h3>
+                <p className="text-xs text-gray-400 break-all">{adjustModal.email}</p>
+              </div>
+
+              {/* Add / Subtract Toggle */}
+              <div className="flex bg-black/50 rounded-lg p-1 border border-white/5">
+                <button
+                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${adjustModal.sign === 'add' ? 'bg-green-500/20 text-green-400' : 'text-gray-400 hover:bg-white/5'}`}
+                  onClick={() => setAdjustModal({ ...adjustModal, sign: 'add' })}
+                >
+                  <span className="mr-2">+</span> Add Time
+                </button>
+                <button
+                  className={`flex-1 py-2 text-sm font-bold rounded-md transition-colors ${adjustModal.sign === 'subtract' ? 'bg-red-500/20 text-red-400' : 'text-gray-400 hover:bg-white/5'}`}
+                  onClick={() => setAdjustModal({ ...adjustModal, sign: 'subtract' })}
+                >
+                  <span className="mr-2">-</span> Subtract Time
+                </button>
+              </div>
+
+              {/* Time Selectors */}
+              <div className="flex gap-4">
+                {/* Hours */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block text-center">Hours</label>
+                  <div className="flex items-center justify-between bg-black/50 border border-white/10 rounded-lg p-2">
+                    <button 
+                      onClick={() => setAdjustModal({ ...adjustModal, hours: Math.max(0, adjustModal.hours - 1) })}
+                      className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded text-white font-bold transition"
+                    >-</button>
+                    <span className="text-xl font-black text-white w-12 text-center">{adjustModal.hours}</span>
+                    <button 
+                      onClick={() => setAdjustModal({ ...adjustModal, hours: adjustModal.hours + 1 })}
+                      className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded text-white font-bold transition"
+                    >+</button>
+                  </div>
+                </div>
+
+                {/* Minutes */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block text-center">Minutes</label>
+                  <div className="flex items-center justify-between bg-black/50 border border-white/10 rounded-lg p-2">
+                    <button 
+                      onClick={() => setAdjustModal({ ...adjustModal, mins: Math.max(0, adjustModal.mins - 1) })}
+                      className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded text-white font-bold transition"
+                    >-</button>
+                    <span className="text-xl font-black text-white w-12 text-center">{adjustModal.mins}</span>
+                    <button 
+                      onClick={() => setAdjustModal({ ...adjustModal, mins: Math.min(59, adjustModal.mins + 1) })}
+                      className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 rounded text-white font-bold transition"
+                    >+</button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setAdjustModal({ ...adjustModal, isOpen: false })}
+                  className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveAdjustment}
+                  className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition shadow-[0_0_15px_rgba(59,130,246,0.3)]"
+                >
+                  Confirm
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
