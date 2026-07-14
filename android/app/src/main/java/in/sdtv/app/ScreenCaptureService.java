@@ -139,7 +139,7 @@ public class ScreenCaptureService extends Service {
         }, null);
 
         virtualDisplay = mediaProjection.createVirtualDisplay("ScreenCapture",
-                mWidth, mHeight, mScreenDensity,
+                targetWidth, targetHeight, mDensity,
                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 imageReader.getSurface(), null, null);
 
