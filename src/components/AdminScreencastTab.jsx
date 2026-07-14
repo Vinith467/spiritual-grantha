@@ -166,20 +166,6 @@ export default function AdminScreencastTab() {
             )}
           </div>
 
-          <div className="flex gap-4">
-            <button 
-              onClick={() => updateSessionStatus(selectedSession.id, 'approved')}
-              className="flex-1 bg-green-500/20 text-green-400 border border-green-500/30 py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-green-500/30"
-            >
-              <CheckCircleOutlined /> Approve
-            </button>
-            <button 
-              onClick={() => updateSessionStatus(selectedSession.id, 'rejected')}
-              className="flex-1 bg-red-500/20 text-red-400 border border-red-500/30 py-3 rounded-xl font-bold flex justify-center items-center gap-2 hover:bg-red-500/30"
-            >
-              <CloseCircleOutlined /> Reject
-            </button>
-          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
