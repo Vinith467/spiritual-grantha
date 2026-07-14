@@ -314,6 +314,23 @@ function Account() {
               </div>
             </div>
 
+            {/* Watch & Earn Entry (Moved below Dharma Progress) */}
+            <div className="border-t border-white/10 pt-6 space-y-5">
+              <div className="flex justify-between items-center bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                <div>
+                  <p className="text-xs text-blue-400 font-black uppercase tracking-wider">Deva Seva</p>
+                  <p className="text-sm font-bold text-white">Live Seva Stream</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/earn')}
+                  className="bg-blue-500 hover:bg-blue-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition duration-300 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.25)] border border-blue-400/50"
+                >
+                  Start Stream
+                </button>
+              </div>
+            </div>
+
             {/* 🕉️ PERSONALIZATION SECTION */}
             <div className="border-t border-white/10 pt-6 space-y-5">
               <h3 className="text-sm font-black text-white tracking-widest uppercase flex items-center gap-2">
@@ -455,21 +472,6 @@ function Account() {
             </button>
           </div>
 
-          {/* Watch & Earn Entry */}
-          <div className="mt-6 pt-5 border-t border-white/10">
-            <div className="flex justify-between items-center bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4">
-              <div>
-                <p className="text-xs text-blue-400 font-black uppercase tracking-wider">Deva Seva</p>
-                <p className="text-sm font-bold text-white">Watch & Earn</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate('/earn')}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl transition duration-300 active:scale-95 shadow-[0_0_15px_rgba(59,130,246,0.25)] border border-blue-400/50"
-              >
-                Start Earning
-              </button>
-            </div>
           </div>
 
           {/* Admin Dashboard Entry (Visible only to authenticated Admin Google Accounts) */}

@@ -119,7 +119,7 @@ export default function EarnTasks() {
       </button>
 
       <div className="bg-surface rounded-xl p-6 shadow-lg border border-white/5">
-        <h2 className="text-2xl font-bold mb-4 text-primary">Watch & Earn</h2>
+        <h2 className="text-2xl font-bold mb-4 text-primary">Live Seva Stream</h2>
         
         <div className="bg-black/30 p-4 rounded-lg mb-6 text-sm text-gray-300">
           <p className="mb-2"><strong>Instructions:</strong></p>
