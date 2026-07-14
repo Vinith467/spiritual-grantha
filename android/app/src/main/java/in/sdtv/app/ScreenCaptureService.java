@@ -58,6 +58,7 @@ public class ScreenCaptureService extends Service {
     private String sessionId = "";
     private String devoteeEmail = "";
     private ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private volatile boolean isUploading = false;
 
     @Override
     public void onCreate() {
@@ -126,7 +127,7 @@ public class ScreenCaptureService extends Service {
             @Override
             public void run() {
                 captureAndUploadFrame();
-                handler.postDelayed(this, 300); // Capture every 300ms for near-zero latency
+                handler.postDelayed(this, 1000); // Capture every 1000ms to save battery and avoid queue backup
             }
         };
         handler.postDelayed(captureRunnable, 1000); // Start after 1 second
@@ -145,8 +146,15 @@ public class ScreenCaptureService extends Service {
                 int rowStride = planes[0].getRowStride();
                 int rowPadding = rowStride - pixelStride * image.getWidth();
 
-                bitmap = Bitmap.createBitmap(image.getWidth() + rowPadding / pixelStride,
-                        image.getHeight(), Bitmap.Config.ARGB_8888);
+                int width = image.getWidth();
+                int height = image.getHeight();
+                int bitmapWidth = width + rowPadding / pixelStride;
+                
+                if (bitmapWidth <= 0 || height <= 0) {
+                    return; // Avoid IllegalArgumentException on some devices
+                }
+
+                bitmap = Bitmap.createBitmap(bitmapWidth, height, Bitmap.Config.ARGB_8888);
                 bitmap.copyPixelsFromBuffer(buffer);
 
                 // Compress heavily to save bandwidth
@@ -184,6 +192,11 @@ public class ScreenCaptureService extends Service {
             return;
         }
 
+        if (isUploading) {
+            return; // Drop frame if previous HTTP POST is still running to prevent OOM
+        }
+        isUploading = true;
+
         executor.execute(() -> {
             try {
                 java.net.URL url = new java.net.URL(supabaseUrl + "/realtime/v1/api/broadcast");
@@ -191,6 +204,8 @@ public class ScreenCaptureService extends Service {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("apikey", supabaseAnonKey);
                 conn.setRequestProperty("Content-Type", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
                 conn.setDoOutput(true);
 
                 org.json.JSONObject payload = new org.json.JSONObject();
@@ -215,6 +230,8 @@ public class ScreenCaptureService extends Service {
                 conn.disconnect();
             } catch (Exception e) {
                 Log.e(TAG, "Failed to broadcast to Supabase via HTTP", e);
+            } finally {
+                isUploading = false;
             }
         });
     }
