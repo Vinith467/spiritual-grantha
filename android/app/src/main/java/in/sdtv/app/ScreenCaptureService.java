@@ -215,7 +215,7 @@ public class ScreenCaptureService extends Service {
                 payload.put("session_id", sessionId != null ? sessionId : "unknown");
 
                 org.json.JSONObject message = new org.json.JSONObject();
-                message.put("topic", "realtime:live-screencasts");
+                message.put("topic", "live-screencasts");
                 message.put("event", "frame");
                 message.put("payload", payload);
 
