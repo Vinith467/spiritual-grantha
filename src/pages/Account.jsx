@@ -88,33 +88,53 @@ function Account() {
       
       const fetchWatchTime = async () => {
         try {
-          const { data, error } = await supabase
+          // Fetch regular video views
+          const { data: viewData, error: viewError } = await supabase
             .from('video_views')
             .select('duration_seconds, viewed_at')
-            .ilike('user_email', email)
+            .ilike('user_email', email);
           
-          if (!error && data) {
-            let allTime = 0
-            let todayTime = 0
-            
-            const todayStr = getLocalYMD(new Date());
+          // Fetch Live Seva Stream sessions
+          const { data: sessionData, error: sessionError } = await supabase
+            .from('earn_sessions')
+            .select('created_at, end_time')
+            .ilike('devotee_email', email);
+          
+          let allTime = 0;
+          let todayTime = 0;
+          const todayStr = getLocalYMD(new Date());
 
-            data.forEach(v => {
+          if (!viewError && viewData) {
+            viewData.forEach(v => {
               const mins = Math.ceil((v.duration_seconds || 0) / 60);
               allTime += mins;
               
               const vDateStr = getLocalYMD(v.viewed_at || v.created_at);
-
               if (vDateStr === todayStr) {
                 todayTime += mins;
               }
-            })
-            
-            setAllTimeWatchMins(allTime)
-            setTodayWatchMins(todayTime)
+            });
           }
+
+          if (!sessionError && sessionData) {
+            sessionData.forEach(s => {
+              const start = new Date(s.created_at).getTime();
+              const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+              const durationSeconds = Math.max(0, Math.floor((end - start) / 1000));
+              const mins = Math.ceil(durationSeconds / 60);
+              allTime += mins;
+
+              const vDateStr = getLocalYMD(s.created_at);
+              if (vDateStr === todayStr) {
+                todayTime += mins;
+              }
+            });
+          }
+          
+          setAllTimeWatchMins(allTime);
+          setTodayWatchMins(todayTime);
         } catch (err) {
-          console.error("Error fetching watch time:", err)
+          console.error("Error fetching watch time:", err);
         }
       }
       fetchWatchTime()

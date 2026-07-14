@@ -79,19 +79,8 @@ export default function EarnTasks() {
           .update({ end_time: endTime.toISOString() })
           .eq('id', session.id);
 
-        // 2. Add duration to video_views so it appears in Account progress (All-time and Filtered Watch Time)
-        // We cap the total daily contribution at 10 hours (36000 seconds) in Account.jsx or here.
-        // The user said "10 hour we need but if they do more than that it not the issue", so we just insert it.
-        if (durationSeconds > 0) {
-          await supabase
-            .from('video_views')
-            .insert({
-              user_email: userEmail,
-              video_id: session.video_id || 'live-seva-stream',
-              duration_seconds: durationSeconds,
-              viewed_at: endTime.toISOString()
-            });
-        }
+        // Note: We no longer insert into video_views because Account.jsx and Admin.jsx 
+        // now directly sum the durations of all earn_sessions dynamically!
       }
       
       setIsRecording(false);

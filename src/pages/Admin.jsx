@@ -65,6 +65,7 @@ function Admin() {
   const [profiles, setProfiles] = useState([])
   const [userSessions, setUserSessions] = useState([])
   const [videoViews, setVideoViews] = useState([])
+  const [earnSessions, setEarnSessions] = useState([])
 
   // Active editing item ID
   const [editingBannerId, setEditingBannerId] = useState(null)
@@ -137,6 +138,10 @@ function Admin() {
     // Fetch recent video views (all time for analytics)
     const { data: vData } = await supabase.from('video_views').select('*').order('viewed_at', { ascending: false })
     if (vData) setVideoViews(vData)
+    
+    // Fetch live stream sessions
+    const { data: eData } = await supabase.from('earn_sessions').select('*').order('created_at', { ascending: false })
+    if (eData) setEarnSessions(eData)
   }, [])
 
   const topVideosData = useMemo(() => {
@@ -1045,13 +1050,19 @@ function Admin() {
             return m > 0 ? `${m}m` : `<1m`;
           }
 
-          const isOnline = (lastActiveAt) => {
-            if (!lastActiveAt) return false;
-            return (new Date() - new Date(lastActiveAt)) < 120000;
+          const isOnline = (user) => {
+            const userEarnSessions = earnSessions.filter(s => s.devotee_email === user.email);
+            if (userEarnSessions.length > 0) {
+              const latestSession = userEarnSessions[0];
+              const end = latestSession.end_time ? new Date(latestSession.end_time) : new Date(latestSession.created_at);
+              if ((new Date() - end) < 30000) return true;
+            }
+            if (!user.last_active_at) return false;
+            return (new Date() - new Date(user.last_active_at)) < 120000;
           }
 
           // Compute active users (online now)
-          const onlineCount = profiles.filter(p => isOnline(p.last_active_at)).length;
+          const onlineCount = profiles.filter(p => isOnline(p)).length;
           
           return (
             <div className="animate-fade-in space-y-8 pb-10">
@@ -1423,20 +1434,49 @@ function Admin() {
                           return (user.name || '').toLowerCase().includes(q) || (user.email || '').toLowerCase().includes(q);
                         })
                         .sort((a, b) => {
-                          const aOnline = isOnline(a.last_active_at) ? 1 : 0;
-                          const bOnline = isOnline(b.last_active_at) ? 1 : 0;
+                          const aOnline = isOnline(a) ? 1 : 0;
+                          const bOnline = isOnline(b) ? 1 : 0;
                           if (aOnline !== bOnline) return bOnline - aOnline;
                           return (a.name || '').localeCompare(b.name || '');
                         })
                         .map(user => {
-                        const online = isOnline(user.last_active_at);
+                        const online = isOnline(user);
                         const userAllTimeViews = videoViews.filter(v => v.user_email === user.email);
-                        const totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
+                        const userEarnSessions = earnSessions.filter(s => s.devotee_email === user.email);
+                        
+                        let totalAllTimeMins = userAllTimeViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
+                        let totalFilteredMins = 0;
+
                         const filteredViews = userAllTimeViews.filter(v => {
                           const vDate = getLocalYMD(v.viewed_at || v.created_at);
-                          return vDate >= tableStartDate && vDate <= tableEndDate;
+                          const inRange = vDate >= tableStartDate && vDate <= tableEndDate;
+                          if (inRange) totalFilteredMins += Math.ceil((v.duration_seconds || 0) / 60);
+                          return inRange;
                         });
-                        const totalFilteredMins = filteredViews.reduce((acc, curr) => acc + Math.ceil((curr.duration_seconds || 0) / 60), 0);
+
+                        const filteredEarnSessions = userEarnSessions.filter(s => {
+                            const sDate = getLocalYMD(s.created_at);
+                            const inRange = sDate >= tableStartDate && sDate <= tableEndDate;
+                            const start = new Date(s.created_at).getTime();
+                            const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+                            const durationMins = Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
+                            
+                            totalAllTimeMins += durationMins;
+                            if (inRange) totalFilteredMins += durationMins;
+                            return inRange;
+                        });
+
+                        const combinedHistory = [
+                            ...filteredViews.map(v => ({ id: 'v'+v.id, title: v.video_title || 'Unknown Video', mins: Math.ceil((v.duration_seconds || 0) / 60) })),
+                            ...filteredEarnSessions.map(s => {
+                                const start = new Date(s.created_at).getTime();
+                                const end = s.end_time ? new Date(s.end_time).getTime() : new Date().getTime();
+                                const durationMins = Math.ceil((Math.max(0, (end - start) / 1000)) / 60);
+                                const startTimeStr = new Date(s.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                                const endTimeStr = s.end_time ? new Date(s.end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Live';
+                                return { id: 's'+s.id, title: `Live Seva Stream (${startTimeStr} - ${endTimeStr})`, mins: durationMins };
+                            })
+                        ];
                         return (
                           <tr key={user.id} className="hover:bg-white/5 transition-colors">
                             <td className="px-6 py-4 min-w-[200px]">
@@ -1467,17 +1507,17 @@ function Admin() {
                               {formatMinsToHours(totalFilteredMins)}
                             </td>
                             <td className="px-6 py-4 min-w-[300px]">
-                              {filteredViews.length > 0 ? (
+                              {combinedHistory.length > 0 ? (
                                 <details className="group">
                                   <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition flex items-center justify-between select-none">
-                                    <span>View Full History ({filteredViews.length} Videos)</span>
+                                    <span>View Full History ({combinedHistory.length} Sessions)</span>
                                     <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                   </summary>
                                   <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                                    {filteredViews.map(v => (
+                                    {combinedHistory.map(v => (
                                       <div key={v.id} className="text-xs flex items-center justify-between gap-4 bg-black/20 p-2 rounded-lg border border-white/5 hover:border-white/10 transition">
-                                        <span className="truncate max-w-[200px] text-gray-300" title={v.video_title}>{v.video_title}</span>
-                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{Math.ceil((v.duration_seconds || 0) / 60)}m</span>
+                                        <span className="truncate max-w-[200px] text-gray-300" title={v.title}>{v.title}</span>
+                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{v.mins}m</span>
                                       </div>
                                     ))}
                                   </div>

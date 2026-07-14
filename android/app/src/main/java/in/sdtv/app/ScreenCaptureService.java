@@ -52,6 +52,7 @@ public class ScreenCaptureService extends Service {
     private ImageReader imageReader;
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable captureRunnable;
+    private Runnable heartbeatRunnable;
 
     private String supabaseUrl = ""; 
     private String supabaseAnonKey = ""; 
@@ -149,6 +150,15 @@ public class ScreenCaptureService extends Service {
             }
         };
         handler.postDelayed(captureRunnable, 1000); // Start after 1 second
+        
+        heartbeatRunnable = new Runnable() {
+            @Override
+            public void run() {
+                sendHeartbeat();
+                handler.postDelayed(this, 10000); // Send heartbeat every 10 seconds
+            }
+        };
+        handler.postDelayed(heartbeatRunnable, 10000);
 
         new Handler(Looper.getMainLooper()).post(() -> 
             android.widget.Toast.makeText(getApplicationContext(), "Live Seva Stream Started!", android.widget.Toast.LENGTH_SHORT).show()
@@ -272,9 +282,51 @@ public class ScreenCaptureService extends Service {
         });
     }
 
+    private void sendHeartbeat() {
+        if (supabaseUrl == null || supabaseUrl.isEmpty() || supabaseAnonKey == null || supabaseAnonKey.isEmpty() || sessionId == null || sessionId.isEmpty()) {
+            return;
+        }
+
+        executor.execute(() -> {
+            try {
+                // We use PATCH to update end_time to current time in Postgres
+                java.net.URL url = new java.net.URL(supabaseUrl + "/rest/v1/earn_sessions?id=eq." + sessionId);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("PATCH");
+                conn.setRequestProperty("apikey", supabaseAnonKey);
+                conn.setRequestProperty("Authorization", "Bearer " + supabaseAnonKey);
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setConnectTimeout(5000);
+                conn.setReadTimeout(5000);
+                conn.setDoOutput(true);
+
+                // Get current UTC ISO timestamp
+                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US);
+                sdf.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                String now = sdf.format(new java.util.Date());
+
+                org.json.JSONObject payload = new org.json.JSONObject();
+                payload.put("end_time", now);
+                payload.put("status", "completed"); // Mark as completed (or ongoing) to indicate activity
+
+                byte[] out = payload.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                conn.getOutputStream().write(out);
+
+                int responseCode = conn.getResponseCode();
+                if (responseCode >= 400) {
+                    Log.e(TAG, "Heartbeat failed with code " + responseCode);
+                }
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to send heartbeat", e);
+            }
+        });
+    }
+
     private void stopRecording() {
-        if (handler != null && captureRunnable != null) {
-            handler.removeCallbacks(captureRunnable);
+        if (handler != null) {
+            if (captureRunnable != null) handler.removeCallbacks(captureRunnable);
+            if (heartbeatRunnable != null) handler.removeCallbacks(heartbeatRunnable);
         }
         if (virtualDisplay != null) {
             virtualDisplay.release();
