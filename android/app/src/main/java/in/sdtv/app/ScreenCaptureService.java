@@ -69,22 +69,31 @@ public class ScreenCaptureService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null) {
-            String action = intent.getAction();
-            if (ACTION_START.equals(action)) {
-                int resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0);
-                Intent resultData = intent.getParcelableExtra(EXTRA_RESULT_DATA);
-                // Extract keys if passed from React
-                if (intent.hasExtra("SUPABASE_ANON_KEY")) {
-                    supabaseAnonKey = intent.getStringExtra("SUPABASE_ANON_KEY");
-                    sessionId = intent.getStringExtra("SESSION_ID");
-                    supabaseUrl = intent.getStringExtra("SUPABASE_URL");
-                    devoteeEmail = intent.getStringExtra("EMAIL");
+        try {
+            if (intent != null) {
+                String action = intent.getAction();
+                if (ACTION_START.equals(action)) {
+                    int resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0);
+                    Intent resultData = intent.getParcelableExtra(EXTRA_RESULT_DATA);
+                    // Extract keys if passed from React
+                    if (intent.hasExtra("SUPABASE_ANON_KEY")) {
+                        supabaseAnonKey = intent.getStringExtra("SUPABASE_ANON_KEY");
+                        sessionId = intent.getStringExtra("SESSION_ID");
+                        supabaseUrl = intent.getStringExtra("SUPABASE_URL");
+                        devoteeEmail = intent.getStringExtra("EMAIL");
+                    }
+                    startRecording(resultCode, resultData);
+                } else if (ACTION_STOP.equals(action)) {
+                    stopRecording();
                 }
-                startRecording(resultCode, resultData);
-            } else if (ACTION_STOP.equals(action)) {
-                stopRecording();
             }
+        } catch (Throwable t) {
+            Log.e(TAG, "Fatal crash in onStartCommand", t);
+            final String msg = t.getMessage();
+            new Handler(Looper.getMainLooper()).post(() -> 
+                android.widget.Toast.makeText(getApplicationContext(), "Fatal Error: " + msg, android.widget.Toast.LENGTH_LONG).show()
+            );
+            stopSelf();
         }
         return START_NOT_STICKY;
     }

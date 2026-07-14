@@ -84,10 +84,21 @@ public class ScreenCapturePlugin extends Plugin {
                 serviceIntent.putExtra("SUPABASE_ANON_KEY", call.getString("SUPABASE_ANON_KEY", ""));
             }
             
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getContext().startForegroundService(serviceIntent);
-            } else {
-                getContext().startService(serviceIntent);
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    getContext().startForegroundService(serviceIntent);
+                } else {
+                    getContext().startService(serviceIntent);
+                }
+            } catch (Exception e) {
+                // On Android 12+, starting a foreground service from the background throws.
+                // Fallback to startService which might work if the app is still somewhat in foreground.
+                try {
+                    getContext().startService(serviceIntent);
+                } catch (Exception ex) {
+                    call.reject("Failed to start service: " + ex.getMessage());
+                    return;
+                }
             }
             call.resolve(new JSObject().put("status", "started"));
         } else {
