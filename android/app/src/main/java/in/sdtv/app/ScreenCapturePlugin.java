@@ -77,12 +77,11 @@ public class ScreenCapturePlugin extends Plugin {
             serviceIntent.putExtra(ScreenCaptureService.EXTRA_RESULT_CODE, resultCode);
             serviceIntent.putExtra(ScreenCaptureService.EXTRA_RESULT_DATA, data);
             
-            PluginCall savedCall = getSavedCall();
-            if (savedCall != null) {
-                serviceIntent.putExtra("SESSION_ID", savedCall.getString("SESSION_ID", ""));
-                serviceIntent.putExtra("EMAIL", savedCall.getString("EMAIL", ""));
-                serviceIntent.putExtra("SUPABASE_URL", savedCall.getString("SUPABASE_URL", ""));
-                serviceIntent.putExtra("SUPABASE_ANON_KEY", savedCall.getString("SUPABASE_ANON_KEY", ""));
+            if (call != null) {
+                serviceIntent.putExtra("SESSION_ID", call.getString("SESSION_ID", ""));
+                serviceIntent.putExtra("EMAIL", call.getString("EMAIL", ""));
+                serviceIntent.putExtra("SUPABASE_URL", call.getString("SUPABASE_URL", ""));
+                serviceIntent.putExtra("SUPABASE_ANON_KEY", call.getString("SUPABASE_ANON_KEY", ""));
             }
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

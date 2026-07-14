@@ -115,6 +115,7 @@ public class ScreenCaptureService extends Service {
         // Downscale directly at the VirtualDisplay level to save memory and avoid Samsung padding bugs
         int targetWidth = 360;
         int targetHeight = (int) (mHeight * ((float) targetWidth / mWidth));
+        targetHeight = (targetHeight / 2) * 2; // Ensure even dimension for ImageReader
 
         imageReader = ImageReader.newInstance(targetWidth, targetHeight, PixelFormat.RGBA_8888, 2);
 
