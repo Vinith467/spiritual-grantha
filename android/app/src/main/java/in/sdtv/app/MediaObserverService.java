@@ -24,15 +24,33 @@ public class MediaObserverService extends NotificationListenerService {
 
     private MediaSessionManager mediaSessionManager;
     private MediaSessionManager.OnActiveSessionsChangedListener sessionsChangedListener;
+    private Handler handler;
+    private Runnable pollingRunnable;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
+        handler = new Handler(Looper.getMainLooper());
 
         sessionsChangedListener = controllers -> {
             registerCallbacks(controllers);
             updateCurrentMedia(controllers);
+        };
+        
+        // Bulletproof polling: check active sessions every 2 seconds in case callbacks drop
+        pollingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ComponentName componentName = new ComponentName(MediaObserverService.this, MediaObserverService.class);
+                    List<MediaController> controllers = mediaSessionManager.getActiveSessions(componentName);
+                    updateCurrentMedia(controllers);
+                } catch (Exception e) {
+                    Log.e(TAG, "Polling failed", e);
+                }
+                handler.postDelayed(this, 2000);
+            }
         };
     }
 
@@ -46,6 +64,7 @@ public class MediaObserverService extends NotificationListenerService {
             registerCallbacks(controllers);
             updateCurrentMedia(controllers);
             mediaSessionManager.addOnActiveSessionsChangedListener(sessionsChangedListener, componentName);
+            handler.postDelayed(pollingRunnable, 2000); // Start polling
         } catch (SecurityException e) {
             Log.e(TAG, "Missing permission to listen to active sessions", e);
         }
@@ -56,6 +75,9 @@ public class MediaObserverService extends NotificationListenerService {
         super.onListenerDisconnected();
         if (mediaSessionManager != null && sessionsChangedListener != null) {
             mediaSessionManager.removeOnActiveSessionsChangedListener(sessionsChangedListener);
+        }
+        if (handler != null && pollingRunnable != null) {
+            handler.removeCallbacks(pollingRunnable);
         }
     }
     
@@ -85,14 +107,24 @@ public class MediaObserverService extends NotificationListenerService {
     private void updateCurrentMedia(List<MediaController> controllers) {
         if (controllers != null && !controllers.isEmpty()) {
             MediaController activeController = null;
+            MediaController fallbackController = null;
+            
             for (MediaController controller : controllers) {
                 if ("com.google.android.youtube".equals(controller.getPackageName())) {
-                    activeController = controller;
-                    break;
+                    if (fallbackController == null) {
+                        fallbackController = controller; // Keep the first one just in case
+                    }
+                    PlaybackState state = controller.getPlaybackState();
+                    if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                        activeController = controller; // Prioritize the one that is actually playing!
+                        break;
+                    }
                 }
             }
-            if (activeController != null) {
-                updateMetadata(activeController.getMetadata(), activeController.getPlaybackState());
+            
+            MediaController target = activeController != null ? activeController : fallbackController;
+            if (target != null) {
+                updateMetadata(target.getMetadata(), target.getPlaybackState());
             }
         }
     }
