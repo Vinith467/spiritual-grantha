@@ -146,11 +146,11 @@ export default function YouTubeHistoryTable({ onClose }) {
             </div>
           ) : (
             <div className="overflow-x-auto rounded-xl border border-white/10 h-full">
-              <table className="w-full text-left text-sm text-gray-300 min-w-[800px]">
+              <table className="w-full text-left text-sm text-gray-300 min-w-[1000px]">
                 <thead className="bg-white/5 text-xs uppercase text-gray-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
                   <tr>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">User</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold w-1/2 min-w-[300px]">Videos Watched</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold w-[250px] max-w-[250px]">User</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold w-[400px]">Videos Watched</th>
                     <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Total Video Length</th>
                     <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Total Time Watched</th>
                     <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Last Session Date</th>
@@ -159,11 +159,11 @@ export default function YouTubeHistoryTable({ onClose }) {
                 <tbody className="divide-y divide-white/5">
                   {aggregatedSessions.map((session) => (
                     <tr key={session.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 font-medium text-white max-w-[200px]" style={{ wordBreak: 'break-all' }}>
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 font-medium text-white break-words max-w-[250px]">
                         {session.devotee_email}
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 font-bold text-blue-400">
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col gap-1.5 break-words">
                           {session.video_titles_array.length === 0 && <span className="text-gray-500 italic">No videos recorded</span>}
                           {session.video_titles_array.map((title, i) => (
                             <div key={i} className="line-clamp-2" title={title}>
