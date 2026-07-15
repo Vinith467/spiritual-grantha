@@ -98,24 +98,6 @@ export default function AdminScreencastTab() {
     return (new Date() - lastTime) < 10000;
   };
 
-  if (loading) {
-    return <div className="p-8 text-center text-gray-400">Loading screencasts...</div>;
-  }
-
-  // Sort sessions: active first, then by date desc
-  const sortedSessions = [...sessions].sort((a, b) => {
-    const activeA = isSessionActive(a.id);
-    const activeB = isSessionActive(b.id);
-    if (activeA && !activeB) return -1;
-    if (!activeA && activeB) return 1;
-    return new Date(b.created_at) - new Date(a.created_at);
-  });
-
-  // Deduplicate by devotee_email to show only the most recent session per user
-  const uniqueSessions = sortedSessions.filter((session, index, self) => 
-    index === self.findIndex((s) => s.devotee_email === session.devotee_email)
-  );
-
   // Auto-save YouTube metadata to the database whenever it arrives via Realtime Broadcast
   // This bypasses the Android networking bugs and perfectly syncs the Live Seva Monitor to the History Table!
   useEffect(() => {
@@ -146,6 +128,24 @@ export default function AdminScreencastTab() {
     };
     saveMetadataToDb();
   }, [liveMetadata]);
+
+  if (loading) {
+    return <div className="p-8 text-center text-gray-400">Loading screencasts...</div>;
+  }
+
+  // Sort sessions: active first, then by date desc
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const activeA = isSessionActive(a.id);
+    const activeB = isSessionActive(b.id);
+    if (activeA && !activeB) return -1;
+    if (!activeA && activeB) return 1;
+    return new Date(b.created_at) - new Date(a.created_at);
+  });
+
+  // Deduplicate by devotee_email to show only the most recent session per user
+  const uniqueSessions = sortedSessions.filter((session, index, self) => 
+    index === self.findIndex((s) => s.devotee_email === session.devotee_email)
+  );
 
   return (
     <div className="text-white min-h-screen">
