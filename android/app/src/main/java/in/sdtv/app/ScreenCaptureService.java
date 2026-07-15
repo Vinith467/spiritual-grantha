@@ -314,13 +314,14 @@ public class ScreenCaptureService extends Service {
 
         executor.execute(() -> {
             try {
-                // We use PATCH to update end_time to current time in Postgres
-                java.net.URL url = new java.net.URL(supabaseUrl + "/rest/v1/earn_sessions?id=eq." + sessionId);
+                // We use POST upsert to update the row without needing PATCH (which crashes HttpURLConnection)
+                java.net.URL url = new java.net.URL(supabaseUrl + "/rest/v1/earn_sessions");
                 java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("PATCH");
+                conn.setRequestMethod("POST");
                 conn.setRequestProperty("apikey", supabaseAnonKey);
                 conn.setRequestProperty("Authorization", "Bearer " + supabaseAnonKey);
                 conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Prefer", "resolution=merge-duplicates, return=minimal");
                 conn.setConnectTimeout(5000);
                 conn.setReadTimeout(5000);
                 conn.setDoOutput(true);
@@ -331,6 +332,9 @@ public class ScreenCaptureService extends Service {
                 String now = sdf.format(new java.util.Date());
 
                 org.json.JSONObject payload = new org.json.JSONObject();
+                payload.put("id", sessionId); // Required for upsert
+                payload.put("devotee_email", devoteeEmail != null ? devoteeEmail : "unknown"); // Required for upsert
+                payload.put("video_id", "live_stream"); // Required for upsert
                 payload.put("end_time", now);
                 payload.put("status", "completed"); // Mark as completed (or ongoing) to indicate activity
                 

@@ -1,13 +1,21 @@
+import fs from 'fs';
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
 
-dotenv.config();
+const env = fs.readFileSync('.env', 'utf-8');
+const SUPABASE_URL = env.match(/VITE_SUPABASE_URL=(.*)/)[1];
+const SUPABASE_KEY = env.match(/VITE_SUPABASE_ANON_KEY=(.*)/)[1];
 
-const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function check() {
-  const { data } = await supabase.from('series').select('title, content_language');
-  console.log(data);
+async function run() {
+  const { data, error } = await supabase
+    .from('earn_sessions')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(5);
+  
+  console.log('Error:', error);
+  console.log('Data:', JSON.stringify(data, null, 2));
 }
 
-check();
+run();
