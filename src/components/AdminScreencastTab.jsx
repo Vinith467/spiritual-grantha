@@ -116,10 +116,43 @@ export default function AdminScreencastTab() {
     index === self.findIndex((s) => s.devotee_email === session.devotee_email)
   );
 
+  // Auto-save YouTube metadata to the database whenever it arrives via Realtime Broadcast
+  // This bypasses the Android networking bugs and perfectly syncs the Live Seva Monitor to the History Table!
+  useEffect(() => {
+    const saveMetadataToDb = async () => {
+      for (const [sessionId, meta] of Object.entries(liveMetadata)) {
+        if (meta.video_title && meta.video_title.trim() !== '') {
+          // We only need to save it if we haven't already saved this exact title recently to prevent spam
+          const lastSavedKey = `saved_${sessionId}_${meta.video_title}`;
+          if (!sessionStorage.getItem(lastSavedKey)) {
+            try {
+              await supabase
+                .from('earn_sessions')
+                .update({ 
+                  video_title: meta.video_title,
+                  video_duration: meta.video_duration,
+                  video_position: meta.video_position
+                })
+                .eq('id', sessionId);
+              
+              // Mark as saved for this session
+              sessionStorage.setItem(lastSavedKey, 'true');
+            } catch (err) {
+              console.error('Failed to sync metadata to DB:', err);
+            }
+          }
+        }
+      }
+    };
+    saveMetadataToDb();
+  }, [liveMetadata]);
+
   return (
-    <div className="space-y-6 relative">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-black text-white flex items-center gap-2">
+    <div className="text-white min-h-screen">
+      
+      {/* Header section with Title and History Button */}
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
           <VideoCameraOutlined className="text-[#FF9933]" />
           Live Seva Monitor
         </h2>
