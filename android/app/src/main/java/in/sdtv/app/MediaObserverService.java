@@ -31,22 +31,8 @@ public class MediaObserverService extends NotificationListenerService {
         mediaSessionManager = (MediaSessionManager) getSystemService(Context.MEDIA_SESSION_SERVICE);
 
         sessionsChangedListener = controllers -> {
+            registerCallbacks(controllers);
             updateCurrentMedia(controllers);
-            for (MediaController controller : controllers) {
-                controller.registerCallback(new MediaController.Callback() {
-                    @Override
-                    public void onMetadataChanged(MediaMetadata metadata) {
-                        super.onMetadataChanged(metadata);
-                        updateMetadata(metadata);
-                    }
-
-                    @Override
-                    public void onPlaybackStateChanged(PlaybackState state) {
-                        super.onPlaybackStateChanged(state);
-                        currentPlaybackState = state;
-                    }
-                });
-            }
         };
     }
 
@@ -57,6 +43,7 @@ public class MediaObserverService extends NotificationListenerService {
         try {
             ComponentName componentName = new ComponentName(this, MediaObserverService.class);
             List<MediaController> controllers = mediaSessionManager.getActiveSessions(componentName);
+            registerCallbacks(controllers);
             updateCurrentMedia(controllers);
             mediaSessionManager.addOnActiveSessionsChangedListener(sessionsChangedListener, componentName);
         } catch (SecurityException e) {
@@ -71,17 +58,48 @@ public class MediaObserverService extends NotificationListenerService {
             mediaSessionManager.removeOnActiveSessionsChangedListener(sessionsChangedListener);
         }
     }
+    
+    private void registerCallbacks(List<MediaController> controllers) {
+        if (controllers == null) return;
+        for (MediaController controller : controllers) {
+            // Registering multiple times on the same controller is safe, it replaces the old one
+            controller.registerCallback(new MediaController.Callback() {
+                @Override
+                public void onMetadataChanged(MediaMetadata metadata) {
+                    super.onMetadataChanged(metadata);
+                    updateMetadata(metadata, controller.getPlaybackState());
+                }
 
-    private void updateCurrentMedia(List<MediaController> controllers) {
-        if (controllers != null && !controllers.isEmpty()) {
-            // Take the first active controller (usually the one playing)
-            MediaController activeController = controllers.get(0);
-            updateMetadata(activeController.getMetadata());
-            currentPlaybackState = activeController.getPlaybackState();
+                @Override
+                public void onPlaybackStateChanged(PlaybackState state) {
+                    super.onPlaybackStateChanged(state);
+                    currentPlaybackState = state;
+                    updateMetadata(controller.getMetadata(), state);
+                }
+            });
         }
     }
 
-    private void updateMetadata(MediaMetadata metadata) {
+    private void updateCurrentMedia(List<MediaController> controllers) {
+        if (controllers != null && !controllers.isEmpty()) {
+            // Try to find the one that is currently playing
+            MediaController activeController = controllers.get(0);
+            for (MediaController controller : controllers) {
+                PlaybackState state = controller.getPlaybackState();
+                if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                    activeController = controller;
+                    break;
+                }
+            }
+            updateMetadata(activeController.getMetadata(), activeController.getPlaybackState());
+        }
+    }
+
+    private void updateMetadata(MediaMetadata metadata, PlaybackState state) {
+        if (state != null) {
+            currentPlaybackState = state;
+        }
+        
         if (metadata != null) {
             String title = metadata.getString(MediaMetadata.METADATA_KEY_TITLE);
             long duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION); // in milliseconds
