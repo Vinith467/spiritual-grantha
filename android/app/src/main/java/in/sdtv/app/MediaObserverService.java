@@ -62,27 +62,21 @@ public class MediaObserverService extends NotificationListenerService {
     private void registerCallbacks(List<MediaController> controllers) {
         if (controllers == null) return;
         for (MediaController controller : controllers) {
+            // Only care about YouTube
+            if (!"com.google.android.youtube".equals(controller.getPackageName())) {
+                continue;
+            }
             controller.registerCallback(new MediaController.Callback() {
                 @Override
                 public void onMetadataChanged(MediaMetadata metadata) {
                     super.onMetadataChanged(metadata);
-                    if (controller.getPlaybackState() != null) {
-                        int state = controller.getPlaybackState().getState();
-                        if (state == PlaybackState.STATE_PLAYING || state == PlaybackState.STATE_BUFFERING) {
-                            updateMetadata(metadata, controller.getPlaybackState());
-                        }
-                    }
+                    updateMetadata(metadata, controller.getPlaybackState());
                 }
 
                 @Override
                 public void onPlaybackStateChanged(PlaybackState state) {
                     super.onPlaybackStateChanged(state);
-                    if (state != null) {
-                        int stateCode = state.getState();
-                        if (stateCode == PlaybackState.STATE_PLAYING || stateCode == PlaybackState.STATE_BUFFERING) {
-                            updateMetadata(controller.getMetadata(), state);
-                        }
-                    }
+                    updateMetadata(controller.getMetadata(), state);
                 }
             });
         }
@@ -90,19 +84,16 @@ public class MediaObserverService extends NotificationListenerService {
 
     private void updateCurrentMedia(List<MediaController> controllers) {
         if (controllers != null && !controllers.isEmpty()) {
-            // Try to find the one that is currently playing or buffering
-            MediaController activeController = controllers.get(0);
+            MediaController activeController = null;
             for (MediaController controller : controllers) {
-                PlaybackState state = controller.getPlaybackState();
-                if (state != null) {
-                    int stateCode = state.getState();
-                    if (stateCode == PlaybackState.STATE_PLAYING || stateCode == PlaybackState.STATE_BUFFERING) {
-                        activeController = controller;
-                        break;
-                    }
+                if ("com.google.android.youtube".equals(controller.getPackageName())) {
+                    activeController = controller;
+                    break;
                 }
             }
-            updateMetadata(activeController.getMetadata(), activeController.getPlaybackState());
+            if (activeController != null) {
+                updateMetadata(activeController.getMetadata(), activeController.getPlaybackState());
+            }
         }
     }
 
