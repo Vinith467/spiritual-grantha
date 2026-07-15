@@ -43,15 +43,56 @@ export default function YouTubeHistoryTable({ onClose }) {
     return `${m}m ${s}s`;
   };
 
+  // Group sessions by devotee_email to show one person once, with all their videos
+  const aggregatedSessions = (() => {
+    const userGroups = {};
+    sessions.forEach(session => {
+      const email = session.devotee_email;
+      if (!email) return;
+
+      if (!userGroups[email]) {
+        userGroups[email] = {
+          id: session.id, // Just use the first session id as a key
+          devotee_email: email,
+          videos: new Set(),
+          total_duration_seconds: 0,
+          total_watched_seconds: 0,
+          last_session_date: session.created_at
+        };
+      }
+      
+      const watched = calculateDuration(session);
+      userGroups[email].total_watched_seconds += watched;
+      
+      if (session.video_title && session.video_title !== 'TEST_TITLE') {
+        const durationStr = formatDuration(session.video_duration || 0);
+        const videoStr = `${session.video_title} (${durationStr})`;
+        userGroups[email].videos.add(videoStr);
+        userGroups[email].total_duration_seconds += (session.video_duration || 0);
+      }
+      
+      // Keep the most recent date
+      if (new Date(session.created_at) > new Date(userGroups[email].last_session_date)) {
+        userGroups[email].last_session_date = session.created_at;
+      }
+    });
+
+    return Object.values(userGroups)
+      .map(group => ({
+        ...group,
+        video_titles_array: Array.from(group.videos)
+      }))
+      .sort((a, b) => new Date(b.last_session_date) - new Date(a.last_session_date));
+  })();
+
   const downloadCSV = () => {
-    const headers = ['User Email', 'Video Title', 'Video Duration', 'Watched For', 'Date Started', 'Date Ended'];
-    const rows = sessions.map(s => [
+    const headers = ['User Email', 'Video Titles', 'Total Video Length', 'Total Time Watched', 'Last Session Date'];
+    const rows = aggregatedSessions.map(s => [
       s.devotee_email,
-      `"${(s.video_title || '').replace(/"/g, '""')}"`,
-      formatDuration(s.video_duration || 0),
-      formatDuration(calculateDuration(s)),
-      new Date(s.created_at).toLocaleString(),
-      s.end_time ? new Date(s.end_time).toLocaleString() : 'Ongoing'
+      `"${s.video_titles_array.join(' | ').replace(/"/g, '""')}"`,
+      formatDuration(s.total_duration_seconds),
+      formatDuration(s.total_watched_seconds),
+      new Date(s.last_session_date).toLocaleString()
     ]);
     
     const csvContent = "data:text/csv;charset=utf-8," 
@@ -98,7 +139,7 @@ export default function YouTubeHistoryTable({ onClose }) {
             <div className="flex justify-center items-center h-full text-white/50">
               Loading records...
             </div>
-          ) : sessions.length === 0 ? (
+          ) : aggregatedSessions.length === 0 ? (
             <div className="flex flex-col justify-center items-center h-full text-white/50 gap-2">
               <TableOutlined className="text-4xl opacity-50" />
               <p>No YouTube watch history recorded yet.</p>
@@ -109,32 +150,37 @@ export default function YouTubeHistoryTable({ onClose }) {
                 <thead className="bg-white/5 text-xs uppercase text-gray-400 border-b border-white/10 sticky top-0 z-10 backdrop-blur-md">
                   <tr>
                     <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">User</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold w-1/3 min-w-[200px]">Video Title</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Total Length</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Time Watched</th>
-                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Session Date</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold w-1/2 min-w-[300px]">Videos Watched</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Total Video Length</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Total Time Watched</th>
+                    <th className="px-4 py-3 sm:px-6 sm:py-4 font-bold whitespace-nowrap">Last Session Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {sessions.map((session) => (
+                  {aggregatedSessions.map((session) => (
                     <tr key={session.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-4 py-3 sm:px-6 sm:py-4 font-medium text-white truncate max-w-[150px]" title={session.devotee_email}>
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 font-medium text-white max-w-[200px]" style={{ wordBreak: 'break-all' }}>
                         {session.devotee_email}
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 font-bold text-blue-400">
-                        <div className="line-clamp-2" title={session.video_title}>
-                          {session.video_title}
+                        <div className="flex flex-col gap-1.5">
+                          {session.video_titles_array.length === 0 && <span className="text-gray-500 italic">No videos recorded</span>}
+                          {session.video_titles_array.map((title, i) => (
+                            <div key={i} className="line-clamp-2" title={title}>
+                              • {title}
+                            </div>
+                          ))}
                         </div>
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-nowrap">
-                        {formatDuration(session.video_duration || 0)}
+                        {formatDuration(session.total_duration_seconds)}
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 text-[#FF9933] font-bold whitespace-nowrap">
-                        {formatDuration(calculateDuration(session))}
+                        {formatDuration(session.total_watched_seconds)}
                       </td>
                       <td className="px-4 py-3 sm:px-6 sm:py-4 text-xs whitespace-nowrap">
-                        <div>{new Date(session.created_at).toLocaleDateString()}</div>
-                        <div className="text-gray-500">{new Date(session.created_at).toLocaleTimeString()}</div>
+                        <div>{new Date(session.last_session_date).toLocaleDateString()}</div>
+                        <div className="text-gray-500">{new Date(session.last_session_date).toLocaleTimeString()}</div>
                       </td>
                     </tr>
                   ))}

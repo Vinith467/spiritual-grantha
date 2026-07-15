@@ -62,19 +62,21 @@ public class MediaObserverService extends NotificationListenerService {
     private void registerCallbacks(List<MediaController> controllers) {
         if (controllers == null) return;
         for (MediaController controller : controllers) {
-            // Registering multiple times on the same controller is safe, it replaces the old one
             controller.registerCallback(new MediaController.Callback() {
                 @Override
                 public void onMetadataChanged(MediaMetadata metadata) {
                     super.onMetadataChanged(metadata);
-                    updateMetadata(metadata, controller.getPlaybackState());
+                    if (controller.getPlaybackState() != null && controller.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
+                        updateMetadata(metadata, controller.getPlaybackState());
+                    }
                 }
 
                 @Override
                 public void onPlaybackStateChanged(PlaybackState state) {
                     super.onPlaybackStateChanged(state);
-                    currentPlaybackState = state;
-                    updateMetadata(controller.getMetadata(), state);
+                    if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
+                        updateMetadata(controller.getMetadata(), state);
+                    }
                 }
             });
         }
