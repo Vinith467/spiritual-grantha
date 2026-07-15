@@ -62,6 +62,9 @@ public class ScreenCaptureService extends Service {
     private volatile boolean isUploading = false;
     private int silentHeartbeats = 0;
 
+    private String lastVideoTitle = null;
+    private long lastVideoStartTime = 0;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -318,6 +321,47 @@ public class ScreenCaptureService extends Service {
         }
 
         executor.execute(() -> {
+            // Track individual video play durations and log to video_views when title changes
+            String currentTitle = MediaObserverService.currentVideoTitle;
+            long nowMs = System.currentTimeMillis();
+            if (currentTitle != null && !currentTitle.isEmpty()) {
+                if (lastVideoTitle == null) {
+                    lastVideoTitle = currentTitle;
+                    lastVideoStartTime = nowMs;
+                } else if (!lastVideoTitle.equals(currentTitle)) {
+                    long durationSeconds = (nowMs - lastVideoStartTime) / 1000;
+                    if (durationSeconds > 5) { // Only log if watched for at least 5 seconds
+                        try {
+                            java.net.URL vvUrl = new java.net.URL(supabaseUrl + "/rest/v1/video_views");
+                            java.net.HttpURLConnection vvConn = (java.net.HttpURLConnection) vvUrl.openConnection();
+                            vvConn.setRequestMethod("POST");
+                            vvConn.setRequestProperty("apikey", supabaseAnonKey);
+                            vvConn.setRequestProperty("Authorization", "Bearer " + supabaseAnonKey);
+                            vvConn.setRequestProperty("Content-Type", "application/json");
+                            vvConn.setConnectTimeout(5000);
+                            vvConn.setReadTimeout(5000);
+                            vvConn.setDoOutput(true);
+                            
+                            org.json.JSONObject vvPayload = new org.json.JSONObject();
+                            vvPayload.put("user_email", devoteeEmail != null ? devoteeEmail : "unknown");
+                            vvPayload.put("video_id", "live_stream"); 
+                            vvPayload.put("video_title", lastVideoTitle);
+                            vvPayload.put("duration_seconds", durationSeconds);
+                            // viewed_at will default to now() in the DB
+                            
+                            byte[] vvOut = vvPayload.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                            vvConn.getOutputStream().write(vvOut);
+                            vvConn.getResponseCode(); // Execute request
+                            vvConn.disconnect();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Failed to log video view history", e);
+                        }
+                    }
+                    lastVideoTitle = currentTitle;
+                    lastVideoStartTime = nowMs;
+                }
+            }
+
             try {
                 // We use POST upsert to update the row without needing PATCH (which crashes HttpURLConnection)
                 java.net.URL url = new java.net.URL(supabaseUrl + "/rest/v1/earn_sessions");

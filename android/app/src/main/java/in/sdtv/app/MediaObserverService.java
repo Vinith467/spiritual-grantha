@@ -66,16 +66,22 @@ public class MediaObserverService extends NotificationListenerService {
                 @Override
                 public void onMetadataChanged(MediaMetadata metadata) {
                     super.onMetadataChanged(metadata);
-                    if (controller.getPlaybackState() != null && controller.getPlaybackState().getState() == PlaybackState.STATE_PLAYING) {
-                        updateMetadata(metadata, controller.getPlaybackState());
+                    if (controller.getPlaybackState() != null) {
+                        int state = controller.getPlaybackState().getState();
+                        if (state == PlaybackState.STATE_PLAYING || state == PlaybackState.STATE_BUFFERING) {
+                            updateMetadata(metadata, controller.getPlaybackState());
+                        }
                     }
                 }
 
                 @Override
                 public void onPlaybackStateChanged(PlaybackState state) {
                     super.onPlaybackStateChanged(state);
-                    if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
-                        updateMetadata(controller.getMetadata(), state);
+                    if (state != null) {
+                        int stateCode = state.getState();
+                        if (stateCode == PlaybackState.STATE_PLAYING || stateCode == PlaybackState.STATE_BUFFERING) {
+                            updateMetadata(controller.getMetadata(), state);
+                        }
                     }
                 }
             });
@@ -84,13 +90,16 @@ public class MediaObserverService extends NotificationListenerService {
 
     private void updateCurrentMedia(List<MediaController> controllers) {
         if (controllers != null && !controllers.isEmpty()) {
-            // Try to find the one that is currently playing
+            // Try to find the one that is currently playing or buffering
             MediaController activeController = controllers.get(0);
             for (MediaController controller : controllers) {
                 PlaybackState state = controller.getPlaybackState();
-                if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
-                    activeController = controller;
-                    break;
+                if (state != null) {
+                    int stateCode = state.getState();
+                    if (stateCode == PlaybackState.STATE_PLAYING || stateCode == PlaybackState.STATE_BUFFERING) {
+                        activeController = controller;
+                        break;
+                    }
                 }
             }
             updateMetadata(activeController.getMetadata(), activeController.getPlaybackState());

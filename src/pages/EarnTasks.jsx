@@ -98,9 +98,34 @@ export default function EarnTasks() {
       alert("Seva stream stopped. Your progress has been added to your Account Journey!");
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      alert("Failed to stop recording: " + err.message);
     }
   };
+
+  // Heartbeat: continuously update end_time in the database while recording
+  // This guarantees that if the app is force-closed or crashes, the last known end_time is accurate.
+  useEffect(() => {
+    let interval;
+    if (isRecording && session) {
+      interval = setInterval(async () => {
+        try {
+          await supabase
+            .from('earn_sessions')
+            .update({ end_time: new Date().toISOString() })
+            .eq('id', session.id);
+        } catch (err) {
+          console.error("Heartbeat error:", err);
+        }
+      }, 15000); // Every 15 seconds
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isRecording, session]);
+
+  if (loading) {
+    return <div className="text-center p-8 text-white">Loading profile...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4 mt-6">

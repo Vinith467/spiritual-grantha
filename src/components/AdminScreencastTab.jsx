@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { CameraOutlined, CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined, VideoCameraOutlined, TableOutlined } from '@ant-design/icons';
 import YouTubeHistoryTable from './YouTubeHistoryTable';
@@ -80,8 +80,25 @@ export default function AdminScreencastTab() {
 
   const calculateDuration = (session) => {
     const start = new Date(session.created_at).getTime();
-    const end = session.end_time ? new Date(session.end_time).getTime() : new Date().getTime();
-    return Math.floor((end - start) / 1000); // in seconds
+    
+    // If the DB explicitly has an end_time, always use it
+    if (session.end_time) {
+      return Math.floor((new Date(session.end_time).getTime() - start) / 1000);
+    }
+    
+    // If the session is currently active, count up using current time
+    if (isSessionActive(session.id)) {
+      return Math.floor((new Date().getTime() - start) / 1000);
+    }
+    
+    // If the session went OFFLINE while the dashboard was open, freeze at the last known frame time
+    if (lastFrameTimes[session.id]) {
+      return Math.floor((lastFrameTimes[session.id].getTime() - start) / 1000);
+    }
+    
+    // Fallback if they were offline when dashboard opened and DB end_time is null
+    // We freeze it at the start time or use whatever fallback we can, to avoid it counting up indefinitely.
+    return 0; 
   };
 
   const formatDuration = (seconds) => {
@@ -98,15 +115,18 @@ export default function AdminScreencastTab() {
     return (new Date() - lastTime) < 10000;
   };
 
+  // Keep track of the last saved title to prevent spamming Supabase
+  const lastSavedTitleRef = useRef({});
+
   // Auto-save YouTube metadata to the database whenever it arrives via Realtime Broadcast
-  // This bypasses the Android networking bugs and perfectly syncs the Live Seva Monitor to the History Table!
+  // This ensures the dashboard always has the latest video title and position!
   useEffect(() => {
     const saveMetadataToDb = async () => {
       for (const [sessionId, meta] of Object.entries(liveMetadata)) {
         if (meta.video_title && meta.video_title.trim() !== '') {
-          // We only need to save it if we haven't already saved this exact title recently to prevent spam
-          const lastSavedKey = `saved_${sessionId}_${meta.video_title}`;
-          if (!sessionStorage.getItem(lastSavedKey)) {
+          // Instead of caching in sessionStorage and never updating again, 
+          // we update the database ONLY if the title actually changed.
+          if (lastSavedTitleRef.current[sessionId] !== meta.video_title) {
             try {
               await supabase
                 .from('earn_sessions')
@@ -116,9 +136,8 @@ export default function AdminScreencastTab() {
                   video_position: meta.video_position
                 })
                 .eq('id', sessionId);
-              
-              // Mark as saved for this session
-              sessionStorage.setItem(lastSavedKey, 'true');
+                
+              lastSavedTitleRef.current[sessionId] = meta.video_title;
             } catch (err) {
               console.error('Failed to sync metadata to DB:', err);
             }
