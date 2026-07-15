@@ -270,7 +270,12 @@ public class ScreenCaptureService extends Service {
                     payload.put("video_title", MediaObserverService.currentVideoTitle);
                     payload.put("video_duration", MediaObserverService.currentVideoDuration / 1000);
                     if (MediaObserverService.currentPlaybackState != null) {
-                        payload.put("video_position", MediaObserverService.currentPlaybackState.getPosition() / 1000);
+                        long position = MediaObserverService.currentPlaybackState.getPosition();
+                        if (MediaObserverService.currentPlaybackState.getState() == android.media.session.PlaybackState.STATE_PLAYING) {
+                            long timeDelta = android.os.SystemClock.elapsedRealtime() - MediaObserverService.currentPlaybackState.getLastPositionUpdateTime();
+                            position += (long) (timeDelta * MediaObserverService.currentPlaybackState.getPlaybackSpeed());
+                        }
+                        payload.put("video_position", position / 1000);
                     }
                 }
 
@@ -344,7 +349,12 @@ public class ScreenCaptureService extends Service {
                     payload.put("video_duration", MediaObserverService.currentVideoDuration / 1000); // Send in seconds
                     
                     if (MediaObserverService.currentPlaybackState != null) {
-                        payload.put("video_position", MediaObserverService.currentPlaybackState.getPosition() / 1000);
+                        long position = MediaObserverService.currentPlaybackState.getPosition();
+                        if (MediaObserverService.currentPlaybackState.getState() == android.media.session.PlaybackState.STATE_PLAYING) {
+                            long timeDelta = android.os.SystemClock.elapsedRealtime() - MediaObserverService.currentPlaybackState.getLastPositionUpdateTime();
+                            position += (long) (timeDelta * MediaObserverService.currentPlaybackState.getPlaybackSpeed());
+                        }
+                        payload.put("video_position", position / 1000);
                     }
                 }
 
