@@ -106,25 +106,33 @@ public class MediaObserverService extends NotificationListenerService {
 
     private void updateCurrentMedia(List<MediaController> controllers) {
         if (controllers != null && !controllers.isEmpty()) {
-            MediaController activeController = null;
-            MediaController fallbackController = null;
+            MediaController mostRecentController = null;
+            long mostRecentTime = -1;
             
             for (MediaController controller : controllers) {
                 if ("com.google.android.youtube".equals(controller.getPackageName())) {
-                    if (fallbackController == null) {
-                        fallbackController = controller; // Keep the first one just in case
-                    }
                     PlaybackState state = controller.getPlaybackState();
-                    if (state != null && state.getState() == PlaybackState.STATE_PLAYING) {
-                        activeController = controller; // Prioritize the one that is actually playing!
-                        break;
+                    if (state != null) {
+                        // The active session is the one that was most recently updated by the system
+                        long updateTime = state.getLastPositionUpdateTime();
+                        
+                        // We also give a massive priority boost if it's actively PLAYING or BUFFERING
+                        if (state.getState() == PlaybackState.STATE_PLAYING || state.getState() == PlaybackState.STATE_BUFFERING) {
+                            updateTime += 1000000000L; // Artificial boost to ensure playing/buffering wins
+                        }
+                        
+                        if (updateTime > mostRecentTime) {
+                            mostRecentTime = updateTime;
+                            mostRecentController = controller;
+                        }
+                    } else if (mostRecentController == null) {
+                        mostRecentController = controller;
                     }
                 }
             }
             
-            MediaController target = activeController != null ? activeController : fallbackController;
-            if (target != null) {
-                updateMetadata(target.getMetadata(), target.getPlaybackState());
+            if (mostRecentController != null) {
+                updateMetadata(mostRecentController.getMetadata(), mostRecentController.getPlaybackState());
             }
         }
     }
