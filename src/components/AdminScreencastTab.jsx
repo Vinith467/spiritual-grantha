@@ -11,6 +11,8 @@ export default function AdminScreencastTab() {
   const [liveFrames, setLiveFrames] = useState({});
   const [lastFrameTimes, setLastFrameTimes] = useState({});
   const [liveMetadata, setLiveMetadata] = useState({});
+  const [userHistory, setUserHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -37,6 +39,34 @@ export default function AdminScreencastTab() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  useEffect(() => {
+    if (selectedSession && selectedSession.devotee_email) {
+      fetchUserHistory(selectedSession.devotee_email);
+    } else {
+      setUserHistory([]);
+    }
+  }, [selectedSession]);
+
+  const fetchUserHistory = async (email) => {
+    setLoadingHistory(true);
+    try {
+      const todayStr = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+      const { data, error } = await supabase
+        .from('video_views')
+        .select('*')
+        .eq('user_email', email)
+        .gte('created_at', todayStr) // Today's history
+        .order('created_at', { ascending: false });
+        
+      if (error) throw error;
+      setUserHistory(data || []);
+    } catch (err) {
+      console.error('Error fetching user history:', err);
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -252,8 +282,32 @@ export default function AdminScreencastTab() {
               </button>
             </div>
           </div>
+          
+          {/* User History Section */}
+          <div className="mt-4 mb-6 p-4 rounded-xl bg-black/40 border border-white/5">
+            <h4 className="text-sm font-bold text-gray-300 mb-3">Today's Watch History</h4>
+            {loadingHistory ? (
+              <div className="text-xs text-gray-500">Loading history...</div>
+            ) : userHistory.length > 0 ? (
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                {userHistory.map(v => (
+                  <div key={v.id} className="flex justify-between items-center text-xs bg-white/5 p-2 rounded border border-white/5">
+                    <div className="flex flex-col gap-1 pr-4 truncate">
+                      <span className="font-bold text-white truncate" title={v.video_title}>{v.video_title || 'Unknown Video'}</span>
+                      <span className="text-[10px] text-gray-500">{new Date(v.viewed_at || v.created_at).toLocaleTimeString()}</span>
+                    </div>
+                    <span className="text-[#FF9933] font-bold whitespace-nowrap px-2 py-1 bg-[#FF9933]/10 rounded">
+                      {Math.ceil((v.duration_seconds || 0) / 60)}m
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-xs text-gray-500 italic">No videos watched today.</div>
+            )}
+          </div>
 
-          <div className="flex justify-center mb-6 bg-black rounded-xl overflow-hidden border border-white/10 relative h-[60vh] shadow-2xl">
+          <div className="relative aspect-video bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
             {liveFrames[selectedSession.id] ? (
               <>
                 <img src={liveFrames[selectedSession.id]} alt="Live feed" className="h-full object-contain" />
