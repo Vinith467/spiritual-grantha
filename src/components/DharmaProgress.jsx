@@ -76,7 +76,23 @@ export default function DharmaProgress() {
         console.error("Error fetching watch time:", err)
       }
     }
+    
+    // Initial fetch
     fetchWatchTime()
+
+    // Realtime subscription for automatic updates
+    const channel = supabase.channel('dharma-progress-updates')
+      .on('postgres', { event: '*', schema: 'public', table: 'video_views', filter: `user_email=eq.${profileEmail}` }, () => {
+        fetchWatchTime()
+      })
+      .on('postgres', { event: '*', schema: 'public', table: 'earn_sessions', filter: `devotee_email=eq.${profileEmail}` }, () => {
+        fetchWatchTime()
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [profileEmail])
 
   if (!profileEmail) return null;
