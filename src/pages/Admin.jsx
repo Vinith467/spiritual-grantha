@@ -1454,7 +1454,8 @@ function Admin() {
                     <thead className="text-xs uppercase tracking-wider bg-white/5">
                       <tr>
                         <th className="px-6 py-4">Devotee</th>
-                        <th className="px-6 py-4 text-[#FF9933]">Total Watch Time</th>
+                        <th className="px-6 py-4 text-[#FF9933]">All-Time Watch Time</th>
+                        <th className="px-6 py-4 text-[#FF9933]">Filtered Watch Time</th>
                         <th className="px-6 py-4">Status</th>
                         <th className="px-6 py-4 text-center">Actions</th>
                       </tr>
@@ -1535,11 +1536,14 @@ function Admin() {
                               </td>
                               <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
                                 <div className="flex items-center gap-2">
-                                  <span>{formatMinsToHours(totalFilteredMins)}</span>
+                                  <span>{formatMinsToHours(totalAllTimeMins)}</span>
                                   <button onClick={(e) => { e.stopPropagation(); handleOpenAdjustmentModal(user.email); }} className="bg-white/10 hover:bg-[#FF9933]/20 hover:text-[#FF9933] text-gray-400 p-1 rounded transition" title="Manual Edit">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                                   </button>
                                 </div>
+                              </td>
+                              <td className="px-6 py-4 font-bold text-white whitespace-nowrap notranslate" translate="no">
+                                <span>{formatMinsToHours(totalFilteredMins)}</span>
                               </td>
                               <td className="px-6 py-4">
                                 {online ? (
@@ -1577,7 +1581,7 @@ function Admin() {
                             </tr>
                             {expandedUser === user.email && (
                               <tr className="bg-black/40 border-b border-white/5">
-                                <td colSpan="4" className="px-6 py-4">
+                                <td colSpan="5" className="px-6 py-4">
                                   <div className="rounded-xl border border-white/10 bg-[#111] overflow-hidden">
                                     <div className="px-4 py-3 bg-white/5 border-b border-white/10 text-xs font-bold text-gray-300 flex justify-between">
                                       <span>Detailed Watch History</span>
