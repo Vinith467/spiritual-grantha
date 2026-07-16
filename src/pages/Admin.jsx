@@ -51,6 +51,7 @@ function Admin() {
   const [tableDatePreset, setTableDatePreset] = useState('today')
   const [userSearch, setUserSearch] = useState('')
   const [showAllTopVideos, setShowAllTopVideos] = useState(false)
+  const [expandedUser, setExpandedUser] = useState(null)
 
   // Loading States
   const [loading, setLoading] = useState(false)
@@ -1453,10 +1454,8 @@ function Admin() {
                     <thead className="text-xs uppercase tracking-wider bg-white/5">
                       <tr>
                         <th className="px-6 py-4">Devotee</th>
+                        <th className="px-6 py-4 text-[#FF9933]">Total Watch Time</th>
                         <th className="px-6 py-4">Status</th>
-                        <th className="px-6 py-4 text-[#FF9933]">All-Time Watch Time</th>
-                        <th className="px-6 py-4">Filtered Watch Time</th>
-                        <th className="px-6 py-4">Filtered Watch History</th>
                         <th className="px-6 py-4 text-center">Actions</th>
                       </tr>
                     </thead>
@@ -1517,94 +1516,103 @@ function Admin() {
                         });
 
                         return (
-                          <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 min-w-[200px]">
-                              <div className="flex items-center gap-3">
-                                <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-8 h-8 rounded-full bg-white/10 shrink-0 object-cover" />
-                                <div>
-                                  <div className="font-bold text-white text-sm">{user.name}</div>
-                                  <div className="text-xs break-all">{user.email}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              {online ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                                  Online
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
-                                  Offline
-                                </span>
-                              )}
-                              {todayLiveMins > 0 && (
-                                <div className="mt-2 w-full max-w-[120px]">
-                                  <div className="text-[10px] text-gray-400 mb-1 flex justify-between">
-                                    <span>Live Today</span>
-                                    <span>{Math.floor(todayLiveMins / 60)}h {todayLiveMins % 60}m</span>
+                          <React.Fragment key={user.id}>
+                            <tr 
+                              className={`hover:bg-white/5 transition-colors cursor-pointer ${expandedUser === user.email ? 'bg-white/5' : ''}`}
+                              onClick={() => setExpandedUser(expandedUser === user.email ? null : user.email)}
+                            >
+                              <td className="px-6 py-4 min-w-[200px]">
+                                <div className="flex items-center gap-3">
+                                  <div className={`transform transition-transform ${expandedUser === user.email ? 'rotate-90' : ''}`}>
+                                    <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                                   </div>
-                                  <div className="h-1.5 w-full bg-black rounded-full overflow-hidden border border-white/10">
-                                    <div className="h-full bg-blue-500 rounded-full" style={{ width: `${Math.min((todayLiveMins / (10 * 60)) * 100, 100)}%` }}></div>
+                                  <img src={user.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt="" className="w-8 h-8 rounded-full bg-white/10 shrink-0 object-cover" />
+                                  <div>
+                                    <div className="font-bold text-white text-sm">{user.name}</div>
+                                    <div className="text-xs break-all">{user.email}</div>
                                   </div>
                                 </div>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
-                              <div className="flex items-center gap-2">
-                                <span>{formatMinsToHours(totalAllTimeMins)}</span>
-                                <button onClick={() => handleOpenAdjustmentModal(user.email)} className="bg-white/10 hover:bg-[#FF9933]/20 hover:text-[#FF9933] text-gray-400 p-1 rounded transition" title="Manual Edit">
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                </button>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 font-bold text-white whitespace-nowrap notranslate" translate="no">
-                              {formatMinsToHours(totalFilteredMins)}
-                            </td>
-                            <td className="px-6 py-4 min-w-[300px]">
-                              {combinedHistory.length > 0 ? (
-                                <details className="group">
-                                  <summary className="cursor-pointer text-xs font-bold text-[#FF9933] bg-black/40 px-3 py-2 rounded-lg border border-white/10 hover:bg-white/5 transition flex items-center justify-between select-none">
-                                    <span>View Full History ({combinedHistory.length} Sessions)</span>
-                                    <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                  </summary>
-                                  <div className="mt-2 space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                                    {combinedHistory.map(v => (
-                                      <div key={v.id} className="text-xs flex items-center justify-between gap-4 bg-black/20 p-2 rounded-lg border border-white/5 hover:border-white/10 transition">
-                                        <span className="truncate max-w-[200px] text-gray-300" title={v.title}>{v.title}</span>
-                                        <span className="text-[#FF9933] font-bold whitespace-nowrap">{v.mins}m</span>
-                                      </div>
-                                    ))}
+                              </td>
+                              <td className="px-6 py-4 font-bold text-[#FF9933] whitespace-nowrap notranslate" translate="no">
+                                <div className="flex items-center gap-2">
+                                  <span>{formatMinsToHours(totalFilteredMins)}</span>
+                                  <button onClick={(e) => { e.stopPropagation(); handleOpenAdjustmentModal(user.email); }} className="bg-white/10 hover:bg-[#FF9933]/20 hover:text-[#FF9933] text-gray-400 p-1 rounded transition" title="Manual Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                  </button>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                {online ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-green-500/10 text-green-500 border border-green-500/20">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                    Online
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-400 border border-white/10">
+                                    Offline
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center justify-center gap-2 mx-auto">
+                                  <button 
+                                    onClick={() => handleForcePause(user.email)}
+                                    className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap"
+                                  >
+                                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
+                                    <svg className="w-4 h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span className="drop-shadow-md uppercase">Force Pause</span>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteUser(user.email)}
+                                    title="Remove User"
+                                    className="p-2 bg-gray-800 hover:bg-red-900/50 text-gray-400 hover:text-red-500 border border-gray-700 hover:border-red-500/50 rounded-xl transition-all active:scale-95"
+                                  >
+                                    <DeleteOutlined />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            {expandedUser === user.email && (
+                              <tr className="bg-black/40 border-b border-white/5">
+                                <td colSpan="4" className="px-6 py-4">
+                                  <div className="rounded-xl border border-white/10 bg-[#111] overflow-hidden">
+                                    <div className="px-4 py-3 bg-white/5 border-b border-white/10 text-xs font-bold text-gray-300 flex justify-between">
+                                      <span>Detailed Watch History</span>
+                                      <span>{filteredViews.length} Videos</span>
+                                    </div>
+                                    <div className="max-h-64 overflow-y-auto">
+                                      {filteredViews.length > 0 ? (
+                                        <div className="divide-y divide-white/5">
+                                          {filteredViews.map((v, i) => (
+                                            <div key={i} className="flex justify-between items-center p-3 hover:bg-white/5 transition-colors">
+                                              <div className="flex flex-col gap-1 pr-4 min-w-0">
+                                                <span className="text-sm font-bold text-gray-200 truncate" title={v.video_title || 'Unknown Video'}>
+                                                  {v.video_title || 'Unknown Video'}
+                                                </span>
+                                                <span className="text-[10px] text-gray-500">
+                                                  {new Date(v.viewed_at || v.created_at).toLocaleString()}
+                                                </span>
+                                              </div>
+                                              <span className="text-xs font-bold text-[#FF9933] whitespace-nowrap bg-[#FF9933]/10 px-2.5 py-1 rounded-md">
+                                                {Math.ceil((v.duration_seconds || 0) / 60)} mins
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <div className="p-8 text-center text-gray-500 text-sm italic">
+                                          No video history found for this period.
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
-                                </details>
-                              ) : (
-                                <span className="text-xs text-gray-600 italic">No videos watched in this period</span>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <div className="flex items-center justify-center gap-2 mx-auto">
-                                <button 
-                                  onClick={() => handleForcePause(user.email)}
-                                  className="group relative px-4 py-2 bg-gradient-to-br from-red-600 to-red-900 hover:from-red-500 hover:to-red-700 text-white font-black tracking-wider rounded-xl text-xs transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.2)] hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] border border-red-500/30 active:scale-95 flex items-center justify-center gap-2 overflow-hidden whitespace-nowrap"
-                                >
-                                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></span>
-                                  <svg className="w-4 h-4 shrink-0 drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                  <span className="drop-shadow-md uppercase">Force Pause</span>
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteUser(user.email)}
-                                  title="Remove User"
-                                  className="p-2 bg-gray-800 hover:bg-red-900/50 text-gray-400 hover:text-red-500 border border-gray-700 hover:border-red-500/50 rounded-xl transition-all active:scale-95"
-                                >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
                         )
                       })}
                     </tbody>
