@@ -20,6 +20,7 @@ function getLocalYMD(dateString) {
 export default function DharmaProgress() {
   const navigate = useNavigate()
   const [todayWatchMins, setTodayWatchMins] = useState(0)
+  const [allTimeWatchMins, setAllTimeWatchMins] = useState(0)
   const [todayLiveMins, setTodayLiveMins] = useState(0)
   const profileEmail = localStorage.getItem('profileEmail')
 
@@ -30,15 +31,17 @@ export default function DharmaProgress() {
       try {
         const { data, error } = await supabase
           .from('video_views')
-          .select('duration_seconds, viewed_at')
+          .select('duration_seconds, viewed_at, created_at')
           .ilike('user_email', profileEmail)
         
         if (!error && data) {
           let todayTime = 0
+          let allTime = 0
           const todayStr = getLocalYMD(new Date());
 
           data.forEach(v => {
             const mins = Math.ceil((v.duration_seconds || 0) / 60);
+            allTime += mins;
             const vDateStr = getLocalYMD(v.viewed_at || v.created_at);
 
             if (vDateStr === todayStr) {
@@ -47,6 +50,7 @@ export default function DharmaProgress() {
           })
           
           setTodayWatchMins(todayTime)
+          setAllTimeWatchMins(allTime)
         }
 
         // Fetch Live Stream Time
@@ -87,6 +91,15 @@ export default function DharmaProgress() {
         {/* Background Glow */}
         <div className="absolute -right-10 -top-10 w-32 h-32 bg-[#FF9933]/10 rounded-full blur-3xl"></div>
         <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-green-500/10 rounded-full blur-3xl"></div>
+
+        {/* All-Time Watch Time */}
+        <div className="flex justify-between items-center relative z-10 pb-4 border-b border-white/5">
+          <div>
+            <p className="text-xs font-bold text-[#FF9933] uppercase tracking-wider">Total Watch Time</p>
+            <p className="text-[10px] text-gray-500">All-Time</p>
+          </div>
+          <div className="text-lg font-black text-[#FF9933]">{formatMinsToHours(allTimeWatchMins)}</div>
+        </div>
 
         {/* Today's Watch Time */}
         <div className="flex justify-between items-center relative z-10">
