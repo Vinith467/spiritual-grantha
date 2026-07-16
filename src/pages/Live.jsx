@@ -81,10 +81,11 @@ function Live() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col animate-in fade-in duration-500">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col animate-in fade-in duration-500 pt-[60px] sm:pt-[68px]">
+      <Navbar />
       
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-[#1a1a1a]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-[60px] sm:top-[68px] z-40 bg-[#1a1a1a]/95 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => navigate(-1)} 
@@ -108,7 +109,7 @@ function Live() {
       <div className="flex-1 w-full max-w-7xl mx-auto flex flex-col md:flex-row bg-black">
         
         {/* Main Video Area */}
-        <div className="w-full md:w-3/4 aspect-video bg-black sticky top-16 md:relative z-40 shadow-2xl">
+        <div className="w-full md:w-3/4 aspect-video bg-black sticky top-[120px] md:relative z-30 shadow-2xl">
           <YouTube 
             videoId={liveStream.youtube_id} 
             opts={opts} 
@@ -128,8 +129,6 @@ function Live() {
         </div>
 
       </div>
-
-      <Navbar />
     </div>
   );
 }
